@@ -1,0 +1,19 @@
+
+@url_dev=http://localhost:3052/v1/api
+
+### login
+POST {{url_dev}}/shop/login
+
+
+### signUp
+
+
+POST {{url_dev}}/shop/signUp
+Content-Type: application/json
+x-api-key: 60023dbbca8f70fa5fbe092549e3673e6a9415dadbf9d62cd5b750b5b696de8d
+
+{ 
+    "name": "Trunknq",
+    "email": "nqtrung12@gmail.com",
+    "password": "12345678ad"
+}
