@@ -12,13 +12,14 @@
   },
   "lint-staged": {
     "*.js": [
-      "eslint --fix"
+      "eslint --fix --config eslint.config.js"
     ]
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "accesscontrol": "^2.2.1",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "lodash": "^4.17.21",

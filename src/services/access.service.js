@@ -34,21 +34,11 @@ class AccessService {
 
       // TODO: Add user to authentication service (JWT, Firebase Auth, etc.)
       if (newShop) {
-        // privateKey để mã hóa còn 
-        // publicKey chỉ là xác thực xem có đúng là từ privateKey mã hóa ra không
-        const { privateKey, publicKey } = await crypto.generateKeyPairSync('rsa', {
-          modulusLength: 4096,
-          publicKeyEncoding: {
-            type: 'pkcs1', //  tiêu chuẩn mật mã được thiết kế để sử dụng RSA (Rivest-Shamir-Adleman) cho việc ký kết và mã hóa
-            format: 'pem', // một định dạng để lưu trữ và truyền tải các dữ liệu mật mã như khóa, chứng chỉ 
-          },
-          privateKeyEncoding: {
-            type: 'pkcs1', //  tiêu chuẩn mật mã được thiết kế để sử dụng RSA (Rivest-Shamir-Adleman) cho việc ký kết và mã hóa
-            format: 'pem', // một định dạng để lưu trữ và truyền tải các dữ liệu mật mã
-          }
-        })
+        // Create random tokens
+        const privateKey = crypto.randomBytes(32).toString('hex');
+        const publicKey = crypto.randomBytes(32).toString('hex');
 
-        console.log(privateKey, publicKey); // save vào collection KeyToken
+
 
         const keyStore = await keyTokenService.createKeyToken({
           userId: newShop._id,

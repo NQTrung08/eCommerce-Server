@@ -6,23 +6,12 @@ const { Key: { DOCUMENT_NAME, COLLECTION_NAME } } = require('../constant/index')
 
 
 var keyTokenSchema = new Schema({
-  user: {
+  userId: {
     type: Schema.Types.ObjectId,
     required: true,
-    ref: 'Shop'
+    ref: 'User'
   },
-  privateKey: {
-    type: String,
-    required: true
-  },
-  publicKey: {
-    type: String,
-    required: true
-  },
-  refreshToken: {
-    type: Array,
-    default: []
-  }
+  refreshToken: { type: String, required: true },
 }, {
   timestamps: true,
   collection: COLLECTION_NAME,
