@@ -1,4 +1,4 @@
-// .eslintrc.js
+
 const pluginJs = require('@eslint/js');
 const globals = require('globals');
 
@@ -10,12 +10,12 @@ module.exports = {
   },
   rules: {
     // Quy tắc cơ bản
-    'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-    'no-console': 'warn',
-    'no-debugger': 'warn',
-    'eqeqeq': ['error', 'always'],
-    'semi': ['error', 'always'],
-    'quotes': ['error', 'single'],
+    // 'no-unused-vars': 'off',
+    // 'no-console': 'off',
+    // 'no-debugger': 'off',
+    // 'eqeqeq': 'off',
+    // 'semi': 'off',
+    // 'quotes': 'off',
   },
   ...pluginJs.configs.recommended,
 };
