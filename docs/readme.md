@@ -184,4 +184,4 @@ useUnifiedTopology: true: Tùy chọn này sử dụng lớp topology hợp nh�
 4. ta cần xử lý lỗi với tầng `controller`
    1. viết 1 middleware: `handle Error` để xử lý phần `router`
 
-## Bài 8:
+## Bài 8: Make Your API Response use class
