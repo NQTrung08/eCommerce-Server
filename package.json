@@ -10,6 +10,11 @@
     "lint:fix": "eslint . --fix",
     "prepare": "husky install"
   },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix"
+    ]
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

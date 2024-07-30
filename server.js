@@ -3,10 +3,12 @@ const { app: {port}} = require('./src/configs/config.mongodb');
 
 // const PORT = process.env.PORT || 3306;
 
+// eslint-disable-next-line
 const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
+console.log(`Starting`);
 
 // process.on("SIGINT", () => {
 //   server.close(() => {
