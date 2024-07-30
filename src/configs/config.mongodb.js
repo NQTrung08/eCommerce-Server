@@ -1,17 +1,4 @@
 
-// lv 0
-// const config = {
-//   db: {
-//     host: "localhost",
-//     port: 27017,
-//     name: "shopDEV",
-//   },
-//   server: {
-//     port: 3000,
-//   },
-
-// }
-
 
 // lv1
 const dev = {
