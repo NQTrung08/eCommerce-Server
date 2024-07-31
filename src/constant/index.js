@@ -1,10 +1,11 @@
 
 module.exports = {
-  RoleShop: {
+  RoleName: {
     SHOP: 'SHOP',
     WRITE: 'WRITE',
     EDITOR: 'EDITOR',
     ADMIN: 'ADMIN',
+    USER: 'USER'
   },
   Header: {
     API_KEY: 'x-api-key',
@@ -21,6 +22,18 @@ module.exports = {
   apiKey: {
     DOCUMENT_NAME: 'ApiKey',
     COLLECTION_NAME: 'ApiKeys'
+  },
+  User: {
+    DOCUMENT_NAME: 'User',
+    COLLECTION_NAME: 'Users'
+  },
+  Role: {
+    DOCUMENT_NAME: 'Role',
+    COLLECTION_NAME: 'Roles'
+  },
+  Resource: {
+    DOCUMENT_NAME: 'Resource',
+    COLLECTION_NAME: 'Resources'
   }
 
 }

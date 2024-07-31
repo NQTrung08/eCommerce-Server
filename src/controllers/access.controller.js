@@ -2,17 +2,8 @@
 const AccessService = require('../services/access.service');
 
 class AccessController {
-  logIn = function (req, res, next) {
-    try {
-      return res.status(200).json({
-        message: 'Login success',
-
-      })
-
-    } catch (error) {
-      next(error);
-    }
-
+  signIn = async(req, res, next) => {
+    return res.status(200).json(await AccessService.signIn(req.body));
   }
 
   signUp = async (req, res, next) => {
