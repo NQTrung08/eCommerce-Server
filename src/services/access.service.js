@@ -1,6 +1,6 @@
 'use strict';
 
-const shopModel = require('../models/shop.model');
+const userModel = require('../models/user.model');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
@@ -8,81 +8,107 @@ const keyTokenService = require('./keyToken.service');
 const { createTokenPair } = require('../auth/authUtils');
 const { getInfoData } = require('../utils/index')
 
-const { RoleShop: { SHOP, WRITE, EDITOR, ADMIN } } = require('../constant/index');
+const { RoleName: { USER } } = require('../constant/index');
 const { ConflictError, InternalServerError } = require('../core/error.response');
 
 class AccessService {
 
-  static signUp = async ({ name, email, password }) => {
-    // try {
-      // Check if user already exists
-      const hodelShop = await shopModel.findOne({ email }).lean(); // trả về 1 object js thuần túy
-      if (hodelShop) {
-        throw new ConflictError('User already exists')
-      }
+  static signUp = async ({ name, email, phoneNumber, password }) => {
+    const hodelUser = await userModel.findOne({ email }).lean(); // trả về 1 object js thuần túy
+    if (hodelUser) {
+      throw new ConflictError('User already exists')
+    }
 
-      const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
 
-      // Create a new user
-      const newShop = await shopModel.create({
-        name,
+    const defaultRole = await roleModel.findOne({ roleName: 'user' }).lean();
+    if (!defaultRole) {
+      throw new InternalServerError('Default role not found');
+    }
+
+    // Create a new user
+    const newUser = await userModel.create({
+      userName: name,
+      email,
+      phoneNumber,
+      password: passwordHash,
+      roles: [defaultRole._id], // Gán vai trò mặc định
+    });
+
+    // create token pair
+    const tokens = await createTokenPair(
+      {
+        _id: newUser._id,
         email,
-        password: passwordHash,
-        roles: [SHOP],
-      });
-
-
-      // TODO: Add user to authentication service (JWT, Firebase Auth, etc.)
-      if (newShop) {
-        // Create random tokens
-        const privateKey = crypto.randomBytes(32).toString('hex');
-        const publicKey = crypto.randomBytes(32).toString('hex');
-
-
-
-        const keyStore = await keyTokenService.createKeyToken({
-          userId: newShop._id,
-          privateKey: privateKey,
-          publicKey: publicKey,
-        })
-
-        if (!keyStore) {
-          throw new InternalServerError('Failed to save keyStore')
-        }
-    
-        // create token pair
-        const tokens = await createTokenPair(
-          {
-            userId: newShop._id,
-            email
-          },
-          publicKey,
-          privateKey
-        )
-
-        console.log("Create token success", tokens)
-
-        return {
-          code: "xxx",
-          metadata: {
-            shop: getInfoData({ fields: ['_id', 'name', 'email',], object: newShop }),
-            tokens
-          }
-        }
-
+        roles: newUser.roles,
+        status: newUser.status
       }
-      // trả về nếu create user thành công như không thể create token
-      throw new InternalServerError('Failed to create user');
 
-      // TODO: Send verification email
-    // } catch (error) {
-    //   console.error('Error signing up:', error);
-    //   return {
-    //     code: 'xxx',
-    //     message: error.message,
-    //     status: 'error'
-    //   }
-    // }
+    )
+
+    console.log("Create token success", tokens)
+
+
+    const keyStore = await keyTokenService.createKeyToken({
+      userId: newUser._id,
+      refreshToken: tokens.refreshToken
+    })
+
+    if (!keyStore) {
+      throw new InternalServerError('Failed to save keyStore')
+    }
+
+    return {
+      code: "xxx",
+      metadata: {
+        user: getInfoData({ fields: ['_id', 'userId', 'userName', 'email', 'status', 'roles', 'provider'], object: newUser }),
+        tokens
+      }
+    }
+  }
+
+
+  static signIn = async ({ email, password }) => {
+    const user = await userModel.findOne({ email }).lean();
+
+    if (!user) {
+      throw new ConflictError('User not found')
+    }
+
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      throw new ConflictError('Invalid password')
+    }
+
+    // create token pair
+    const tokens = await createTokenPair(
+      {
+        _id: user._id,
+        email,
+        roles: user.roles,
+        status: user.status
+      }
+    )
+
+    console.log("Create token success", tokens)
+
+    const keyStore = await keyTokenService.createKeyToken({
+      userId: user._id,
+      refreshToken: tokens.refreshToken
+    })
+
+    if (!keyStore) {
+      throw new InternalServerError('Failed to save keyStore')
+    }
+
+    return {
+      code: "xxx",
+      metadata: {
+        user: getInfoData({ fields: ['_id', 'userId', 'userName', 'email', 'status', 'roles', 'provider'], object: newShop }),
+        tokens
+      }
+    }
   }
 }
 

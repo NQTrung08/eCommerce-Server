@@ -32,6 +32,12 @@ class InternalServerError extends ErrorReponse {
   }
 }
 
+class AuthFailureError extends ErrorReponse {
+  constructor(message = reasonPhrases.UNAUTHORIZED, status = statusCode.UNAUTHORIZED) {
+    super(message, status)
+  }
+}
+
 module.exports = {
   ConflictError,
   BadRequestError,

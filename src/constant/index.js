@@ -1,10 +1,11 @@
 
 module.exports = {
-  RoleShop: {
+  RoleName: {
     SHOP: 'SHOP',
     WRITE: 'WRITE',
     EDITOR: 'EDITOR',
     ADMIN: 'ADMIN',
+    USER: 'USER'
   },
   Header: {
     API_KEY: 'x-api-key',
