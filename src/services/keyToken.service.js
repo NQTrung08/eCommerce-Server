@@ -6,8 +6,8 @@ class keyTokenService {
   static createKeyToken = async ({ userId, refreshToken }) => {
     try {
       const tokens = await keyTokenModel.create({
-        user: userId,
-        refreshToken
+        userId: userId,
+        refreshToken: refreshToken,
       })
 
       return tokens ? tokens : null;

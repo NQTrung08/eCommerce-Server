@@ -20,12 +20,10 @@ var userSchema = new Schema({
   },
   dateOfBirth: {
     type: Date,
-    required: true,
   },
   gender: {
     type: String,
     enum: ['male', 'female', 'other'],
-    required: true,
   },
   avatar: { type: String }, // URL of avatar
   phoneNumber: { type: String, unique: true },

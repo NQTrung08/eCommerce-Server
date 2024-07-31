@@ -24,8 +24,12 @@ const createTokenPair = async ( payload ) => {
     return { accessToken, refreshToken  };
     
   } catch (error) {
-    
+    console.log('decode::', error);
   }
+}
+
+const authenticate = (req, res, next) => {
+
 }
 
 module.exports = {

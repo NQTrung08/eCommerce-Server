@@ -8,8 +8,8 @@ const keyTokenService = require('./keyToken.service');
 const { createTokenPair } = require('../auth/authUtils');
 const { getInfoData } = require('../utils/index')
 
-const { RoleName: { USER } } = require('../constant/index');
 const { ConflictError, InternalServerError } = require('../core/error.response');
+const roleModel = require('../models/role.model');
 
 class AccessService {
 
@@ -47,6 +47,7 @@ class AccessService {
     )
 
     console.log("Create token success", tokens)
+    console.log(tokens.refreshToken)
 
 
     const keyStore = await keyTokenService.createKeyToken({
@@ -105,7 +106,7 @@ class AccessService {
     return {
       code: "xxx",
       metadata: {
-        user: getInfoData({ fields: ['_id', 'userId', 'userName', 'email', 'status', 'roles', 'provider'], object: newShop }),
+        user: getInfoData({ fields: ['_id', 'userId', 'userName', 'email', 'status', 'roles', 'provider'], object: user }),
         tokens
       }
     }
