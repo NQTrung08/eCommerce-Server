@@ -13,10 +13,10 @@ const createTokenPair = async ( payload ) => {
     });
 
 
-    jwt.verify(accessToken, process.env.jwtAccessToken, (err, decode) => {
+    jwt.verify(accessToken, process.env.JWT_ACCESS_TOKEN, (err, decode) => {
       if (err) {
         console.log('Invalid access token:', err);
-        return null;
+        return err;
       } else {
         console.log('decode::', decode);
       }

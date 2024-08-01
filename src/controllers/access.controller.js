@@ -1,10 +1,13 @@
 
-const { CREATED } = require('../core/success.response');
+const { CREATED, SuccessReponse } = require('../core/success.response');
 const AccessService = require('../services/access.service');
 
 class AccessController {
   signIn = async(req, res, next) => {
-    return res.status(200).json(await AccessService.signIn(req.body));
+    new SuccessReponse({
+      message: 'Login OK',
+      data: await AccessService.signIn(req.body)
+    }).send(res)
   }
 
   signUp = async (req, res, next) => {
@@ -15,6 +18,13 @@ class AccessController {
     }).send(res)
 
   }
+
+  logOut = async (req, res, next) => {
+    new SuccessReponse({ message: 'Logged out',
+      data: await AccessService.logOut(req.user)
+     }).send(res)
+  
+  }  
 
 }
 

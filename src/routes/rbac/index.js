@@ -2,7 +2,7 @@
 const express = require('express');
 const { grantAccess } = require('../../middewares/rbac');
 const {listRole, newRole} = require('../../controllers/rbac.controller');
-const { asyncHandler } = require('../../auth/checkAuth')
+const { asyncHandler } = require('../../helpers/asyncHandler')
 const router = express.Router();
 
 router.get('/roles', asyncHandler(listRole));

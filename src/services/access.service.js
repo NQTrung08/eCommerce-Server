@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
 const keyTokenService = require('./keyToken.service');
+const keyTokenModel = require('../models/keytoken.model')
 const { createTokenPair } = require('../auth/authUtils');
 const { getInfoData } = require('../utils/index')
 
@@ -60,7 +61,7 @@ class AccessService {
     }
 
     return {
-      code: "xxx",
+      code: "200",
       metadata: {
         user: getInfoData({ fields: ['_id', 'userId', 'userName', 'email', 'status', 'roles', 'provider'], object: newUser }),
         tokens
@@ -111,6 +112,14 @@ class AccessService {
       }
     }
   }
+
+
+  static logOut = async ({ _id }) => {
+    console.log("logOut user", _id)
+    const keyToken = await keyTokenModel.deleteMany({ userId: _id })
+    return keyToken;
+  }
+
 }
 
 module.exports = AccessService;
