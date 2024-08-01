@@ -3,14 +3,11 @@
 const keyTokenModel = require('../models/keytoken.model')
 
 class keyTokenService {
-  static createKeyToken = async ({ userId, accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry }) => {
+  static createKeyToken = async ({ userId, refreshToken }) => {
     try {
       const tokens = await keyTokenModel.create({
         userId: userId,
-        accessToken: accessToken,
-        refreshToken: refreshToken,
-        accessTokenExpiry: accessTokenExpiry,
-        refreshTokenExpiry: refreshTokenExpiry,
+        refreshToken: refreshToken
         
       })
 

@@ -12,9 +12,6 @@ const createTokenPair = async ( payload ) => {
       expiresIn: '7d'
     });
 
-    const accessTokenExpiry = new Date(Date.now() + 3 * 24 * 3600 * 1000); // 3 days
-    const refreshTokenExpiry = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 days
-
 
     jwt.verify(accessToken, process.env.jwtAccessToken, (err, decode) => {
       if (err) {
@@ -25,7 +22,7 @@ const createTokenPair = async ( payload ) => {
       }
     })
 
-    return { accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry };
+    return { accessToken, refreshToken};
     
   } catch (error) {
     console.log('decode::', error);
