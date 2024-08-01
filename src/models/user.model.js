@@ -42,7 +42,8 @@ var userSchema = new Schema({
     type: String,
     enum: ['local', 'google', 'facebook'],
     default: 'local',
-  }
+  },
+  providerId: { type: String, default: ''}
 }, {
   timestamps: true,
   collection: COLLECTION_NAME,

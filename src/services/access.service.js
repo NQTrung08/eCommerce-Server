@@ -52,7 +52,10 @@ class AccessService {
 
     const keyStore = await keyTokenService.createKeyToken({
       userId: newUser._id,
-      refreshToken: tokens.refreshToken
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      accessTokenExpiry: tokens.accessTokenExpiry,
+      refreshTokenExpiry: tokens.refreshTokenExpiry,
     })
 
     if (!keyStore) {
@@ -96,7 +99,10 @@ class AccessService {
 
     const keyStore = await keyTokenService.createKeyToken({
       userId: user._id,
-      refreshToken: tokens.refreshToken
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      accessTokenExpiry: tokens.accessTokenExpiry,
+      refreshTokenExpiry: tokens.refreshTokenExpiry,
     })
 
     if (!keyStore) {

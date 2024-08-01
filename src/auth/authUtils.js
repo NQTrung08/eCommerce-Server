@@ -4,13 +4,17 @@ const jwt = require('jsonwebtoken');
 
 const createTokenPair = async ( payload ) => {
   try {
-    const accessToken = await jwt.sign(payload, process.env.JWT_ACCESS_TOKEN, { 
-      expiresIn: '1h' 
+    const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN, { 
+      expiresIn: '3d' 
     });
     
-    const refreshToken = await jwt.sign(payload, process.env.JWT_REFRESH_TOKEN, {
+    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN, {
       expiresIn: '7d'
     });
+
+    const accessTokenExpiry = new Date(Date.now() + 3 * 24 * 3600 * 1000); // 3 days
+    const refreshTokenExpiry = new Date(Date.now() + 7 * 24 * 3600 * 1000); // 7 days
+
 
     jwt.verify(accessToken, process.env.jwtAccessToken, (err, decode) => {
       if (err) {
@@ -21,7 +25,7 @@ const createTokenPair = async ( payload ) => {
       }
     })
 
-    return { accessToken, refreshToken  };
+    return { accessToken, refreshToken, accessTokenExpiry, refreshTokenExpiry };
     
   } catch (error) {
     console.log('decode::', error);
