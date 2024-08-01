@@ -11,6 +11,7 @@ const roleSchema = new Schema({
   roleDesc: {type: String},
   rol_grants: [
     {
+      _id: { type: Schema.Types.ObjectId, auto: true },
       resource: { type: Schema.Types.ObjectId, ref: 'Resource'},
       actions: [{type: String}],
       attributes: { type: String, default: '*'}

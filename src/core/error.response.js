@@ -32,6 +32,12 @@ class InternalServerError extends ErrorReponse {
   }
 }
 
+class NotFoundError extends ErrorReponse {
+  constructor(message = reasonPhrases.NOT_FOUND, status = statusCode.NOT_FOUND) {
+    super(message, status)
+  }
+}
+
 class AuthFailureError extends ErrorReponse {
   constructor(message = reasonPhrases.UNAUTHORIZED, status = statusCode.UNAUTHORIZED) {
     super(message, status)
@@ -42,4 +48,6 @@ module.exports = {
   ConflictError,
   BadRequestError,
   InternalServerError,
+  AuthFailureError,
+  NotFoundError
 }
