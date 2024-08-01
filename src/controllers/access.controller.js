@@ -24,7 +24,13 @@ class AccessController {
       data: await AccessService.logOut(req.user)
      }).send(res)
   
-  }  
+  }
+
+  refreshTokenHandler = async (req, res, next) => {
+    new SuccessReponse({ message: 'Refresh token OK',
+      data: await AccessService.refreshTokenHandler(req.body)
+    }).send(res)
+  }
 
 }
 

@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
+const keyTokenModel = require('../models/keytoken.model');
 
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
   const token = req.header('Authorization').replace('Bearer ', '');
   
   if (!token) {
@@ -9,6 +10,15 @@ const authenticate = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_TOKEN);
+    
+    const tokenRecord = await keyTokenModel.findOne({
+      userId: decoded._id,
+    });
+
+    if (!tokenRecord) {
+      return res.status(403).json({ message: 'Access denied' });
+    }
+    
     req.user = decoded;
     console.log("decode::", decoded)
     next();

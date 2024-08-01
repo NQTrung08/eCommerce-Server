@@ -3,13 +3,14 @@
 const userModel = require('../models/user.model');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 
 const keyTokenService = require('./keyToken.service');
 const keyTokenModel = require('../models/keytoken.model')
 const { createTokenPair } = require('../auth/authUtils');
 const { getInfoData } = require('../utils/index')
 
-const { ConflictError, InternalServerError } = require('../core/error.response');
+const { ConflictError, InternalServerError, BadRequestError } = require('../core/error.response');
 const roleModel = require('../models/role.model');
 
 class AccessService {
@@ -119,6 +120,33 @@ class AccessService {
     const keyToken = await keyTokenModel.deleteMany({ userId: _id })
     return keyToken;
   }
+
+  static refreshTokenHandler = async ({refreshToken}) => {
+    console.log(refreshToken)
+    if (!refreshToken) {
+      throw new BadRequestError('Refresh token is required')
+    }
+
+    const tokenRecord = await keyTokenModel.findOne({ refreshToken });
+
+    // Xác minh refreshToken
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN);
+
+    // Tạo mới accessToken
+    const newAccessToken = jwt.sign({ _id: decoded._id }, process.env.JWT_ACCESS_TOKEN, { expiresIn: '3d' });
+
+    // Cập nhật thời gian hết hạn của accessToken trong cơ sở dữ liệu
+    // await keyTokenModel.updateOne(
+    //   { refreshToken },
+    //   { accessToken: newAccessToken, accessTokenExpiry: new Date(Date.now() + 3600 * 1000) } // Hết hạn sau 3 days
+    // );
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: tokenRecord.refreshToken // Có thể cấp phát refreshToken mới nếu cần
+    }
+
+  };
 
 }
 
