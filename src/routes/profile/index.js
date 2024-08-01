@@ -1,10 +1,11 @@
 const express = require('express');
 const { grantAccess } = require('../../middewares/rbac');
 const { profiles, profile} = require('../../controllers/profile.controller');
-
+const { authenticate } = require('../../middewares/authenticate.middleware')
+const { asyncHandler } = require('../../auth/checkAuth')
 const router = express.Router();
 
-router.get('/viewAny', grantAccess('readAny', 'profile'), profiles)
-router.get('/viewOwn', grantAccess('readOwn', 'profile'), profile)
+router.get('/viewAny',authenticate, grantAccess('readAny', 'profile'), asyncHandler(profiles));
+router.get('/viewOwn',authenticate, grantAccess('readOwn', 'profile'), asyncHandler(profile))
 
 module.exports = router

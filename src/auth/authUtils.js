@@ -28,10 +28,6 @@ const createTokenPair = async ( payload ) => {
   }
 }
 
-const authenticate = (req, res, next) => {
-
-}
-
 module.exports = {
   createTokenPair,
 }

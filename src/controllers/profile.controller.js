@@ -4,17 +4,21 @@ const ProfileService = require('../services/profile.service');
 
 class ProfileController {
   profiles = async(req, res, next) => {
-    new SuccessReponse({
+    return res.status(200).json({
       message: 'All profiles',
-      data: await ProfileService.getAllProfiles(),
+      data: {
+        message: "All profiles"
+      },
     })
   }
 
   profile = async(req, res, next) => {
     const { id } = req.params;
-    new SuccessReponse({
+    return res.status(200).json({
       message: 'Profile',
-      data: await ProfileService.getProfileById(id),
+      data: {
+        message: "Profile",
+      },
     })
   }
   
