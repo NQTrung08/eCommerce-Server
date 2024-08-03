@@ -10,7 +10,11 @@ const productSchema = new Schema({
     ref: 'Shop',
     required: true
   },
-  name: {
+  productName: {
+    type: String,
+    required: true
+  },
+  productThumb: {
     type: String,
     required: true
   },
@@ -23,7 +27,7 @@ const productSchema = new Schema({
     type: Number,
     required: true
   },
-  quantity: {
+  stockQuantity: {
     type: Number,
     required: true
   },
@@ -46,17 +50,40 @@ const productSchema = new Schema({
     unique: true,
     required: true
   },
-  thumb: {
-    type: [String],
+  productVariations: {
+    type: [{
+      variationName: String,
+      variationPrice: Number,
+      variationStock: Number,
+      variationThumb: String,
+      variationImages: [String]
+    }],
     default: []
   },
   attributes: {
     type: Schema.Types.Mixed
+  },
+  isDraft: {
+    type: Boolean,
+    default: true,
+    index: true,
+    select: false
+  },
+  isPublic: {
+    type: Boolean,
+    default: false,
+    index: true,
+    select: false
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
   }
   
 }, {
   timestamps: true,
-  collection: COLLECTION_NAME
+  collection: COLLECTION_NAME,
+  discriminatorKey: 'productType'
 });
 
 const productModel = model(DOCUMENT_NAME, productSchema);
