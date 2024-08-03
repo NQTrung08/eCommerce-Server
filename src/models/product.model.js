@@ -1,6 +1,7 @@
 'use strict';
 
 const { Schema, model } = require('mongoose');
+const slugify = require('slugify');
 
 const { Product: { DOCUMENT_NAME, COLLECTION_NAME } } = require('../constant/index')
 
@@ -41,14 +42,12 @@ const productSchema = new Schema({
     enum: ['kilogram', 'pieces', 'boxes'],
     default: 'pieces'
   },
-  description: {
+  productDesc: {
     type: String,
     default: ''
   },
-  sku: {
+  productSlug: {
     type: String,
-    unique: true,
-    required: true
   },
   productVariations: {
     type: [{
@@ -79,11 +78,18 @@ const productSchema = new Schema({
     type: Boolean,
     default: false,
   }
-  
+
 }, {
   timestamps: true,
   collection: COLLECTION_NAME,
   discriminatorKey: 'productType'
+});
+
+productSchema.index({ productName: 'text', productDesc: 'text' })
+
+productSchema.pre('save', function (next) {
+  this.productSlug = slugify(this.productName, { lower: true });
+  next();
 });
 
 const productModel = model(DOCUMENT_NAME, productSchema);
