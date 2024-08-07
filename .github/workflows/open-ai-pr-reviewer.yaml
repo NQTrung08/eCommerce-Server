@@ -1,24 +1,62 @@
-name: T3G / Request PR review
+name: T3G Team OpenAI PR reviewer
 
 on:
   pull_request:
     types:
-      - opened
-      - reopened
+      - labeled
 
 jobs:
-  request-pr-review:
-    name: Request PR review
+  openai-reviewer:
+    name: Open AI PR reviewer by new prompt
     runs-on: ubuntu-latest
+    if: github.event.label.name == 'Please review' && github.actor == 'NQTrung08'
+    env:
+      base_branch: main
+      GH_TOKEN: ${{ secrets.OBITO_BOT }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
+      - name: Install jq
+        run: sudo apt-get install -y jq
       - name: checkout
         uses: actions/checkout@v4
-
-      - name: Comment using library
+      - name: get review result and post comment
+        shell: sh
         run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          MESSAGE_COMMENT="## Thank You for Your Pull Request! 🎉\n\n### Summary:\nThank you for opening this pull request! We appreciate your contribution to the project. To ensure a smooth review process, please take a moment to provide a brief summary of the changes and how they enhance the project.\n\n### Code Quality:\n- Please confirm that your changes meet our code quality standards.\n- If you have added new features or fixed bugs, briefly explain the approach you've taken.\n\n### Self-Testing:\nBefore requesting a review, please self-test your changes to catch any potential issues. Once you are confident, label the pull request with 'Please review.'\n\n### Confirmation Checklist:\n- [ ] Summary provided\n- [ ] Code quality confirmed\n- [ ] Self-tested\n- [ ] Labeled with 'Please review'\n\nThank you once again for your contribution! We look forward to reviewing your changes. If you have any questions or need assistance, feel free to ask. 😊"
-          GITHUB_TOKEN=${{ secrets.OBITO_BOT }}
-          COMMENT_URL="https://api.github.com/repos/${{ github.repository }}/issues/${PR_NUMBER}/comments"
-
-          curl -s -H "Authorization: token ${GITHUB_TOKEN}" -X POST $COMMENT_URL -d "{\"body\":\"$MESSAGE_COMMENT\"}"
+          git fetch origin main
+          echo "diff result:"
+          git diff remotes/origin/main -U1
+          # get review result from Open AI
+          echo -n '{
+            "model": "gpt-3.5-turbo",
+            "temperature": 1,
+            "max_tokens": 4095,
+            "top_p": 1,
+            "frequency_penalty": 0,
+            "presence_penalty": 0,
+            "messages":
+              [
+                {
+                  "role": "system",
+                  "content": "${{ secrets.CONTEXT_OF_ECOMMERCE }}"
+                },
+                {
+                  "role": "user",
+                  "content": ' > payload.json
+          echo $(git diff remotes/origin/main -U1) |jq -Rsa >> payload.json
+          echo '}]}' >> payload.json
+          echo "payload:"
+          cat payload.json
+          # send request and create comments file
+          curl -s https://api.openai.com/v1/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${OPENAI_API_KEY}" \
+            -d @payload.json | jq -r ".choices[].message.content" >> comments || exit 0
+          # Add comment to PR using Github CLI
+          echo "\n#### This comment is created by OpenAI API. 👍\nWebsite: [https://studytogether.vn](https://studytogether.vn) 🌟\nTiktok: [Lets Study Together](https://www.tiktok.com/@study2together) 🙏" >> comments
+          # Edit last commend or create new one
+          if [[ "${{ github.event.action }}" == "opened" ]]; then
+            gh pr comment -F ./comments ${{ github.event.pull_request.html_url }}
+          else
+            gh pr comment --edit-last -F ./comments ${{ github.event.pull_request.html_url }} ||
+              gh pr comment -F ./comments ${{ github.event.pull_request.html_url }}
+          fi

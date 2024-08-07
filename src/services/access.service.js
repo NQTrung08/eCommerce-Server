@@ -3,17 +3,19 @@
 const userModel = require('../models/user.model');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 
 const keyTokenService = require('./keyToken.service');
+const keyTokenModel = require('../models/keytoken.model')
 const { createTokenPair } = require('../auth/authUtils');
 const { getInfoData } = require('../utils/index')
 
-const { ConflictError, InternalServerError } = require('../core/error.response');
+const { ConflictError, InternalServerError, BadRequestError } = require('../core/error.response');
 const roleModel = require('../models/role.model');
 
 class AccessService {
 
-  static signUp = async ({ name, email, phoneNumber, password }) => {
+  static signUp = async ({ name, email, phoneNumber, password, roles }) => {
     const hodelUser = await userModel.findOne({ email }).lean(); // trả về 1 object js thuần túy
     if (hodelUser) {
       throw new ConflictError('User already exists')
@@ -32,7 +34,7 @@ class AccessService {
       email,
       phoneNumber,
       password: passwordHash,
-      roles: [defaultRole._id], // Gán vai trò mặc định
+      roles: roles || [defaultRole._id], // Gán vai trò mặc định
     });
 
     // create token pair
@@ -52,7 +54,7 @@ class AccessService {
 
     const keyStore = await keyTokenService.createKeyToken({
       userId: newUser._id,
-      refreshToken: tokens.refreshToken
+      refreshToken: tokens.refreshToken,
     })
 
     if (!keyStore) {
@@ -60,12 +62,10 @@ class AccessService {
     }
 
     return {
-      code: "xxx",
-      metadata: {
-        user: getInfoData({ fields: ['_id', 'userId', 'userName', 'email', 'status', 'roles', 'provider'], object: newUser }),
+        user: getInfoData({ fields: ['_id', 'userName', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: newUser }),
         tokens
       }
-    }
+    
   }
 
 
@@ -96,7 +96,7 @@ class AccessService {
 
     const keyStore = await keyTokenService.createKeyToken({
       userId: user._id,
-      refreshToken: tokens.refreshToken
+      refreshToken: tokens.refreshToken,
     })
 
     if (!keyStore) {
@@ -106,11 +106,46 @@ class AccessService {
     return {
       code: "xxx",
       metadata: {
-        user: getInfoData({ fields: ['_id', 'userId', 'userName', 'email', 'status', 'roles', 'provider'], object: user }),
+        user: getInfoData({ fields:  ['_id', 'userName', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: user }),
         tokens
       }
     }
   }
+
+
+  static logOut = async ({ _id }) => {
+    console.log("logOut user", _id)
+    const keyToken = await keyTokenModel.deleteMany({ userId: _id })
+    return keyToken;
+  }
+
+  static refreshTokenHandler = async ({refreshToken}) => {
+    console.log(refreshToken)
+    if (!refreshToken) {
+      throw new BadRequestError('Refresh token is required')
+    }
+
+    const tokenRecord = await keyTokenModel.findOne({ refreshToken });
+
+    // Xác minh refreshToken
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN);
+
+    // Tạo mới accessToken
+    const newAccessToken = jwt.sign({ _id: decoded._id }, process.env.JWT_ACCESS_TOKEN, { expiresIn: '3d' });
+
+    // Cập nhật thời gian hết hạn của accessToken trong cơ sở dữ liệu
+    // await keyTokenModel.updateOne(
+    //   { refreshToken },
+    //   { accessToken: newAccessToken, accessTokenExpiry: new Date(Date.now() + 3600 * 1000) } // Hết hạn sau 3 days
+    // );
+
+    return {
+      accessToken: newAccessToken,
+      refreshToken: tokenRecord.refreshToken // Có thể cấp phát refreshToken mới nếu cần
+    }
+
+  };
+
 }
 
 module.exports = AccessService;

@@ -4,24 +4,25 @@ const jwt = require('jsonwebtoken');
 
 const createTokenPair = async ( payload ) => {
   try {
-    const accessToken = await jwt.sign(payload, process.env.JWT_ACCESS_TOKEN, { 
-      expiresIn: '1h' 
+    const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN, { 
+      expiresIn: '3d' 
     });
     
-    const refreshToken = await jwt.sign(payload, process.env.JWT_REFRESH_TOKEN, {
+    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN, {
       expiresIn: '7d'
     });
 
-    jwt.verify(accessToken, process.env.jwtAccessToken, (err, decode) => {
+
+    jwt.verify(accessToken, process.env.JWT_ACCESS_TOKEN, (err, decode) => {
       if (err) {
         console.log('Invalid access token:', err);
-        return null;
+        return err;
       } else {
         console.log('decode::', decode);
       }
     })
 
-    return { accessToken, refreshToken  };
+    return { accessToken, refreshToken};
     
   } catch (error) {
     console.log('decode::', error);

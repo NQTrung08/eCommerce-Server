@@ -11,7 +11,23 @@ var keyTokenSchema = new Schema({
     required: true,
     ref: 'User'
   },
-  refreshToken: { type: String, required: true },
+  // accessTokenExpiry: { 
+  //   type: Date,
+  //   required: true
+  // },
+  // refreshTokensUsed: {
+  //   type: Array,
+  //   default: [] 
+  // },
+  refreshToken: { 
+    type: String, 
+    required: true,
+    unique: true 
+  },
+  // refreshTokenExpiry: {
+  //   type: Date,
+  //   required: true
+  // },
 }, {
   timestamps: true,
   collection: COLLECTION_NAME,

@@ -34,6 +34,10 @@ module.exports = {
   Resource: {
     DOCUMENT_NAME: 'Resource',
     COLLECTION_NAME: 'Resources'
+  },
+  Product: {
+    DOCUMENT_NAME: 'Product',
+    COLLECTION_NAME: 'Products'
   }
 
 }

@@ -7,12 +7,13 @@ class keyTokenService {
     try {
       const tokens = await keyTokenModel.create({
         userId: userId,
-        refreshToken: refreshToken,
+        refreshToken: refreshToken
+        
       })
 
       return tokens ? tokens : null;
     } catch (error) {
-      
+      console.log(error);
     }
   }
 }
