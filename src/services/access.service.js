@@ -15,7 +15,7 @@ const roleModel = require('../models/role.model');
 
 class AccessService {
 
-  static signUp = async ({ name, email, phoneNumber, password, roles }) => {
+  static signUp = async ({ userName, full_name, email, phoneNumber, password, roles }) => {
     const hodelUser = await userModel.findOne({ email }).lean(); // trả về 1 object js thuần túy
     if (hodelUser) {
       throw new ConflictError('User already exists')
@@ -30,11 +30,12 @@ class AccessService {
 
     // Create a new user
     const newUser = await userModel.create({
-      userName: name,
+      userName: userName,
+      full_name,
       email,
       phoneNumber,
       password: passwordHash,
-      roles: roles || [defaultRole._id], // Gán vai trò mặc định
+      roles: [defaultRole._id], // Gán vai trò mặc định
     });
 
     // create token pair
@@ -62,10 +63,10 @@ class AccessService {
     }
 
     return {
-        user: getInfoData({ fields: ['_id', 'userName', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: newUser }),
-        tokens
-      }
-    
+      user: getInfoData({ fields: ['_id', 'userName', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: newUser }),
+      tokens
+    }
+
   }
 
 
@@ -106,7 +107,7 @@ class AccessService {
     return {
       code: "xxx",
       metadata: {
-        user: getInfoData({ fields:  ['_id', 'userName', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: user }),
+        user: getInfoData({ fields: ['_id', 'userName', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: user }),
         tokens
       }
     }
@@ -119,7 +120,7 @@ class AccessService {
     return keyToken;
   }
 
-  static refreshTokenHandler = async ({refreshToken}) => {
+  static refreshTokenHandler = async ({ refreshToken }) => {
     console.log(refreshToken)
     if (!refreshToken) {
       throw new BadRequestError('Refresh token is required')
@@ -130,14 +131,14 @@ class AccessService {
     // Xác minh refreshToken
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_TOKEN);
 
-    // Tạo mới accessToken
-    const newAccessToken = jwt.sign({ _id: decoded._id }, process.env.JWT_ACCESS_TOKEN, { expiresIn: '3d' });
-
-    // Cập nhật thời gian hết hạn của accessToken trong cơ sở dữ liệu
-    // await keyTokenModel.updateOne(
-    //   { refreshToken },
-    //   { accessToken: newAccessToken, accessTokenExpiry: new Date(Date.now() + 3600 * 1000) } // Hết hạn sau 3 days
-    // );
+    // Lấy thông tin người dùng và cấp phát token mới với thông tin quyền cập nhật
+    const user = await userModel.findById(decoded._id).lean();
+    const newAccessToken = jwt.sign({
+      _id: user._id,
+      email: user.email,
+      roles: user.roles,
+      status: user.status
+    }, process.env.JWT_ACCESS_TOKEN, { expiresIn: '3d' });
 
     return {
       accessToken: newAccessToken,

@@ -13,6 +13,11 @@ var userSchema = new Schema({
     maxLength: 150,
     require: true
   },
+  full_name: {
+    type: String,
+    trim: true,
+    maxLength: 150,
+  },
   email: {
     type: String,
     trim: true,
