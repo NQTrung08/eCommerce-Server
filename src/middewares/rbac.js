@@ -15,20 +15,20 @@ const grantAccess = (action, resource) => {
 
     try {
       rbac.setGrants( await getGrantList());
+      console.log(rbac.getGrants())
       const roleId = req.user.roles;
       const role = await roleModel.findById(roleId).populate({
         path: 'rol_grants.resource',
         select: 'resourceName'
       });
       
-      console.log(role)
+      console.log(role.roleName)
       if (!role) {
         throw new NotFoundError('Role not found.');
     }
       
       const permission = rbac.can(role.roleName)[action](resource)
 
-      console.log('Permission', permission)
       if (permission.granted) {
         next()
       } else {

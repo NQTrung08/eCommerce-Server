@@ -17,14 +17,14 @@ class SuccessReponse {
 }
 
 class OK extends SuccessReponse {
-  constructor(message, data) {
+  constructor({message, data}) {
     super({message, data})
   }
 }
 
 class CREATED extends SuccessReponse {
-  constructor(message, statusCode = StatusCode.CREATED, reasonPhrases = ReasonPhrases.CREATED, data) {
-    super({message, statusCode, reasonPhrases, data})
+  constructor({message, data, statusCode = StatusCode.CREATED, reasonPhrases = ReasonPhrases.CREATED}) {
+    super({message, data, statusCode, reasonPhrases})
   }
 }
 

@@ -6,71 +6,73 @@ const slugify = require('slugify');
 const { Product: { DOCUMENT_NAME, COLLECTION_NAME } } = require('../constant/index')
 
 const productSchema = new Schema({
-  shopId: {
+  // product_id: {type: String, default: ''},
+  shop_id: {
     type: Schema.Types.ObjectId,
     ref: 'Shop',
     required: true
   },
-  productName: {
+  product_name: {
     type: String,
     required: true
   },
-  productThumb: {
+  product_thumb: {
     type: String,
     required: true
   },
-  categoryId: {
+  category_id: {
     type: Schema.Types.ObjectId,
     ref: 'Category',
     required: true
   },
-  price: {
+  product_price: {
     type: Number,
     required: true
   },
-  stockQuantity: {
-    type: Number,
-    required: true
-  },
-  stockStatus: {
+  stock_status: {
     type: String,
     enum: ['inStock', 'outOfStock', 'preOrder'],
     default: 'inStock'
   },
-  unit: {
-    type: String,
-    enum: ['kilogram', 'pieces', 'boxes'],
-    default: 'pieces'
-  },
-  productDesc: {
+  product_desc: {
     type: String,
     default: ''
   },
-  productSlug: {
+  product_slug: {
     type: String,
   },
-  productVariations: {
-    type: [{
-      variationName: String,
-      variationPrice: Number,
-      variationStock: Number,
-      variationThumb: String,
-      variationImages: [String]
-    }],
-    default: []
-  },
+  // product_variations: {
+  //   type: Array,
+  //   default: []
+  // },
+  /**
+   * variations: [
+   *  {
+   *
+   *    name: 'color',
+   *     options: ['red', 'green', 'blue']   
+   *  
+   *  },
+   *  {
+   *     image: [],
+   *     name: 'size',
+   *     options: ['S', 'M'],
+   *   }
+   * ]
+   * 
+   */
   attributes: {
     type: Schema.Types.Mixed
   },
   isDraft: {
     type: Boolean,
-    default: true,
+    default: false,
     index: true,
     select: false
   },
   isPublic: {
     type: Boolean,
-    default: false,
+    default: true,
     index: true,
     select: false
   },
@@ -82,13 +84,12 @@ const productSchema = new Schema({
 }, {
   timestamps: true,
   collection: COLLECTION_NAME,
-  discriminatorKey: 'productType'
 });
 
-productSchema.index({ productName: 'text', productDesc: 'text' })
+productSchema.index({ product_name: 'text', product_desc: 'text' })
 
 productSchema.pre('save', function (next) {
-  this.productSlug = slugify(this.productName, { lower: true });
+  this.product_slug = slugify(this.product_name, { lower: true });
   next();
 });
 

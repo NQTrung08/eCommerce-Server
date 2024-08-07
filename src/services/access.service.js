@@ -15,7 +15,7 @@ const roleModel = require('../models/role.model');
 
 class AccessService {
 
-  static signUp = async ({ name, email, phoneNumber, password }) => {
+  static signUp = async ({ name, email, phoneNumber, password, roles }) => {
     const hodelUser = await userModel.findOne({ email }).lean(); // trả về 1 object js thuần túy
     if (hodelUser) {
       throw new ConflictError('User already exists')
@@ -34,7 +34,7 @@ class AccessService {
       email,
       phoneNumber,
       password: passwordHash,
-      roles: [defaultRole._id], // Gán vai trò mặc định
+      roles: roles || [defaultRole._id], // Gán vai trò mặc định
     });
 
     // create token pair
@@ -62,12 +62,10 @@ class AccessService {
     }
 
     return {
-      code: "200",
-      metadata: {
-        user: getInfoData({ fields: ['_id', 'userId', 'userName', 'email', 'status', 'roles', 'provider'], object: newUser }),
+        user: getInfoData({ fields: ['_id', 'userName', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: newUser }),
         tokens
       }
-    }
+    
   }
 
 
@@ -108,7 +106,7 @@ class AccessService {
     return {
       code: "xxx",
       metadata: {
-        user: getInfoData({ fields: ['_id', 'userId', 'userName', 'email', 'status', 'roles', 'provider'], object: user }),
+        user: getInfoData({ fields:  ['_id', 'userName', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: user }),
         tokens
       }
     }

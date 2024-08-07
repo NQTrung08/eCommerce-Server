@@ -1,6 +1,7 @@
 const { Schema, model } = require('mongoose');
 const roleModel = require('../models/role.model');
 const resourceModel = require('../models/resource.model');
+const { NotFoundError } = require('../core/error.response');
 
 const getGrantList = async () => {
     try {
@@ -76,9 +77,46 @@ const createRole = async (roleData) => {
       console.error('Error creating role:', err);
       throw err;
     }
-  };
+};
+
+const updateRole = async (id, updatedData) => {
+  try {
+
+    console.log(id)
+    // Xác thực và chuẩn bị dữ liệu trước khi lưu
+    const { roleName, roleSlug, roleStatus, roleDesc, rol_grants } = updatedData;
+
+    // Kiểm tra các quyền trong rol_grants để đảm bảo resource tồn tại
+    for (const grant of rol_grants) {
+      const resource = await resourceModel.findById(grant.resource);
+      if (!resource) {
+        throw new Error(`Resource with ID ${grant.resource} does not exist.`);
+      }
+    }
+
+    // Tìm vai trò theo ID và cập nhật dữ liệu
+    const role = await roleModel.findById(id);
+    if (!role) {
+      throw new NotFoundError('Role not found.');
+    }
+
+    // Cập nhật vai trò với ID
+    const updatedRole = await roleModel.findByIdAndUpdate(id, {
+      roleName,
+      roleSlug,
+      roleStatus,
+      roleDesc,
+      rol_grants
+    }, { new: true });
+
+    return updatedRole;
+  } catch (error) {
+    console.error('Error updating role:', error);
+  }
+}
 
 module.exports = {
     getGrantList,
-    createRole
+    createRole,
+    updateRole
 };

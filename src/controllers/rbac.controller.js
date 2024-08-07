@@ -16,7 +16,15 @@ const newRole = async (req, res, next) => {
     });
 }
 
+const updateRole = async (req, res, next) => {
+  return res.status(200).json(
+    { message: "Update Role",
+      data: await RoleService.updateRole(req.params.id, req.body)
+    });
+}
+
 module.exports = {
   listRole,
-  newRole
+  newRole,
+  updateRole
 };

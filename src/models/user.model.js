@@ -43,7 +43,11 @@ var userSchema = new Schema({
     enum: ['local', 'google', 'facebook'],
     default: 'local',
   },
-  providerId: { type: String, default: ''}
+  providerId: { type: String, default: ''},
+  isDeleted: {
+    type: Boolean,
+    default: false,
+  }
 }, {
   timestamps: true,
   collection: COLLECTION_NAME,

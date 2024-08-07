@@ -7,27 +7,16 @@ const COLLECTION_NAME = 'Categories'
 
 // Mô hình Category
 const categorySchema = new Schema({
-  name: {
+  category_name: {
     type: String,
     required: true
   },
-  description: {
-    type: String,
-    default: ''
-  },
-  parentId: {
+  parent_id: {
     type: Schema.Types.ObjectId,
     ref: 'Category',
     default: null
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
+  level: Number,
 }, {
   timestamps: true,
   collection: COLLECTION_NAME
