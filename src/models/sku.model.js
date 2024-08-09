@@ -22,13 +22,17 @@ const skuSchema = new Schema({
    */
   sku_code: {type: String},
   // sku_sort: {type: Number, default: 0},
-  sku_price: {type: String, require: true},
+  sku_price: {type: Number, require: true},
   sku_stock: {type: Number, default: 0},
-  product_id: {type: String, ref: 'Product'}, // ref to spu product
-  options: {
-    type: Object,
-    default: {}
-  },
+  product_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'Product'
+  }, // ref to product
+  options: [{
+    name: { type: String, required: true },  // Tên của thuộc tính, ví dụ: "color", "size"
+    value: { type: String, required: true },  // Giá trị của thuộc tính, ví dụ: "red", "M"
+    image: { type: String }  // Đường dẫn hoặc URL của hình ảnh tùy chọn cho giá trị này
+  }],
   isDraft: {
     type: Boolean,
     default: false,

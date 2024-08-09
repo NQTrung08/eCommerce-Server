@@ -4,6 +4,13 @@ const { model, Schema} = require('mongoose'); // Erase if already required
 
 const { User: { DOCUMENT_NAME, COLLECTION_NAME } } = require('../constant/index')
 
+
+const addressSchema = new mongoose.Schema({
+  street: String,
+  city: String,
+  zipcode: String
+});
+
 // Declare the Schema of the Mongo model
 var userSchema = new Schema({
   userId: { type: Number},
@@ -36,6 +43,7 @@ var userSchema = new Schema({
     type: String,
     required: true,
   },
+  address: [addressSchema],
   status: {
     type: String,
     enum: ['active', 'pending', 'block'],
