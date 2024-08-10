@@ -10,6 +10,7 @@ const router = express.Router();
 // router.use(checkPermissions('0000'))
 
 router.use('/v1/api', require('./access'))
+router.use('/v1/api/auth', require('./auth'))
 router.use('/v1/api/rbac', require('./rbac'))
 router.use('/v1/api/profile', require('./profile'))
 router.use('/v1/api/category', require('./category'))
