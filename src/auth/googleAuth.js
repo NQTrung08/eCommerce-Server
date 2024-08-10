@@ -33,6 +33,7 @@ async (accessToken, refreshToken, profile, done) => {
       provider: 'google',
       providerId: profile.id,
       roles: [defaultRole._id],
+      verifiedEmail: profile.email_verified
     });
 
     return done(null, newUser);
