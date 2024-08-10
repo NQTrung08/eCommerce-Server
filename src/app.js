@@ -5,11 +5,21 @@ const morgan = require('morgan');
 const { default: helmet } = require('helmet');
 const compression = require('compression');
 const dotenv = require('dotenv');
+const passport = require('passport');
+const session = require('express-session');
+
 
 dotenv.config();
+require('./auth/googleAuth')
+
 const app = express();
 
-// console.log(process.env);
+// app.use(session({
+//   secret: 'your-session-secret', // Thay đổi thành secret của bạn
+//   resave: false,
+//   saveUninitialized: false,
+//   cookie: { secure: false } // Sử dụng `true` nếu bạn sử dụng HTTPS
+// }));
 
 // init middleware
 app.use(morgan("dev"));
@@ -17,6 +27,10 @@ app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Middleware cho Passport
+app.use(passport.initialize());
+// app.use(passport.session());
 
 // init database
 
