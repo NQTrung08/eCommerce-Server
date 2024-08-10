@@ -17,6 +17,10 @@ const categorySchema = new Schema({
     default: null
   },
   level: Number,
+  properties: {
+    type: Schema.Types.Mixed,
+    default: {}
+  }
 }, {
   timestamps: true,
   collection: COLLECTION_NAME

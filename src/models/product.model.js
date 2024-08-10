@@ -41,28 +41,8 @@ const productSchema = new Schema({
   product_slug: {
     type: String,
   },
-  // product_variations: {
-  //   type: Array,
-  //   default: []
-  // },
-  /**
-   * variations: [
-   *  {
-   *
-   *    name: 'color',
-   *     options: ['red', 'green', 'blue']   
-   *  
-   *  },
-   *  {
-   *     image: [],
-   *     name: 'size',
-   *     options: ['S', 'M'],
-   *   }
-   * ]
-   * 
-   */
-  attributes: {
-    type: Schema.Types.Mixed
+  properties: {
+    type: Schema.Types.Mixed,
   },
   isDraft: {
     type: Boolean,
