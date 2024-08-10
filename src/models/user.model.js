@@ -5,7 +5,7 @@ const { model, Schema} = require('mongoose'); // Erase if already required
 const { User: { DOCUMENT_NAME, COLLECTION_NAME } } = require('../constant/index')
 
 
-const addressSchema = new mongoose.Schema({
+const addressSchema = Schema({
   street: String,
   city: String,
   zipcode: String
@@ -49,6 +49,10 @@ var userSchema = new Schema({
     enum: ['active', 'pending', 'block'],
     default: 'active',
   },
+  verifiedEmail: {
+    type: Boolean,
+    default: false,
+  },
   roles: [{ type: Schema.Types.ObjectId, ref: 'Role' }],
   blockedPermissions: [{ type: String }],
   provider: {
@@ -60,7 +64,12 @@ var userSchema = new Schema({
   isDeleted: {
     type: Boolean,
     default: false,
-  }
+  },
+  lastLogin: { type: Date },
+  lastPasswordReset: { type: Date },
+  lastEmailChange: { type: Date },
+  lastEmailVerification: { type: Date },
+  lastPhoneChange: { type: Date },
 }, {
   timestamps: true,
   collection: COLLECTION_NAME,

@@ -9,7 +9,12 @@ const { ConflictError, BadRequestError } = require('../core/error.response')
 
 const newShop = async ({ owner_id, body }) => {
   try {
-    console.log(body);
+    // Kiểm tra nếu owner_id đã có shop
+    const existingShop = await shopModel.findOne({ owner_id: owner_id });
+
+    if (existingShop) {
+      throw new BadRequestError("You can't create a new shop");
+    }
 
     const shop = await shopModel.findOne({
       shop_name: body.shop_name,
@@ -49,16 +54,46 @@ const newShop = async ({ owner_id, body }) => {
   }
 };
 
-const getAllShop = async () => {
+const getAllShop = async ({
+  page = 1,
+  limit = 4,
+  sortBy = 'asc',
+  query = {},
+}) => {
   try {
-    const shops = await shopModel.find()
-    .populate({
-      path: 'owner_id',
-      select: 'userName roles',
-    })
-    .lean();
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+    console.log(query)
 
-    return shops;
+    // Xác định thứ tự sắp xếp (1: A-Z, -1: Z-A)
+    const sortOrder = sortBy.toLowerCase() === 'desc' ? -1 : 1;
+
+    const searchQuery = {};
+    if (query.shop_name) {
+      searchQuery.shop_name = new RegExp(query.shop_name, 'i'); // Tìm kiếm không phân biệt chữ hoa chữ thường
+    }
+
+    const shops = await shopModel.find(searchQuery)
+      .populate({
+        path: 'owner_id',
+        select: 'userName roles',
+      })
+      .sort({
+        shop_name: sortOrder,
+      })
+      .skip((pageNumber - 1) * limitNumber)
+      .limit(limitNumber)
+      .lean();
+    
+    const totalShops = await shopModel.countDocuments();
+
+    return {
+      shops,
+      totalShops,
+      totalPages: Math.ceil(totalShops / limitNumber),
+      currentPage: pageNumber,
+    };
+
   } catch (error) {
     console.log('[E]::getAllShop::', error);
     throw error;

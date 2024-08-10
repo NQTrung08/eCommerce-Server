@@ -6,7 +6,7 @@ const { asyncHandler } = require('../../helpers/asyncHandler')
 const router = express.Router();
 
 
-router.get('/get', authenticate, authorize(['admin']), asyncHandler(ShopController.getAllShops));
+router.get('/', authenticate, authorize(['admin']), asyncHandler(ShopController.getAllShops));
 // router.get('/shops/:id', authenticate, asyncHandler(ShopController.getShopById));
 router.post('/create',authenticate, authorize(['admin', 'shop']), asyncHandler(ShopController.newShop));
 

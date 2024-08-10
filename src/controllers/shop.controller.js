@@ -18,7 +18,12 @@ class ShopController {
   getAllShops = async(req, res, next) => {
     return new SuccessReponse({
       message: 'All shops',
-      data: await ShopService.getAllShop()
+      data: await ShopService.getAllShop({
+        page: req.query.page,
+        limit: req.query.limit,
+        sortBy: req.query.sortBy,
+        query: req.query
+      })
     }).send(res)
   }
 
