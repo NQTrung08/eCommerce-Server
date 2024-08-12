@@ -4,10 +4,11 @@ const shopModel = require('../models/shop.model')
 const userModel = require('../models/user.model')
 const roleModel = require('../models/role.model')
 
-const { ConflictError, BadRequestError } = require('../core/error.response')
+const { ConflictError, BadRequestError, InternalServerError } = require('../core/error.response');
+const { uploadShopLogo } = require('./upload.service');
 
 
-const newShop = async ({ owner_id, body }) => {
+const newShop = async ({ owner_id, body, file }) => {
   try {
     // Kiểm tra nếu owner_id đã có shop
     const existingShop = await shopModel.findOne({ owner_id: owner_id });
@@ -34,11 +35,25 @@ const newShop = async ({ owner_id, body }) => {
     const newShop = new shopModel({
       owner_id: owner_id,
       shop_name: body.shop_name,
-      logo: body.logo,
       address: body.address,
       phone_number: body.phone_number,
       description: body.description,
     });
+
+
+    // Lưu shop vào database và lấy shop id
+    const savedShop = await newShop.save();
+
+    // Nếu có ảnh logo, upload và cập nhật lại
+    if (file) {
+      const uploadResult = await uploadShopLogo({
+        filePath: file.path,
+        shopId: savedShop._id.toString(), // Sử dụng ID của shop đã lưu
+      });
+
+      savedShop.logo = uploadResult.secure_url;
+      await savedShop.save(); // Cập nhật logo URL vào shop
+    }
 
     // update roles cho owner
     await userModel.findOneAndUpdate(
@@ -47,7 +62,7 @@ const newShop = async ({ owner_id, body }) => {
       { new: true } // Trả về tài liệu đã được cập nhật
     );
 
-    return await newShop.save();
+    return savedShop;
   } catch (error) {
     console.log('[E]::newShop::', error);
     throw error;

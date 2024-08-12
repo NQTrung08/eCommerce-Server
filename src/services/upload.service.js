@@ -1,49 +1,55 @@
 'use strict';
 
-const cloudinary = require('../configs/cloudinary.config')
-// 1. upload from url image
+const { uploadToCloudinary } = require('../helpers/cloudinary.helper');
 
-const uploadImageFromUrl = async() => {
-  try {
-    const urlImage = 'https://hovo.vn/wp-content/uploads/2021/08/HDH_7872.jpg'
-    const folderName = 'product/shopId'
-    const newFileName = 'test1'
+// Ví dụ service cụ thể cho shop logo
+const uploadShopLogo = async ({ filePath, shopId }) => {
+  const folder = `shops/${shopId}/logo`;
+  const publicId = `${shopId}-logo`;
+  return await uploadToCloudinary({ filePath, folder, publicId });
+};
 
-    const result = await cloudinary.uploader.upload( urlImage, {
-      public_id: newFileName,
-      folder: folderName,
+// Ví dụ service cụ thể cho user avatar
+const uploadUserAvatar = async ({ filePath, userId }) => {
+  const folder = `users/${userId}/avatar`;
+  const publicId = `${userId}-avatar`;
+  return await uploadToCloudinary({ filePath, folder, publicId });
+};
+
+// Ví dụ service cụ thể cho product thumbnail
+const uploadProductThumbnail = async ({ filePath, shopId, productId }) => {
+  const folder = `products/${shopId}/${productId}/thumbnail`;
+  const publicId = `${productId}-thumbnail`;
+  const result = await uploadToCloudinary({ filePath, folder, publicId });
+
+  return {
+    image_url: result.secure_url,
+    thumb_url: await cloudinary.url(result.public_id, {
+      width: 100,
+      height: 100,
+      crop: 'thumb'
     })
-    
-    return result
-  }catch (e) {
-    console.error(e)
-  }
-}
+  };
+};
 
-// 2. upload from local file
+// Ví dụ service cụ thể cho product SKU
+const uploadProductSKU = async ({ filePath, shopId, productId, skuId }) => {
+  const folder = `products/${shopId}/${productId}/sku/${skuId}`;
+  const publicId = `${productId}-sku-${skuId}`;
+  return await uploadToCloudinary({ filePath, folder, publicId });
+};
 
-const uploadImageFromLocal = async({
-  filePath,
-  folderName,
-  shopId,
-}) => {
-  try {
-    const fullFolderName = `${folderName}/${shopId}`;
-    const result = await cloudinary.uploader.upload(filePath, {
-      public_id: 'thumb',
-      folder: fullFolderName,
-    })
-
-    return {
-      image_url: result.secure_url,
-      shop_id: shopId,
-    }
-  } catch (e) {
-    console.error(e)
-  }
-}
+// Ví dụ service cho ảnh chung chung
+const uploadGeneralImage = async ({ filePath, category }) => {
+  const folder = `general/${category}`;
+  const publicId = `${category}-${new Date().getTime()}`;
+  return await uploadToCloudinary({ filePath, folder, publicId });
+};
 
 module.exports = {
-  uploadImageFromUrl,
-  uploadImageFromLocal,
-}
+  uploadShopLogo,
+  uploadUserAvatar,
+  uploadProductThumbnail,
+  uploadProductSKU,
+  uploadGeneralImage,
+};

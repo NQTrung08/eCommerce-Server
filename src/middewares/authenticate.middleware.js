@@ -65,6 +65,7 @@ const authorize = (requiredRoles) => {
     try {
       const userRoles = await roleModel.find({ _id: { $in: req.user.roles } });
 
+      console.log(userRoles);
       const hasRequiredRole = userRoles.some(role => requiredRoles.includes(role.roleName));
 
       if (!hasRequiredRole) {

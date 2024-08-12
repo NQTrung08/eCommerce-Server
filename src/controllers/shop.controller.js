@@ -11,6 +11,7 @@ class ShopController {
       data: await ShopService.newShop({
         owner_id: req.user._id,
         body: req.body,
+        file: req.file,
       })
     }).send(res)
   }
@@ -54,6 +55,30 @@ class ShopController {
       data: await ShopService.deleteShop(req.params.id)
     }).send(res)
   }
+
+  updateShopLogo = async (req, res) => {
+    const { file } = req
+    if (!file) {
+      throw new BadRequestError('File not found')
+    }
+    const shop = await shopModel.findOne({
+      owner_id: req.user._id
+    })
+    if (!shop) {
+      throw new BadRequestError('Shop not found')
+    }
+    const result = await uploadService.uploadShopLogo({
+      filePath: file.path,
+      shopId: shop._id
+    })
+    shop.logo = result.secure_url
+    await shop.save();
+    
+    new SuccessReponse({
+      message: "Shop logo uploaded successfully",
+      data: shop
+    }).send(res)
+  };
 
 }
 
