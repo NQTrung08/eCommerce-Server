@@ -15,7 +15,7 @@ const roleModel = require('../models/role.model');
 
 class AccessService {
 
-  static signUp = async ({ userName, full_name, email, phoneNumber, password, roles }) => {
+  static signUp = async ({ userName, full_name, email, phoneNumber, password}) => {
     const hodelUser = await userModel.findOne({ email }).lean(); // trả về 1 object js thuần túy
     if (hodelUser) {
       throw new ConflictError('User already exists')

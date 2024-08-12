@@ -11,9 +11,11 @@ class AccessController {
   }
 
   signUp = async (req, res, next) => {
-    // return res.status(200).json(await AccessService.signUp(req.body));
-    const result = await AccessService.signUp(req.body);
-    new CREATED('Register OK', result).send(res);
+    
+    new CREATED({
+      message: 'Sign up OK',
+      data: await AccessService.signUp(req.body)
+    }).send(res);
 
   }
 
