@@ -3,6 +3,8 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const userModel = require('../models/user.model');
 const roleModel = require('../models/role.model');
 const { ConflictError, InternalServerError, BadRequestError } = require('../core/error.response');
+const bcrypt = require('bcrypt');
+
 
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
@@ -26,10 +28,18 @@ async (accessToken, refreshToken, profile, done) => {
       throw new InternalServerError('Default role not found');
     }
 
+    // Tạo mật khẩu ngẫu nhiên hoặc mặc định
+    const plainPassword = Math.random().toString(36).slice(-8); // Ví dụ: tạo mật khẩu ngẫu nhiên 8 ký tự
+
+    // Mã hóa mật khẩu
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
     const newUser = await userModel.create({
       userName: profile.displayName,
       full_name: profile.displayName,
       email: profile.emails[0].value,
+      password: hashedPassword,
+      avatar: profile.photos[0].value, // Lấy ảnh đại diện từ profile
       provider: 'google',
       providerId: profile.id,
       roles: [defaultRole._id],
