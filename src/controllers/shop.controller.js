@@ -38,7 +38,9 @@ class ShopController {
   getShopById = async(req, res, next) => {
     return new SuccessReponse({
       message: 'Shop by id',
-      data: await ShopService.getShop(req.params.id)
+      data: await ShopService.getShop({
+        id: req.params.id
+      })
     }).send(res)
   }
 
