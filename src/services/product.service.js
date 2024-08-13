@@ -4,6 +4,8 @@ const productModel = require('../models/product.model');
 const shopModel = require('../models/shop.model');
 const categoryModel = require('../models/category.model');
 const skuModel = require('../models/sku.model');
+const reviewModel = require('../models/review.model');
+const orderModel = require('../models/order.model');
 const skuService = require('../services/sku.service');
 
 const newProduct = async (owner_id, body, file) => {
@@ -29,9 +31,6 @@ const newProduct = async (owner_id, body, file) => {
       attributes,
       product_thumb: '',
       stock_status,
-      reviewCount,
-      averageRating,
-      sold_count,
       skus: [],
     });
 
@@ -70,6 +69,31 @@ const newProduct = async (owner_id, body, file) => {
 
 }
 
+const getRatingAndSoldCount = async (productId) => {
+  const ratingCount = await reviewModel.countDocuments({ product_id: productId });
+
+  const soldCount = await orderModel.aggregate([
+    { $match: { product_id: productId } },
+    { $group: { _id: null, totalSold: { $sum: '$quantity' } } }
+  ]);
+
+  const soldCountValue = soldCount[0]?.totalSold || 0;
+
+  // Tính điểm đánh giá trung bình
+  const avgRatingResult = await reviewModel.aggregate([
+    { $match: { product_id: productId } },
+    { $group: { _id: null, avgRating: { $avg: '$rating' } } }
+  ]);
+
+  const avgRating = avgRatingResult[0]?.avgRating || 0;
+
+  return {
+    ratingCount,
+    soldCount: soldCountValue,
+    avgRating
+  };
+}
+
 const getAllProducts = async ({
   page = 1,
   limit = 24,
@@ -98,11 +122,22 @@ const getAllProducts = async ({
       .sort(sortBy)
       .lean();
 
+    
+    // Sử dụng Promise.all để đồng thời tính ratingCount và soldCount cho tất cả sản phẩm
+    const productsWithCounts = await Promise.all(products.map(async (product) => {
+      const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
+      return {
+        ...product,
+        ratingCount,
+        soldCount,
+        avgRating
+      };
+    }));
     // Lấy tổng số sản phẩm để tính tổng số trang
     const totalCount = await productModel.countDocuments();
 
     return {
-      products,
+      productsWithCounts,
       totalCount,
       totalPages: Math.ceil(totalCount / limitNumber),
       currentPage: pageNumber,
@@ -127,11 +162,20 @@ const getProductById = async (id) => {
     })
     .populate({
       path:'skus'
-    });
+    })
+    .lean();
+
     if (!product) {
       throw new NotFoundError('Product not found');
     }
-    return product;
+    const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
+    
+    return {
+      ...product,
+      ratingCount,
+      soldCount,
+      avgRating,
+    };
   } catch (error) {
     console.error('[E]::getProductById::', error);
     throw error;
@@ -212,11 +256,23 @@ const searchProducts = async ({
       .sort(sortQuery)
       .lean();
 
-    // Lấy tổng số sản phẩm để tính tổng số trang
+    
+    // Sử dụng Promise.all để đồng thời tính ratingCount và soldCount cho tất cả sản phẩm
+    const productsWithCounts = await Promise.all(products.map(async (product) => {
+      const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
+      return {
+        ...product,
+        ratingCount,
+        soldCount,
+        avgRating
+      };
+    }));
+
+      // Lấy tổng số sản phẩm để tính tổng số trang
     const totalCount = await productModel.countDocuments(query);
 
     return {
-      products,
+      productsWithCounts,
       totalCount,
       totalPages: Math.ceil(totalCount / limitNumber),
       currentPage: pageNumber
