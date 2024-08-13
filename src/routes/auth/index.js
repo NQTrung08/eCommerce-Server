@@ -29,7 +29,8 @@ router.get('/google/callback',
     }
 
 
-    res.json({ user: req.user, tokens });
+    // res.json({ user: req.user, tokens });
+    return res.redirect(`http://localhost:3000?access_token=${tokens.accessToken}&refresh_token=${tokens.refreshToken}`);
   }
 );
 
