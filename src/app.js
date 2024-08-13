@@ -8,6 +8,7 @@ const dotenv = require('dotenv');
 const passport = require('passport');
 const session = require('express-session');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 
 dotenv.config();
 require('./auth/googleAuth')
@@ -21,7 +22,10 @@ const app = express();
 //   cookie: { secure: false } // Sử dụng `true` nếu bạn sử dụng HTTPS
 // }));
 
+app.use(cors());
+
 // init middleware
+
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());
