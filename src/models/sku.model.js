@@ -24,26 +24,19 @@ const skuSchema = new Schema({
   // sku_sort: {type: Number, default: 0},
   sku_price: {type: Number, require: true},
   sku_stock: {type: Number, default: 0},
+  stock_status: {
+    type: String,
+    enum: ['inStock', 'outOfStock', 'preOrder'],
+    default: 'inStock'
+  },
   product_id: {
     type: Schema.Types.ObjectId,
     ref: 'Product'
   }, // ref to product
-  options: [{
-    name: { type: String, required: true },  // Tên của thuộc tính, ví dụ: "color", "size"
-    value: { type: String, required: true },  // Giá trị của thuộc tính, ví dụ: "red", "M"
-    image: { type: String }  // Đường dẫn hoặc URL của hình ảnh tùy chọn cho giá trị này
-  }],
-  isDraft: {
-    type: Boolean,
-    default: false,
-    index: true,
-    select: false
-  },
-  isPublic: {
-    type: Boolean,
-    default: true,
-    index: true,
-    select: false
+  attributeValues: {
+    type: Map,
+    of: String,
+    required: true,
   },
   isDeleted: {
     type: Boolean,

@@ -10,20 +10,24 @@ const uploadFile = async (req, res, next) => {
     }).send(res)
 };
 
-const uploadThumb = async (req, res, next) => {
+const uploadThumbnail = async (req, res, next) => {
   const { file } = req
-  const { id } = req.body;
+  const id = req.params.id
   if (!file) {
     throw new BadRequestError('File not found')
   }
+  const shop = await shopModel.findOne({
+    owner_id: req.user._id
+  })
+  if (!shop) {
+    throw new BadRequestError('Shop not found')
+  }
   new SuccessReponse({
     message: "File uploaded thumbnail successfully",
-    data: await uploadService.uploadImageFromLocal({
+    data: await uploadService.uploadProductThumbnail({
       filePath: file.path,
-      ownerId: req.user._id,
-      folderName: 'product',
-      type: 'thumb',
-      id
+      shopId: shop._id,
+      productId: id
     })
   }).send(res)
 };
@@ -48,8 +52,24 @@ const uploadShopLogo = async (req, res) => {
   }).send(res)
 };
 
+const uploadProductImage = async (req, res) => {
+  const { file } = req
+  const { productId } = req.params;
+  if (!file) {
+    throw new BadRequestError('File not found')
+  }
+  new SuccessReponse({
+    message: "Product image uploaded successfully",
+    data: await uploadService.uploadProductImage({
+      filePath: file.path,
+      productId: productId
+    })
+  }).send(res)
+};
+
 module.exports = {
     uploadFile,
-    uploadThumb,
+    uploadThumbnail,
     uploadShopLogo,
+    uploadProductImage,
 }

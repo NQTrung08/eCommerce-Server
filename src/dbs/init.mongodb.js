@@ -1,8 +1,8 @@
 'use strict'
 
 const mongoose = require('mongoose');
-
-const { db: {host, port, name}} = require('../configs/config.mongodb');
+const productModel = require('../models/product.model');
+const { db: { host, port, name } } = require('../configs/config.mongodb');
 
 const mongoConnectString = `mongodb://${host}:${port}/${name}`
 console.log(mongoConnectString);
@@ -34,6 +34,14 @@ class Database {
           console.log('MongoDB is connected')
 
           countConnect();
+          // Tạo chỉ mục cho tất cả các mô hình nếu cần
+          productModel.createIndexes()
+            .then(() => {
+              console.log('Product Indexes created successfully');
+            })
+            .catch((err) => {
+              console.error('Error creating indexes:', err);
+            });
 
 
         })
