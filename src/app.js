@@ -22,7 +22,13 @@ const app = express();
 //   cookie: { secure: false } // Sử dụng `true` nếu bạn sử dụng HTTPS
 // }));
 
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+}));
 
 // init middleware
 

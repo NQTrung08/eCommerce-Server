@@ -1,4 +1,5 @@
 
+const { BadRequestError } = require('../core/error.response');
 const { CREATED, SuccessReponse } = require('../core/success.response');
 const ShopService = require('../services/shop.service');
 
@@ -59,7 +60,7 @@ class ShopController {
   }
 
   updateShopLogo = async (req, res) => {
-    const { file } = req
+    const file = req.file;
     if (!file) {
       throw new BadRequestError('File not found')
     }

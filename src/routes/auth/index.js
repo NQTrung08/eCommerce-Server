@@ -15,6 +15,8 @@ router.get('/google/callback',
     // Success redirect or return JWT token
     const tokens = await createTokenPair({
       _id: req.user._id,
+      userName: req.user.userName,
+      avatar: req.user.avatar,
       email: req.user.email,
       roles: req.user.roles,
       status: req.user.status
