@@ -18,22 +18,33 @@ const productSchema = new Schema({
   },
   product_thumb: {
     type: String,
-    required: true
+    // required: true
   },
   category_id: {
     type: Schema.Types.ObjectId,
     ref: 'Category',
     required: true
   },
-  product_price: {
-    type: Number,
-    required: true
-  },
-  stock_status: {
-    type: String,
-    enum: ['inStock', 'outOfStock', 'preOrder'],
-    default: 'inStock'
-  },
+  attributes: [
+    {
+      name: {
+        type: String,
+        required: true,
+      },
+      values: [
+        {
+          type: String,
+          required: true,
+        }
+      ]
+    }
+  ],
+  skus: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: 'SKU',
+    }
+  ],
   product_desc: {
     type: String,
     default: ''
@@ -59,7 +70,13 @@ const productSchema = new Schema({
   isDeleted: {
     type: Boolean,
     default: false,
-  }
+  },
+  stock_status: {
+    type: String,
+    enum: ['inStock', 'outOfStock', 'preOrder'],
+    default: 'inStock'
+  },
+
 
 }, {
   timestamps: true,

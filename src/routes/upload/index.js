@@ -17,7 +17,6 @@ const router = express.Router();
 router.post('/shopLogo', authenticate, authorize(['shop']), uploadStorage.single('file'),  asyncHandler(uploadController.uploadShopLogo));
 
 // product
-router.post('/product',  asyncHandler(uploadController.uploadFile));
-router.post('/product/thumb', authenticate, uploadStorage.single('file'),  asyncHandler(uploadController.uploadThumb));
+router.post('/product/:id/thumb', authenticate, authorize(['shop']), uploadStorage.single('file'),  asyncHandler(uploadController.uploadThumbnail));
 
 module.exports = router

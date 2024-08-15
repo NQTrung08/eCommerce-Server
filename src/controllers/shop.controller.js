@@ -1,4 +1,5 @@
 
+const { BadRequestError } = require('../core/error.response');
 const { CREATED, SuccessReponse } = require('../core/success.response');
 const ShopService = require('../services/shop.service');
 
@@ -38,7 +39,9 @@ class ShopController {
   getShopById = async(req, res, next) => {
     return new SuccessReponse({
       message: 'Shop by id',
-      data: await ShopService.getShop(req.params.id)
+      data: await ShopService.getShop({
+        id: req.params.id
+      })
     }).send(res)
   }
 
@@ -57,7 +60,7 @@ class ShopController {
   }
 
   updateShopLogo = async (req, res) => {
-    const { file } = req
+    const file = req.file;
     if (!file) {
       throw new BadRequestError('File not found')
     }

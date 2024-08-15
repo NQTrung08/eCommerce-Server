@@ -116,8 +116,9 @@ const getAllShop = async ({
 }
 
 
-const getShop = async (id) => {
+const getShop = async ({ id }) => {
   try {
+    console.log('[E]::getShop', id)
     const shop = await shopModel.findById(id).lean();
 
     if (!shop) {
@@ -133,7 +134,11 @@ const getShop = async (id) => {
 
 const getShopByOwnerId = async (owner_id) => {
   try {
-    const shop = await shopModel.findOne({ owner_id }).lean();
+    const shop = await shopModel.findOne({ owner_id })
+    .populate({
+      path: 'owner_id',
+    })
+    .lean();
 
     if (!shop) {
       throw new ConflictError('Shop not found');

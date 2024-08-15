@@ -1,7 +1,7 @@
 'use strict';
 
 const { uploadToCloudinary } = require('../helpers/cloudinary.helper');
-
+const cloudinary = require('../configs/cloudinary.config');
 // Ví dụ service cụ thể cho shop logo
 const uploadShopLogo = async ({ filePath, shopId }) => {
   const folder = `shops/${shopId}/logo`;
@@ -18,18 +18,25 @@ const uploadUserAvatar = async ({ filePath, userId }) => {
 
 // Ví dụ service cụ thể cho product thumbnail
 const uploadProductThumbnail = async ({ filePath, shopId, productId }) => {
-  const folder = `products/${shopId}/${productId}/thumbnail`;
-  const publicId = `${productId}-thumbnail`;
-  const result = await uploadToCloudinary({ filePath, folder, publicId });
+  try {
 
-  return {
-    image_url: result.secure_url,
-    thumb_url: await cloudinary.url(result.public_id, {
-      width: 100,
-      height: 100,
-      crop: 'thumb'
-    })
-  };
+    
+    const folder = `products/${shopId}/${productId}/thumbnail`;
+    const publicId = `${productId}-thumbnail`;
+    const result = await uploadToCloudinary({ filePath, folder, publicId });
+    
+    return {
+      image_url: result.secure_url,
+      thumb_url: await cloudinary.url(result.public_id, {
+        width: 100,
+        height: 100,
+        crop: 'thumb'
+      })
+    };
+  } catch (e) {
+    console.error('[E]::uploadProductThumbnail::', e);
+    throw e;
+  }
 };
 
 // Ví dụ service cụ thể cho product SKU

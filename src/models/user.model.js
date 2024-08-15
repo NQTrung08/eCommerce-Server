@@ -38,7 +38,10 @@ var userSchema = new Schema({
     type: String,
     enum: ['male', 'female', 'other'],
   },
-  avatar: { type: String }, // URL of avatar
+  avatar: { 
+    type: String,
+    default: ''
+  }, // URL of avatar
   phoneNumber: { type: String, unique: true },
   password: {
     type: String,
