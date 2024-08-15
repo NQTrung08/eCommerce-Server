@@ -20,6 +20,16 @@ const uploadToCloudinary = async({
     const result = await cloudinary.uploader.upload(filePath, {
       folder: folder,
       public_id: publicId,
+      transformation: [
+        {
+          overlay: 'samples:logo', // ID công khai của logo
+          gravity: 'south_east', // Vị trí của logo
+          x: 10, // Khoảng cách từ cạnh bên trái
+          y: 10, // Khoảng cách từ cạnh dưới
+          width: 100, // Chiều rộng của logo
+          crop: 'scale' // Điều chỉnh kích thước của logo
+        }
+      ]
     });
     return result;
   } catch (error) {

@@ -76,18 +76,7 @@ const productSchema = new Schema({
     enum: ['inStock', 'outOfStock', 'preOrder'],
     default: 'inStock'
   },
-  // reviewCount: {
-  //   type: Number,
-  //   default: 0
-  // },
-  // averageRating: {
-  //   type: Number,
-  //   default: 0
-  // },
-  // sold_count: {
-  //   type: Number,
-  //   default: 0
-  // },
+
 
 }, {
   timestamps: true,

@@ -1,7 +1,6 @@
 
 'use strict';
 
-
 const { Header: { API_KEY, AUTHORIZATION } } = require('../constant/index')
 
 const { findById } = require('../services/apiKey.service')

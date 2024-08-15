@@ -1,14 +1,23 @@
 const express = require('express');
 const { grantAccess } = require('../../middewares/rbac');
 const ProfileController = require('../../controllers/profile.controller');
-const { authenticate } = require('../../middewares/authenticate.middleware')
+const { authenticate, authorize } = require('../../middewares/authenticate.middleware')
 const { asyncHandler } = require('../../helpers/asyncHandler');
 const { uploadStorage } = require('../../configs/multer.config');
 const router = express.Router();
 
-// router.get('/viewAny',authenticate, grantAccess('readAny', 'profile'), asyncHandler(profiles));
-// router.get('/viewOwn',authenticate, grantAccess('readOwn', 'profile'), asyncHandler(profile))
 
 
+
+router.get('/own', authenticate, asyncHandler(ProfileController.getProfileOwn));
+router.get('/:id', authenticate, authorize(['user']), asyncHandler(ProfileController.getProfileForUser));
+router.get('/admin/:id', authenticate, authorize(['admin']), asyncHandler(ProfileController.getProfileForAdmin));
+router.get('/', authenticate, authorize(['admin']), asyncHandler(ProfileController.getAllProfiles));
 router.post('/avatar-own', authenticate, uploadStorage.single('file'), asyncHandler(ProfileController.updateAvatar));
+router.post('/own', authenticate, asyncHandler(ProfileController.updateProfile));
+
+router.post('/address', authenticate, asyncHandler(ProfileController.addAddress));
+router.get('/addresses', authenticate, asyncHandler(ProfileController.getAddresses));
+router.put('/address/:addressId', authenticate, asyncHandler(ProfileController.updateAddress));
+router.delete('/address/:addressId', authenticate, asyncHandler(ProfileController.deleteAddress));
 module.exports = router

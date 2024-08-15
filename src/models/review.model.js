@@ -2,6 +2,9 @@
 
 const { Schema, model } = require('mongoose');
 
+const DOCUMENT_NAME = 'Review';
+const COLLECTION_NAME = 'Reviews';
+
 const reviewSchema = new Schema({
   product_id: {
     type: Schema.Types.ObjectId,
@@ -25,7 +28,8 @@ const reviewSchema = new Schema({
   },
 }, {
   timestamps: true,
+  collection: COLLECTION_NAME
 });
 
-const reviewModel = model('Review', reviewSchema);
+const reviewModel = model(DOCUMENT_NAME, reviewSchema);
 module.exports = reviewModel;
