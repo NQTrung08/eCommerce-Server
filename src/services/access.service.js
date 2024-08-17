@@ -41,12 +41,12 @@ class AccessService {
     // create token pair
     const tokens = await createTokenPair(
       {
-        _id: user._id,
-        userName: user.userName,
-        avatar: user.avatar,
-        email,
-        roles: user.roles,
-        status: user.status
+        _id: newUser._id,
+        userName: newUser.userName,
+        avatar: newUser.avatar,
+        email: newUser.email,
+        roles: newUser.roles,
+        status: newUser.status
       }
 
     )
