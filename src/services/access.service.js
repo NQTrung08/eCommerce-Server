@@ -18,7 +18,7 @@ class AccessService {
   static signUp = async ({ userName, full_name, email, phoneNumber, password}) => {
     const hodelUser = await userModel.findOne({ email }).lean(); // trả về 1 object js thuần túy
     if (hodelUser) {
-      throw new ConflictError('User already exists')
+      throw new BadRequestError('User already exists')
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
