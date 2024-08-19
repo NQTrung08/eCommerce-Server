@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 const keyTokenService = require('./keyToken.service');
 const keyTokenModel = require('../models/keytoken.model')
 const { createTokenPair } = require('../auth/authUtils');
-const { getInfoData } = require('../utils/index')
+const { getInfoData, createTokenForUser, createAccessTokenForUser } = require('../utils/index')
 
 const { ConflictError, InternalServerError, BadRequestError } = require('../core/error.response');
 const roleModel = require('../models/role.model');
@@ -37,39 +37,8 @@ class AccessService {
       phoneNumber,
       password: passwordHash,
       roles: [defaultRole._id], // Gán vai trò mặc định
+      status: 'pending'
     });
-
-    // create token pair
-    // const tokens = await createTokenPair(
-    //   {
-    //     _id: newUser._id,
-    //     userName: newUser.userName,
-    //     phoneNumber: newUser.phoneNumber,
-    //     avatar: newUser.avatar,
-    //     email: newUser.email,
-    //     roles: newUser.roles,
-    //     status: newUser.status
-    //   }
-
-    // )
-
-    // console.log("Create token success", tokens)
-    // console.log(tokens.refreshToken)
-
-
-    // const keyStore = await keyTokenService.createKeyToken({
-    //   userId: newUser._id,
-    //   refreshToken: tokens.refreshToken,
-    // })
-
-    // if (!keyStore) {
-    //   throw new InternalServerError('Failed to save keyStore')
-    // }
-
-    // return {
-    //   user: getInfoData({ fields: ['_id', 'userName', 'avatar', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: newUser }),
-    //   tokens
-    // }
 
     // Gửi OTP qua email
     await sendOTPEmail(newUser.email);
@@ -93,17 +62,7 @@ class AccessService {
     }
 
     // create token pair
-    const tokens = await createTokenPair(
-      {
-        _id: user._id,
-        userName: user.userName,
-        avatar: user.avatar,
-        phoneNumber: user.phoneNumber,
-        email: user.email,
-        roles: user.roles,
-        status: user.status
-      }
-    )
+    const tokens = await createTokenForUser(user)
 
     console.log("Create token success", tokens)
 
@@ -119,7 +78,7 @@ class AccessService {
     return {
       code: "xxx",
       metadata: {
-        user: getInfoData({ fields: ['_id', 'userName','avatar', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: user }),
+        user: getInfoData({ fields: ['_id', 'userName','avatar', 'email', "phoneNumber", 'status', 'verifiedEmail', 'roles', 'provider', "providerId"], object: user }),
         tokens
       }
     }
@@ -145,15 +104,7 @@ class AccessService {
 
     // Lấy thông tin người dùng và cấp phát token mới với thông tin quyền cập nhật
     const user = await userModel.findById(decoded._id).lean();
-    const newAccessToken = jwt.sign({
-      _id: user._id,
-      userName: user.userName,
-      avatar: user.avatar,
-      email: user.email,
-      phoneNumber: user.phoneNumber,
-      roles: user.roles,
-      status: user.status
-    }, process.env.JWT_ACCESS_TOKEN, { expiresIn: '3d' });
+    const newAccessToken = await createAccessTokenForUser(user)
 
     return {
       accessToken: newAccessToken,

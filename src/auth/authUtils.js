@@ -29,6 +29,16 @@ const createTokenPair = async ( payload ) => {
   }
 }
 
+const createAccessToken = async(payload) => {
+  try {
+    const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN, { expiresIn: '3d' });
+    return accessToken;
+  } catch (error) {
+    console.log('decode::', error);
+  }
+}
+
 module.exports = {
   createTokenPair,
+  createAccessToken,
 }
