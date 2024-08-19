@@ -105,7 +105,9 @@ const getAllProducts = async ({
     const limitNumber = Number.isInteger(limit) ? parseInt(limit, 10) : 10;
 
     // Thực hiện truy vấn với phân trang, sắp xếp và chọn trường
-    const products = await productModel.find()
+    const products = await productModel.find({
+      isPublic: true,
+    })
       .populate({
         path: 'shop_id',
         select: 'shop_name -_id', // Chọn trường 'shop_name', loại bỏ '_id'

@@ -12,13 +12,14 @@ const { getInfoData } = require('../utils/index')
 
 const { ConflictError, InternalServerError, BadRequestError } = require('../core/error.response');
 const roleModel = require('../models/role.model');
+const { sendOTPEmail } = require('./otp.service');
 
 class AccessService {
 
   static signUp = async ({ userName, full_name, email, phoneNumber, password}) => {
     const hodelUser = await userModel.findOne({ email }).lean(); // trả về 1 object js thuần túy
     if (hodelUser) {
-      throw new ConflictError('User already exists')
+      throw new BadRequestError('User already exists')
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
@@ -39,36 +40,42 @@ class AccessService {
     });
 
     // create token pair
-    const tokens = await createTokenPair(
-      {
-        _id: user._id,
-        userName: user.userName,
-        avatar: user.avatar,
-        email,
-        roles: user.roles,
-        status: user.status
-      }
+    // const tokens = await createTokenPair(
+    //   {
+    //     _id: newUser._id,
+    //     userName: newUser.userName,
+    //     phoneNumber: newUser.phoneNumber,
+    //     avatar: newUser.avatar,
+    //     email: newUser.email,
+    //     roles: newUser.roles,
+    //     status: newUser.status
+    //   }
 
-    )
+    // )
 
-    console.log("Create token success", tokens)
-    console.log(tokens.refreshToken)
+    // console.log("Create token success", tokens)
+    // console.log(tokens.refreshToken)
 
 
-    const keyStore = await keyTokenService.createKeyToken({
-      userId: newUser._id,
-      refreshToken: tokens.refreshToken,
-    })
+    // const keyStore = await keyTokenService.createKeyToken({
+    //   userId: newUser._id,
+    //   refreshToken: tokens.refreshToken,
+    // })
 
-    if (!keyStore) {
-      throw new InternalServerError('Failed to save keyStore')
-    }
+    // if (!keyStore) {
+    //   throw new InternalServerError('Failed to save keyStore')
+    // }
 
+    // return {
+    //   user: getInfoData({ fields: ['_id', 'userName', 'avatar', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: newUser }),
+    //   tokens
+    // }
+
+    // Gửi OTP qua email
+    await sendOTPEmail(newUser.email);
     return {
-      user: getInfoData({ fields: ['_id', 'userName', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: newUser }),
-      tokens
+      message: 'User created successfully, please verify your email to complete the registration'
     }
-
   }
 
 
@@ -91,7 +98,8 @@ class AccessService {
         _id: user._id,
         userName: user.userName,
         avatar: user.avatar,
-        email,
+        phoneNumber: user.phoneNumber,
+        email: user.email,
         roles: user.roles,
         status: user.status
       }
@@ -111,7 +119,7 @@ class AccessService {
     return {
       code: "xxx",
       metadata: {
-        user: getInfoData({ fields: ['_id', 'userName', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: user }),
+        user: getInfoData({ fields: ['_id', 'userName','avatar', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: user }),
         tokens
       }
     }
@@ -139,7 +147,10 @@ class AccessService {
     const user = await userModel.findById(decoded._id).lean();
     const newAccessToken = jwt.sign({
       _id: user._id,
+      userName: user.userName,
+      avatar: user.avatar,
       email: user.email,
+      phoneNumber: user.phoneNumber,
       roles: user.roles,
       status: user.status
     }, process.env.JWT_ACCESS_TOKEN, { expiresIn: '3d' });

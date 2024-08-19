@@ -40,7 +40,7 @@ var userSchema = new Schema({
   },
   avatar: { 
     type: String,
-    default: ''
+    default: '',
   }, // URL of avatar
   phoneNumber: { type: String, unique: true },
   password: {

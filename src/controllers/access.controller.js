@@ -11,7 +11,6 @@ class AccessController {
   }
 
   signUp = async (req, res, next) => {
-    
     new CREATED({
       message: 'Sign up OK',
       data: await AccessService.signUp(req.body)

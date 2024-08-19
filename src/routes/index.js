@@ -18,6 +18,7 @@ router.use('/v1/api/shop', require('./shop'))
 router.use('/v1/api/upload', require('./upload'))
 
 router.use('/v1/api/product', require('./product'))
+router.use('/v1/api/otp', require('./otp'))
 // router.use('/v1/api/checkout', require('./checkout'))
 // router.use('/v1/api/cart', require('./cart'))
 // router.use('/v1/api/inventory', require('./inventory'))

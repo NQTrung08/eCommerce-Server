@@ -2,7 +2,7 @@
 const statusCode = require('./statusCode')
 const reasonPhrases = require('./reasonPhrases')
 
-class ErrorReponse extends Error {
+class ErrorResponse extends Error {
   constructor(message, status) {
     super(message);
     this.status = status;
@@ -10,7 +10,7 @@ class ErrorReponse extends Error {
 
 }
 
-class ConflictError extends ErrorReponse {
+class ConflictError extends ErrorResponse {
 
   constructor(message = reasonPhrases.CONFLICT, status = statusCode.CONFLICT) {
     super(message, status)
@@ -18,35 +18,43 @@ class ConflictError extends ErrorReponse {
 
 }
 
-class BadRequestError extends ErrorReponse {
+class BadRequestError extends ErrorResponse {
   constructor(message = reasonPhrases.BAD_REQUEST, status = statusCode.BAD_REQUEST) {
     super(message, status)
   }
 }
 
 
-class InternalServerError extends ErrorReponse {
+class InternalServerError extends ErrorResponse {
   constructor(message = reasonPhrases.INTERNAL_SERVER_ERROR, status = statusCode.INTERNAL_SERVER_ERROR) {
     super(message, status)
   }
 }
 
-class NotFoundError extends ErrorReponse {
+class NotFoundError extends ErrorResponse {
   constructor(message = reasonPhrases.NOT_FOUND, status = statusCode.NOT_FOUND) {
     super(message, status)
   }
 }
 
-class AuthFailureError extends ErrorReponse {
+class AuthFailureError extends ErrorResponse {
   constructor(message = reasonPhrases.UNAUTHORIZED, status = statusCode.UNAUTHORIZED) {
     super(message, status)
   }
 }
+
+class InvalidError extends ErrorResponse {
+  constructor(message = reasonPhrases.UNAUTHORIZED, status = statusCode.UNAUTHORIZED) {
+    super(message, status)
+  }
+}
+
 
 module.exports = {
   ConflictError,
   BadRequestError,
   InternalServerError,
   AuthFailureError,
-  NotFoundError
+  NotFoundError,
+  InvalidError,
 }
