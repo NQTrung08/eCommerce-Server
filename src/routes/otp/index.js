@@ -11,5 +11,5 @@ const router = express.Router();
 
 
 router.post('/send-otp', asyncHandler(OTPController.requestOTP));
-router.put('/verify-otp', asyncHandler(OTPController.verifyOTP));
+router.post('/verify-otp', asyncHandler(OTPController.verifyOTP));
 module.exports = router

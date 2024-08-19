@@ -14,6 +14,7 @@ const mysqlConfig = {
 }
 
 const { countConnect } = require('../helpers/check.connect');
+const OtpModel = require('../models/otp.model');
 
 class Database {
 
@@ -42,6 +43,15 @@ class Database {
             .catch((err) => {
               console.error('Error creating indexes:', err);
             });
+
+          OtpModel.createIndexes()
+            .then(() => {
+              console.log('OTP index created successfully');
+            })
+            .catch((err) => {
+              console.error('Error creating OTP index:', err);
+            });
+
 
 
         })

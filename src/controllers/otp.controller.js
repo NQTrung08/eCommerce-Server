@@ -5,19 +5,13 @@ const OTPService = require('../services/otp.service');
 const requestOTP = async (req, res) => {
   const { email } = req.body;
   
-  // Generate OTP
-  const otp = OTPService.generateOTP();
-
-  // Save OTP to database
-  await OTPService.saveOTP(email, otp);
-
   // Send OTP to user's email
-  await OTPService.sendOTPEmail(email, otp);
+  const otp = await OTPService.sendOTPEmail(email);
 
-  new SuccessReponse({
+  return new SuccessReponse({
     message: 'OTP sent to your email',
-    data: { otp }
-  })
+    data: otp
+  }).send(res)
 };
 
 const verifyOTP = async (req, res) => {
@@ -25,10 +19,10 @@ const verifyOTP = async (req, res) => {
     // Verify OTP
     await OTPService.verifyOTP(email, otp);
 
-    new SuccessReponse({
+    return new SuccessReponse({
       message: 'OTP verified successfully',
       data: OTPService
-    })
+    }).send(res)
 };
 
 module.exports = {

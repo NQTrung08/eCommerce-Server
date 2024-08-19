@@ -2,9 +2,23 @@
 const OtpModel = require('../models/otp.model');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const handlebars = require('handlebars');
+const { BadRequestError, InvalidError } = require('../core/error.response');
+const { getTemplate } = require('./template.service');
+const transporter  = require('../dbs/init.nodemailer');
 
-const saveOTP = async (email, otp) => {
-  const newOtp = new OtpModel({ email, otp });
+
+const generateOTP = () => {
+  return crypto.randomInt(100000, 999999).toString(); // Tạo mã OTP gồm 6 chữ số
+};
+
+const newOTP = async (email) => {
+  // Tạo mã OTP mới
+  const otp = generateOTP();
+  const newOtp = new OtpModel({
+    email,
+    otp,
+  });
   await newOtp.save();
   return newOtp;
 };
@@ -16,56 +30,86 @@ const getOTPByEmail = async (email) => {
 
 // Hàm xóa OTP sau khi xác thực (nếu cần)
 const deleteOTP = async (email) => {
-  return await OtpModel.deleteOne({ email });
+  return await OtpModel.deleteMany({ email });
 };
 
 const verifyOTP = async (email, inputOtp) => {
-  const otpRecord = await OtpModel.findOne({ email });
+  const otpRecord = await OtpModel.find({ email });
 
-  if (!otpRecord || otpRecord.otp !== inputOtp) {
-    throw new Error('Invalid or expired OTP');
+  if (!otpRecord) {
+    throw new BadRequestError('expired OTP');
   }
-
-  // Xóa OTP sau khi sử dụng để đảm bảo mã chỉ dùng một lần
-  await OtpModel.deleteOne({ email });
+  const lastOTP = otpRecord[otpRecord.length - 1];
+  if (lastOTP.otp !== inputOtp) {
+    throw new InvalidError('Invalid OTP');
+  }
 
   return true;
 };
 
 
-const sendOTPEmail = async (email, otp) => {
+const sendEmailLinkVerify = async ({
+  html,
+  toEmail,
+  subject,
+  replacements
+}) => {
   try {
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER, // Email của bạn
-        pass: process.env.EMAIL_PASSWORD, // Mật khẩu ứng dụng của email
-      },
-    });
+
+    // Compile HTML template với Handlebars
+    const compiledTemplate = handlebars.compile(html);
+    const htmlToSend = compiledTemplate(replacements);
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Your OTP Code',
-      text: `Your OTP code is: ${otp}`,
+      from: '"ShopDev" <nqtrung0810@gmail.com>',
+      to: toEmail,
+      subject,
+      html: htmlToSend,
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log('OTP email sent successfully');
+    await transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        console.error('Error sending email: ', err);
+        throw new Error('Failed to send email');
+      }
+      console.log('Email sent: ', info.messageId);
+    });
+  } catch (e) {
+    console.error('Error while sending email: ', e);
+    throw new Error('Failed to send email');
+  }
+}
+
+const sendOTPEmail = async (email) => {
+  try {
+    const token = await newOTP(email)
+    console.log('Generated OTP:', token.otp);
+
+    const template = await getTemplate({
+      tem_name: 'register',
+    })
+
+    sendEmailLinkVerify({
+      html: template.tem_html,
+      toEmail: email,
+      subject: template.tem_subject,
+      replacements: {
+        otp: token.otp, // Replace this with the actual data from the OTP model.
+        name: token.email, // Replace this with the actual data from the OTP model.
+        // link: `http://localhost:3000/verify-email/${token._id}`, // Replace this with the actual link to the verification endpoint.
+        // expires: '5 minutes', // Replace this with the actual expiration time.
+      }, // Add any additional data you need to replace in the template here.
+    }).catch
+
+    return token
   } catch (error) {
     console.log('Error sending OTP email:', error);
   }
 };
 
 
-const generateOTP = () => {
-  return crypto.randomInt(100000, 999999).toString(); // Tạo mã OTP gồm 6 chữ số
-};
-
-
 module.exports = {
-  saveOTP,
+  newOTP,
   getOTPByEmail,
   deleteOTP,
   verifyOTP,

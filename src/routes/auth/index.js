@@ -3,8 +3,12 @@ const passport = require('passport');
 const { createTokenPair } = require('../../auth/authUtils');
 const { ConflictError, InternalServerError, BadRequestError } = require('../../core/error.response');
 const keyTokenService = require('../../services/keyToken.service');
+const UserController = require('../../controllers/user.controller');
+const { asyncHandler } = require('../../helpers/asyncHandler');
 
 const router = express.Router();
+
+router.post('/verifyUser', asyncHandler(UserController.verifyUserOTP));
 
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
@@ -35,5 +39,7 @@ router.get('/google/callback',
     return res.redirect(`http://localhost:3000?access_token=${tokens.accessToken}&refresh_token=${tokens.refreshToken}`);
   }
 );
+
+
 
 module.exports = router;
