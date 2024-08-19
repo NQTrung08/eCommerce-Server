@@ -43,6 +43,7 @@ class AccessService {
       {
         _id: newUser._id,
         userName: newUser.userName,
+        phoneNumber: newUser.phoneNumber,
         avatar: newUser.avatar,
         email: newUser.email,
         roles: newUser.roles,
@@ -65,7 +66,7 @@ class AccessService {
     }
 
     return {
-      user: getInfoData({ fields: ['_id', 'userName', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: newUser }),
+      user: getInfoData({ fields: ['_id', 'userName', 'avatar', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: newUser }),
       tokens
     }
 
@@ -91,7 +92,8 @@ class AccessService {
         _id: user._id,
         userName: user.userName,
         avatar: user.avatar,
-        email,
+        phoneNumber: user.phoneNumber,
+        email: user.email,
         roles: user.roles,
         status: user.status
       }
@@ -111,7 +113,7 @@ class AccessService {
     return {
       code: "xxx",
       metadata: {
-        user: getInfoData({ fields: ['_id', 'userName', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: user }),
+        user: getInfoData({ fields: ['_id', 'userName','avatar', 'email', "phoneNumber", 'status', 'roles', 'provider', "providerId"], object: user }),
         tokens
       }
     }
@@ -139,7 +141,10 @@ class AccessService {
     const user = await userModel.findById(decoded._id).lean();
     const newAccessToken = jwt.sign({
       _id: user._id,
+      userName: user.userName,
+      avatar: user.avatar,
       email: user.email,
+      phoneNumber: user.phoneNumber,
       roles: user.roles,
       status: user.status
     }, process.env.JWT_ACCESS_TOKEN, { expiresIn: '3d' });
