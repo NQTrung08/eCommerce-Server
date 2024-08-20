@@ -2,10 +2,12 @@
 
 const mongoose = require('mongoose');
 const productModel = require('../models/product.model');
-const { db: { host, port, name } } = require('../configs/config.mongodb');
+const { db: { host, port, name, uri } } = require('../configs/config.mongodb');
 
-const mongoConnectString = `mongodb://${host}:${port}/${name}`
-console.log(mongoConnectString);
+const mongoConnectString = uri || `mongodb://${host}:${port}/${name}`;
+console.log(`MongoDB Connect String: ${mongoConnectString}`);
+
+
 const mysqlConfig = {
   host: 'localhost',
   user: 'username',

@@ -17,6 +17,7 @@ const pro = {
     host: process.env.PRO_DB_HOST || 'localhost',
     port: process.env.PRO_DB_PORT || 27017,
     name: process.env.PRO_DB_NAME || 'shopPRO',
+    uri: process.env.URI_MONGO_PRO
   },
   app: {
     port: process.env.PRO_APP_PORT || 3000,
