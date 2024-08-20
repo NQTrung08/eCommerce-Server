@@ -54,6 +54,9 @@ class AccessService {
     if (!user) {
       throw new ConflictError('User not found')
     }
+    if(!user.verifiedEmail || user.status === 'pending') {
+      throw new BadRequestError('Email not verified')
+    }
 
     const match = await bcrypt.compare(password, user.password);
 
