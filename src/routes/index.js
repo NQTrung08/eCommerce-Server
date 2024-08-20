@@ -8,9 +8,7 @@ const router = express.Router();
 
 // check permission
 // router.use(checkPermissions('0000'))
-router.use('/v1/api/', async(req, res, next) => {
-  res.send('Hello world')
-})
+
 router.use('/v1/api', require('./access'))
 router.use('/v1/api/auth', require('./auth'))
 router.use('/v1/api/rbac', require('./rbac'))
