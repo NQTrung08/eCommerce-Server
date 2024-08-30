@@ -6,10 +6,7 @@ const dev = {
     host: process.env.DEV_DB_HOST || 'localhost',
     port: process.env.DEV_DB_PORT || 27017,
     name: process.env.DEV_DB_NAME || 'shopDEV',
-  },
-  app: {
-    port: process.env.DEV_APP_PORT || 3052,
-  },
+  }
 }
 
 const pro = {
@@ -18,10 +15,7 @@ const pro = {
     port: process.env.PRO_DB_PORT || 27017,
     name: process.env.PRO_DB_NAME || 'shopPRO',
     uri: process.env.URI_MONGO_PRO
-  },
-  app: {
-    port: process.env.PRO_APP_PORT || 3000,
-  },
+  }
 }
 
 const config = { dev, pro };

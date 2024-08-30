@@ -1,19 +1,87 @@
 const TemplateRegister = (name, otp) => `
-  <div style="font-family: Arial, sans-serif; background-color: #f3f4f6; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; text-align: center;">
-  <div style="background-color: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); max-width: 400px; width: 100%; margin: auto;">
-    <img src="" alt="Shop Dev Logo" style="display: block; margin: 0 auto 1rem; height: 64px;" />
-    <h2 style="font-size: 1.25rem; color: #2d3748; margin-bottom: 0.5rem;">Xin chào {{name}},</h2>
-    <p style="font-size: 0.875rem; color: #4a5568; margin-bottom: 1.5rem;">Mã xác minh tài khoản Shop Dev của bạn là:</p>
-    <div style="font-size: 3rem; color: #e53e3e; font-weight: bold; letter-spacing: 0.1rem; margin-bottom: 1.5rem;">{{otp}}</div>
-    <p style="font-size: 0.875rem; color: #4a5568; margin-bottom: 1.5rem;">
-      Có hiệu lực trong 15 phút. KHÔNG chia sẻ mã này với người khác, kể cả nhân viên Shop Dev.
-    </p>
-    <p style="font-size: 0.75rem; color: #718096;">
-      Đây là email tự động. Vui lòng không trả lời email này. Thêm
-      <a href="mailto:info@mail.shopdev.vn" style="color: #e53e3e; text-decoration: none;">info@mail.shopdev.vn</a> vào danh bạ email của bạn để đảm bảo bạn luôn nhận được email từ chúng tôi.
-    </p>
-    <p style="font-size: 0.75rem; color: #718096; margin-top: 1rem;">Địa chỉ: TLU University</p>
-  </div>
-</div>
-
+  <table width="100%" bgcolor="#ffffff" cellpadding="0" cellspacing="0" border="0" align="center">
+      <tbody>
+        <!-- Header Row -->
+        <tr>
+          <td>
+            <table width="600" cellpadding="0" cellspacing="0" border="0" align="center">
+              <tbody>
+                <tr>
+                  <td style="text-align: center; padding: 20px;">
+                    <img src="https://ci3.googleusercontent.com/meips/ADKq_NaueDmHN6gM6qsAbaKhuecE054ldVeFhxLOHJOA2eo25SeosakamlWikcxJNc-bfgbXHcyEhYH2rqgRtAvwERwjwMwuJlFyTwDuvajLgbjB-eh3nSnObb5I-gqRmiqYAmtbCg2_tEuf2qDjxWQxbre62R3HHYKf9cJb=s0-d-e1-ft#https://res.cloudinary.com/dxrkwmirs/image/upload/v1725009771/logo_light-removebg-preview_cbwkxm.png" width="140" height="auto" style="width:12%; height:auto;">
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+    
+        <!-- Body Row -->
+        <tr>
+          <td>
+            <table width="600" cellpadding="0" cellspacing="0" border="0" align="center">
+              <tbody>
+                <tr>
+                  <td style="font-family:Helvetica, Arial, sans-serif; font-size:13px; color:#000000; text-align:center; line-height:18px; padding: 20px;">
+                    Xin chào {{name}},
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-family:Helvetica, Arial, sans-serif; font-size:13px; color:#000000; text-align:center; line-height:18px; padding: 10px;">
+                    Mã xác minh tài khoản ShopeDev của bạn là:
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-family:Helvetica, Arial, sans-serif; font-size:40px; color:#ee4d2d; text-align:center; line-height:100px; letter-spacing:18px; padding: 10px;">
+                    <b>{{otp}}</b>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-family:Helvetica, Arial, sans-serif; font-size:13px; color:#000000; text-align:center; line-height:18px; padding: 10px;">
+                    Có hiệu lực trong 5 phút. KHÔNG chia sẻ mã này với người khác, kể cả nhân viên ShopeDev.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+    
+        <!-- Footer Row -->
+        <tr>
+          <td>
+            <table width="600" cellpadding="0" cellspacing="0" border="0" align="center">
+              <tbody>
+                <tr>
+                  <td style="padding: 20px; text-align: center;">
+                    <a href="https://play.google.com/store/apps/details?id=com.shopee.vn" target="_blank">
+                      <img src="https://ci3.googleusercontent.com/meips/ADKq_NY00t7Vhs04cCBjdRIbVAqOW04dpq9co0yFi4rY3f9eDTNFxmD9Lwsa_-nAWyYF8GRv19AOi79hBUH-y4AGJj5xM6PGl2kslZj_LwWrs7Ce=s0-d-e1-ft#https://cf.shopee.sg/file/cacc3e27277d02501b0989fdcbaf18e9" width="130" style="width:130px;">
+                    </a>
+                    <a href="https://apps.apple.com/vn/app/id959841449" target="_blank">
+                      <img src="https://ci3.googleusercontent.com/meips/ADKq_Nartbu3UbvL6zWABXPy50HGKDGYN3v39CXyZu_ko05txGYpnAwpZKexFdFlRC0lFu0GPxyB6l7wldAgorXHm1mqdxzZOvHcgaQw-_oiLX7c=s0-d-e1-ft#https://cf.shopee.sg/file/5b4dcec6c9c60950954b465bafee9cff" width="130" style="width:130px;">
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-family:Helvetica, Arial, sans-serif; font-size:13px; color:#747474; text-align:center; line-height:18px; padding: 10px;">
+                    Hãy mua sắm cùng ShopeDev
+                  </td>
+                </tr>
+                <tr>
+                  <td style="width:100%; height:5px; border-top:1px solid #e0e0e0; padding: 5px 0;">
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-family:Helvetica, Arial, sans-serif; font-size:11px; color:#747474; text-align:center; line-height:16px; padding: 20px;">
+                    © 2024 ShopeDev. Tất cả các quyền được bảo lưu.<br>
+                    <a href="mailto:support@shope.dev" target="_blank" style="color:#747474;">Hỗ trợ</a> |
+                    <a href="https://www.shopeedv.com/privacy-policy" target="_blank" style="color:#747474;">Chính sách bảo mật</a> |
+                    <a href="https://www.shopeedv.com/terms-of-service" target="_blank" style="color:#747474;">Điều khoản dịch vụ</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 `;

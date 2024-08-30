@@ -4,12 +4,13 @@ const userModel = require('../models/user.model');
 const roleModel = require('../models/role.model');
 const { ConflictError, InternalServerError, BadRequestError } = require('../core/error.response');
 const bcrypt = require('bcrypt');
+const {app: {callbackUrl}} = require('../configs/config.app');
 
 
 passport.use(new GoogleStrategy({
   clientID: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: 'http://localhost:8080/v1/api/auth/google/callback',
+  callbackURL: `${callbackUrl}/v1/api/auth/google/callback`,
   scope: ['profile', 'email', 'openid'] // Cấu hình các phạm vi yêu cầu
 },
 async (accessToken, refreshToken, profile, done) => {

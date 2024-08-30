@@ -48,14 +48,8 @@ const verifyOTP = async (email, inputOtp) => {
 };
 
 
-const sendEmailLinkVerify = async ({
-  html,
-  toEmail,
-  subject,
-  replacements
-}) => {
+const sendEmailLinkVerify = async ({ html, toEmail, subject, replacements }) => {
   try {
-
     // Compile HTML template với Handlebars
     const compiledTemplate = handlebars.compile(html);
     const htmlToSend = compiledTemplate(replacements);
@@ -67,45 +61,43 @@ const sendEmailLinkVerify = async ({
       html: htmlToSend,
     };
 
-    await transporter.sendMail(mailOptions, (err, info) => {
-      if (err) {
-        console.error('Error sending email: ', err);
-        throw new Error('Failed to send email');
-      }
-      console.log('Email sent: ', info.messageId);
-    });
-  } catch (e) {
-    console.error('Error while sending email: ', e);
+    // Sử dụng async/await thay cho callback
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent: ', info.messageId);
+
+  } catch (err) {
+    console.error('Error while sending email: ', err);
     throw new Error('Failed to send email');
   }
-}
+};
 
 const sendOTPEmail = async (email) => {
   try {
-    const token = await newOTP(email)
+    const token = await newOTP(email);
     console.log('Generated OTP:', token.otp);
 
-    const template = await getTemplate({
-      tem_name: 'register',
-    })
+    const template = await getTemplate({ tem_name: 'register' });
 
-    sendEmailLinkVerify({
+    // Gọi hàm gửi email và chờ nó hoàn thành
+    await sendEmailLinkVerify({
       html: template.tem_html,
       toEmail: email,
       subject: template.tem_subject,
       replacements: {
-        otp: token.otp, // Replace this with the actual data from the OTP model.
-        name: token.email, // Replace this with the actual data from the OTP model.
-        // link: `http://localhost:3000/verify-email/${token._id}`, // Replace this with the actual link to the verification endpoint.
-        // expires: '5 minutes', // Replace this with the actual expiration time.
-      }, // Add any additional data you need to replace in the template here.
-    }).catch
+        otp: token.otp, // Thay thế bằng dữ liệu thực tế từ model OTP.
+        name: token.email, // Thay thế bằng dữ liệu thực tế từ model OTP.
+        // link: `http://localhost:3000/verify-email/${token._id}`, // Thay thế bằng link xác minh thực tế.
+        expires: '5 minutes', // Thay thế bằng thời gian hết hạn thực tế.
+      },
+    });
 
-    return token
+    return token;
   } catch (error) {
-    console.log('Error sending OTP email:', error);
+    console.error('Error sending OTP email:', error);
+    throw new Error('Failed to send OTP email');
   }
 };
+
 
 
 module.exports = {

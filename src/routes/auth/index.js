@@ -5,6 +5,7 @@ const { ConflictError, InternalServerError, BadRequestError } = require('../../c
 const keyTokenService = require('../../services/keyToken.service');
 const UserController = require('../../controllers/user.controller');
 const { asyncHandler } = require('../../helpers/asyncHandler');
+const { app: { redirectUrl }} = require('../../configs/config.app')
 
 const router = express.Router();
 
@@ -36,7 +37,7 @@ router.get('/google/callback',
 
 
     // res.json({ user: req.user, tokens });
-    return res.redirect(`http://localhost:3000?access_token=${tokens.accessToken}&refresh_token=${tokens.refreshToken}`);
+    return res.redirect(`${redirectUrl}?access_token=${tokens.accessToken}&refresh_token=${tokens.refreshToken}`);
   }
 );
 
