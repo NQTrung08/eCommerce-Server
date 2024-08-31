@@ -25,9 +25,6 @@ const options = {
     path.join(__dirname, '../routes/**/*.js'), // This path should match your route files
   ],
 };
-
-console.log(options.apis)
-
 const swaggerSpec = swaggerJSDoc(options);
 
 module.exports = (app) => {

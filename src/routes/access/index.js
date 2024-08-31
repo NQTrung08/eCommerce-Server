@@ -68,6 +68,17 @@ router.post('/signup', asyncHandler(accessController.signUp));
  *         description: Unauthorized
  */
 router.post('/signin', asyncHandler(accessController.signIn));
+
+/**
+ * @swagger
+ * /logout:
+ *   post: 
+ *     tags:
+ *       - User
+ *     summary: Đăng xuất người dùng
+ *     description: API này đăng xuất một người dùng đã tồn tại.
+ * description: Unauthorized
+ */
 router.post('/logout', authenticate, asyncHandler(accessController.logOut));
 router.post('/refresh-token', asyncHandler(accessController.refreshTokenHandler));
 

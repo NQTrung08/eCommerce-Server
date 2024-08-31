@@ -1,11 +1,13 @@
 {
   "watch": [
-    "server.js",
-    "models/**/*.js",
-    "routes/**/*.js",
-    "middlewares/**/*.js",
-    "configs/*.js",
-    "services/**/*.js"
+    "src/models/*.js",
+    "src/middlewares/*.js",
+    "src/routes/**/*.js",
+    "src/configs/*.js",
+    "src/services/*.js",
+    "src/app.js",
+    "nodemon.json",
+    "server.js"
   ],
   "ext": "js,json",
   "ignore": [
