@@ -4,6 +4,7 @@ const { app: {port}} = require('./src/configs/config.app');
  
 const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+  console.log(`Api docs is running on http://localhost:${port}/api-docs`);
 });
 
 console.log(`Starting`);

@@ -9,6 +9,17 @@ const { authenticate } = require('../../middewares/authenticate.middleware');
 
 /**
  * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
+
+
+/**
+ * @swagger
  * tags:
  *   - name: User
  *     description: API endpoints related to user operations.
@@ -76,11 +87,57 @@ router.post('/signin', asyncHandler(accessController.signIn));
  *     tags:
  *       - User
  *     summary: Đăng xuất người dùng
- *     description: API này đăng xuất một người dùng đã tồn tại.
- * description: Unauthorized
+ *     description: API này đăng xuất người dùng bằng cách vô hiệu hóa access token hiện tại.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Đăng xuất thành công
+ *       401:
+ *         description: Unauthorized - Token không hợp lệ hoặc đã hết hạn
+ *       500:
+ *         description: Lỗi server
  */
 router.post('/logout', authenticate, asyncHandler(accessController.logOut));
+
+/**
+ * @swagger
+ * /refresh-token:
+ *   post:
+ *     tags:
+ *       - User
+ *     summary: Cấp mới access token
+ *     description: API này cấp một access token mới bằng cách sử dụng refresh token hiện có trong body của yêu cầu.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 description: Access token hiện tại cần được làm mới.
+ *     responses:
+ *       200:
+ *         description: Cấp mới access token thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 accessToken:
+ *                   type: string
+ *                   description: Access token mới được cấp.
+ *       400:
+ *         description: Bad Request - Access token không được cung cấp hoặc không hợp lệ
+ *       401:
+ *         description: Unauthorized - Refresh token không hợp lệ hoặc đã hết hạn
+ *       500:
+ *         description: Lỗi server
+ */
 router.post('/refresh-token', asyncHandler(accessController.refreshTokenHandler));
+
 
 
 module.exports = router;
