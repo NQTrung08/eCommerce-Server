@@ -31,7 +31,6 @@ app.use(cors({
 }));
 
 // init middleware
-
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());
@@ -39,6 +38,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Import Swagger configuration
+require('./configs/swagger.config')(app);
 
 // Middleware cho Passport
 app.use(passport.initialize());
@@ -55,16 +56,13 @@ require('./dbs/init.mongodb')
 // const { checkOverload } = require('./helpers/check.connect')
 // checkOverload()
 
-
 // init routers
-
 const router = require('./routes')
 
 app.use('/',router)
 
 
 // handle error
-
 app.use((req, res, next) => {
   const error = new Error('Not Found');
   error.status = 404;
@@ -81,7 +79,5 @@ app.use((error, req, res, next) => {
   });
   
 });
-
-
 
 module.exports = app;

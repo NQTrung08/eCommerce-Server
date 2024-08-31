@@ -7,7 +7,7 @@ const { uploadStorage } = require('../../configs/multer.config');
 const router = express.Router();
 
 
-router.post('/create',authenticate, authorize(['admin', 'shop']), uploadStorage.single('file'),  asyncHandler(ShopController.newShop));
+router.post('/create',authenticate, uploadStorage.single('file'),  asyncHandler(ShopController.newShop));
 
 // get in4 cho chỉ shop đó mới được xem thông tin (sau này có 1 số thông tin nhạy cảm như số dư, mã thuế,...)
 router.get('/view-own', authenticate, authorize(['shop']), asyncHandler(ShopController.getShopByOwnerId));
