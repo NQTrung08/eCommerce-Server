@@ -12,7 +12,7 @@ const pro = {
     port: process.env.DEV_APP_PORT || 3052,
     redirectUrl: process.env.PRO_REDIRECT_URL,
     callbackUrl: process.env.PRO_CALLBACK_URL,
-    url: 'http://localhost:8080'
+    url: 'https://ecommerce-server-0mcc.onrender.com'
   },
 }
 

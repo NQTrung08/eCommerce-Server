@@ -10,6 +10,6 @@ router.post('/create',authenticate, authorize(['shop']), uploadStorage.single('f
 
 router.get('/:id', authenticate, asyncHandler(ProductController.getProductById))
 router.post('/',authenticate, asyncHandler(ProductController.searchProducts));
-router.get('/', authenticate, asyncHandler(ProductController.getAllProducts));
+router.get('/', asyncHandler(ProductController.getAllProducts));
 
 module.exports = router

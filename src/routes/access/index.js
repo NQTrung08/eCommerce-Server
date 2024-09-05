@@ -21,7 +21,7 @@ const { authenticate } = require('../../middewares/authenticate.middleware');
 /**
  * @swagger
  * tags:
- *   - name: User
+ *   - name: Access
  *     description: API endpoints related to user operations.
  */
 
@@ -30,7 +30,7 @@ const { authenticate } = require('../../middewares/authenticate.middleware');
  * /signup:
  *   post:
  *     tags:
- *       - User
+ *       - Access
  *     summary: Đăng ký người dùng mới
  *     description: API này đăng ký một người dùng mới.
  *     requestBody:
@@ -40,7 +40,7 @@ const { authenticate } = require('../../middewares/authenticate.middleware');
  *           schema:
  *             type: object
  *             properties:
- *               username:
+ *               email:
  *                 type: string
  *               password:
  *                 type: string
@@ -58,7 +58,7 @@ router.post('/signup', asyncHandler(accessController.signUp));
  * /signin:
  *   post:
  *     tags:
- *       - User
+ *       - Access
  *     summary: Đăng nhập người dùng
  *     description: API này đăng nhập một người dùng đã tồn tại.
  *     requestBody:
@@ -85,7 +85,7 @@ router.post('/signin', asyncHandler(accessController.signIn));
  * /logout:
  *   post: 
  *     tags:
- *       - User
+ *       - Access
  *     summary: Đăng xuất người dùng
  *     description: API này đăng xuất người dùng bằng cách vô hiệu hóa access token hiện tại.
  *     security:
@@ -105,7 +105,7 @@ router.post('/logout', authenticate, asyncHandler(accessController.logOut));
  * /refresh-token:
  *   post:
  *     tags:
- *       - User
+ *       - Access
  *     summary: Cấp mới access token
  *     description: API này cấp một access token mới bằng cách sử dụng refresh token hiện có trong body của yêu cầu.
  *     requestBody:
