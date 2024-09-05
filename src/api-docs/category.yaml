@@ -1,0 +1,250 @@
+openapi: 3.0.0
+info:
+  title: Category API
+  version: 1.0.0
+  description: API endpoints liên quan đến các thao tác với danh mục như tạo, cập nhật, xóa và lấy danh mục.
+
+tags:
+  - name: Category
+    description: API endpoints liên quan đến các thao tác với danh mục.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID của danh mục
+        name:
+          type: string
+          description: Tên của danh mục
+        parentId:
+          type: string
+          description: ID của danh mục cha (nếu có)
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+          description: Danh sách các danh mục con
+
+servers:
+  - url: /category
+
+paths:
+  /category/:
+    get:
+      tags:
+        - Category
+      summary: Lấy tất cả danh mục
+      description: API này lấy danh sách tất cả các danh mục.
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Danh sách tất cả các danh mục
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+  
+    post:
+      tags:
+        - Category
+      summary: Tạo danh mục mới
+      description: API này tạo một danh mục mới.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Tên của danh mục
+                parentId:
+                  type: string
+                  description: ID của danh mục cha (nếu có)
+      responses:
+        201:
+          description: Danh mục được tạo thành công
+        400:
+          description: Bad request
+
+  /category/root:
+    get:
+      tags:
+        - Category
+      summary: Lấy danh mục gốc
+      description: API này lấy danh mục gốc (những danh mục không có cha).
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Danh mục gốc được lấy thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+
+  /buildTree:
+    get:
+      tags:
+        - Category
+      summary: Xây dựng cây danh mục
+      description: API này xây dựng cây danh mục để hiển thị cấu trúc phân cấp của danh mục.
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Cây danh mục được xây dựng thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+
+  /search:
+    post:
+      tags:
+        - Category
+      summary: Tìm kiếm danh mục
+      description: API này tìm kiếm danh mục dựa trên các tiêu chí.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: Tiêu chí tìm kiếm
+      responses:
+        200:
+          description: Danh sách danh mục tìm thấy
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        400:
+          description: Bad request
+
+  /{id}:
+    get:
+      tags:
+        - Category
+      summary: Lấy danh mục theo ID
+      description: API này lấy thông tin chi tiết của một danh mục dựa trên ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Danh mục được lấy thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        404:
+          description: Danh mục không tìm thấy
+    put:
+      tags:
+        - Category
+      summary: Cập nhật danh mục
+      description: API này cập nhật thông tin của một danh mục dựa trên ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Tên của danh mục
+                parentId:
+                  type: string
+                  description: ID của danh mục cha (nếu có)
+      responses:
+        200:
+          description: Danh mục được cập nhật thành công
+        400:
+          description: Bad request
+        404:
+          description: Danh mục không tìm thấy
+    delete:
+      tags:
+        - Category
+      summary: Xóa danh mục
+      description: API này xóa một danh mục dựa trên ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Danh mục được xóa thành công
+        404:
+          description: Danh mục không tìm thấy
+
+  /{id}/children:
+    get:
+      tags:
+        - Category
+      summary: Lấy danh mục con
+      description: API này lấy các danh mục con của một danh mục dựa trên ID.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Danh sách danh mục con
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+        404:
+          description: Danh mục không tìm thấy
