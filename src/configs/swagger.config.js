@@ -1,5 +1,6 @@
 const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
 const { app: {url}} = require('../configs/config.app');
 const path = require('path');
 
@@ -22,11 +23,14 @@ const swaggerDefinition = {
 const options = {
   swaggerDefinition,
   apis: [
-    path.join(__dirname, '../routes/**/*.js'), // This path should match your route files
+    path.join(__dirname, '../api-docs/*.yaml'), // Đọc tất cả các tệp YAML trong thư mục docs
   ],
 };
 const swaggerSpec = swaggerJSDoc(options);
 
+
+
 module.exports = (app) => {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 };
+

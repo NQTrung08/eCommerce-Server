@@ -5,7 +5,7 @@ const { app: {url}} = require('./src/configs/config.app');
  
 const server = app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
-  console.log(`Api docs is running on ${url}/v1/api/api-docs`);
+  console.log(`Api docs is running on ${url}/api-docs`);
 });
 
 console.log(`Starting`);

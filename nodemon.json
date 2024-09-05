@@ -5,11 +5,12 @@
     "src/routes/**/*.js",
     "src/configs/*.js",
     "src/services/*.js",
+    "src/api-docs/*.yaml",
     "src/app.js",
     "nodemon.json",
     "server.js"
   ],
-  "ext": "js,json",
+  "ext": "js,json,yaml",
   "ignore": [
     "node_modules",
     "public",
