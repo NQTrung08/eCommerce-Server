@@ -20,6 +20,10 @@ const categorySchema = new Schema({
   properties: {
     type: Schema.Types.Mixed,
     default: {}
+  },
+  isSystemCategory: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,

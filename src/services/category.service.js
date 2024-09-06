@@ -51,7 +51,9 @@ const newCategory = async (body) => {
 
 const getCategories = async () => {
   try {
-    const categories = await categoryModel.find().populate('parent_id');
+    const categories = await categoryModel.find({
+      isSystemCategory: true,
+    }).populate('parent_id');
     return categories;
   } catch (error) {
     console.error('[E]::getCategories::', error);
@@ -247,8 +249,6 @@ const getCategoryWithChildren = async (id) => {
     throw error;
   }
 };
-
-
 
 module.exports = {
   newCategory,
