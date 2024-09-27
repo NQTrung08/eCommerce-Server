@@ -142,12 +142,21 @@ const removeFromCart = async ({userId, productId}) => {
 }
 
 const removeProductsFromCart = async ({userId, productIds}) => {
+  
+  const ids = productIds.productIds
+  if (!userId ||!ids.length) {
+    throw new BadRequestError('User id and product ids are required')
+  }
   const userCart = await cartModel.findOneAndUpdate(
     { cart_userId: userId },
-    { $pullAll: { cart_products: {
-      productId: { $in: productIds.map(product => product._id) },
-    } } },
-    { new: true }
+    { 
+      $pull: { 
+        cart_products: { 
+          productId: { $in: ids } // Sử dụng ids trực tiếp, không cần lấy _id
+        } 
+      } 
+    },
+    { upsert: true, new: true }
   )
   return userCart
 }

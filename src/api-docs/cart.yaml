@@ -56,3 +56,82 @@ paths:
           description: Product added to cart
         400:
           description: Bad request
+  /cart/:productId:  
+    delete:
+      tags:
+        - Cart
+      summary: Xóa product khỏi cart dựa trên ID
+      description: API này xóa một sản phẩm dựa trên ID.
+      parameters:
+        - in: query
+          name: productId
+          description: ID of product to be deleted
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Product deleted from cart
+        400:
+          description: Bad request
+  /cart/update:
+    post:
+      tags:
+        - Cart
+      summary: Cập nhật số lượng sản phẩm trong giỏ hàng
+      description: API này cho phép người dùng cập nhật số lượng sản phẩm trong giỏ hàng.
+      security:
+      - bearerAuth: []
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: string
+                  example: "66bb25b1c20ba387f1a4705d"
+                quantity:
+                  type: integer
+                  example: 1
+                old_quantity:
+                  type: integer
+                  example: 2
+      responses:
+        200:
+          description: Quantity updated in cart
+        404:
+          description: Not found
+  
+  /cart/products:
+    delete:
+      tags:
+        - Cart
+      summary: Xóa nhiều sản phẩm trong giỏ hàng theo mảng ID
+      description: API này cho phép người dùng xóa các sản phẩm trong giỏ hàng.
+      security:
+      - bearerAuth: []
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productIds:
+                  type: array
+                  example: ["66bb25b1c20ba387f1a4705d"]
+      responses:
+        200:
+          description: Products removed from cart
+        404:
+          description: Not found
+
+
+  
+        
