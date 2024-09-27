@@ -1,0 +1,58 @@
+openapi: 3.0.0
+info:
+  title: Cart API
+  version: 1.0.0
+  description: API endpoints liên quan đến các thao tác với giỏ hàng như tạo, cập nhật, xóa nhiều.
+
+tags:
+  - name: Cart
+    description: API endpoints liên quan đến các thao tác với giỏ hàng.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /cart:
+    get:
+      tags:
+        - Cart
+      summary: đưa ra list sản phẩm trong giỏ hàng
+      description: API này cho phép người dùng xem sản phẩm trong giỏ hàng.
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: List product in cart
+        400:
+          description: Bad request
+
+    post:
+      tags:
+        - Cart
+      summary: Thêm sản phẩm vào giỏ hàng
+      description: API này cho phép người dùng thêm sản phẩm vào giỏ hàng.
+      security:
+        - bearerAuth: []
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: string
+                  example: "66bb25b1c20ba387f1a4705d"
+                quantity:
+                  type: integer
+                  example: 1
+      responses:
+        200:
+          description: Product added to cart
+        400:
+          description: Bad request

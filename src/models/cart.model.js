@@ -11,18 +11,25 @@ const cartSchema = new Schema({
     ref: 'User',
     required: true
   },
-  cart_items: {
+  cart_products: {
     type: Array,
-    default: []
+    default: [],
+    required: true
   },
-  cart_count_product: {
-    type: Number,
-    default: 0
-  },
-  cart_total_price: {
-    type: Number,
-    default: 0
-  },
+  /**
+    [
+      {
+        productId,
+        shopId,
+        quantity,
+        price,
+        product_name,
+        product_thumb,
+        product_desc,
+        product_attributes,
+      }
+    ]
+   */
   cart_state: {
     type: String,
     enum: ['active', 'inactive'],
@@ -33,5 +40,5 @@ const cartSchema = new Schema({
   collection: COLLECTION_NAME
 })
 
-const Cart = model(DOCUMENT_NAME, cartSchema)
-module.exports = Cart
+const cartModel = model(DOCUMENT_NAME, cartSchema)
+module.exports = cartModel
