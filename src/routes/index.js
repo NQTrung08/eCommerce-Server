@@ -22,6 +22,8 @@ router.use('/v1/api/otp', require('./otp'))
 // router.use('/v1/api/checkout', require('./checkout'))
 router.use('/v1/api/cart', require('./cart'))
 // router.use('/v1/api/inventory', require('./inventory'))
+router.use('/v1/api/order', require('./order'))
+router.use('/v1/api/transaction', require('./transaction'))
 
 
 

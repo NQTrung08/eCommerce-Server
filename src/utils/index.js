@@ -3,7 +3,7 @@
 const _ = require('lodash');
 const { createTokenPair, createAccessToken } = require('../auth/authUtils');
 const roleModel = require('../models/role.model');
-const mongoose = require('mongoose');
+const { Types } = require('mongoose');
 const { BadRequestError } = require('../core/error.response');
 const getInfoData = ({ fields = [], object = {} }) => {
   return _.pick(object, fields)
@@ -47,13 +47,7 @@ const createAccessTokenForUser = async (object) => {
 }
 
 const convertToObjectId = (id) => {
-  // Kiểm tra nếu id không hợp lệ
-  if (!mongoose.Types.ObjectId.isValid(id)) {
-    return null;
-  }
-  
-  // Trả về ObjectId
-  return new mongoose.Types.ObjectId(id);
+  return Types.ObjectId(id);
 };
 
 module.exports = {

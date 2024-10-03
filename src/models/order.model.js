@@ -5,9 +5,14 @@ const DOCUMENT_NAME = 'Order'
 const COLLECTION_NAME = 'Orders'
 
 const orderProductSchema = new Schema({
-  product_id: {
+  productId: {
     type: Schema.Types.ObjectId,
     ref: 'Product',
+    required: true
+  },
+  shopId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Shop', // Tham chiếu đến mô hình shop
     required: true
   },
   quantity: {
@@ -43,7 +48,7 @@ const orderSchema = new Schema({
   order_products: [orderProductSchema],
   order_status: {
     type: String,
-    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'paid'],
     default: 'pending'
   },
   order_payment_method: {
@@ -72,5 +77,5 @@ const orderSchema = new Schema({
   collection: COLLECTION_NAME
 })
 
-const Order = model(DOCUMENT_NAME, orderSchema)
-module.exports = Order
+const orderModel = model(DOCUMENT_NAME, orderSchema)
+module.exports = orderModel

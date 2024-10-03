@@ -16,6 +16,7 @@ const { getProductById } = require('../models/repo/product.repo');
  */
 
 const createUserCart = async ({ userId, product }) => {
+  const { productId, quantity } = product;
   if(!userId ||!product.productId ||!product.quantity) {
     throw new BadRequestError('User id, product id and quantity are required')
   }
