@@ -70,12 +70,14 @@ paths:
             schema:
               type: object
               properties:
-                name:
+                category_name:
                   type: string
                   description: Tên của danh mục
-                parentId:
+                  example: "Ao thun mua dong"
+                parent_id:
                   type: string
                   description: ID của danh mục cha (nếu có)
+                  example: "66ff884d6c5fdd23b7cb8cfb"
       responses:
         201:
           description: Danh mục được tạo thành công

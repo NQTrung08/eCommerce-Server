@@ -5,8 +5,6 @@ const categoryModel = require('../models/category.model');
 const mongoose = require('mongoose');
 
 const newCategory = async (body) => {
-  try {
-    console.log(body);
 
     const category = await categoryModel.findOne({
       category_name: body.category_name
@@ -42,10 +40,6 @@ const newCategory = async (body) => {
     });
 
     return newCategory;
-  } catch (error) {
-    console.error('[E]::newCategory::', error);
-    throw error;  // Đảm bảo lỗi được ném ra để xử lý tiếp theo
-  }
 }
 
 

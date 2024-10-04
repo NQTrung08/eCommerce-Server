@@ -6,7 +6,7 @@ const { asyncHandler } = require('../../helpers/asyncHandler');
 const { uploadStorage } = require('../../configs/multer.config');
 const router = express.Router();
 
-router.post('/create',authenticate, authorize(['shop']), uploadStorage.single('file'), asyncHandler(ProductController.newProduct));
+router.post('/create',authenticate, authorize(['shop']), uploadStorage.array('files', 10), asyncHandler(ProductController.newProduct));
 
 router.get('/:id', authenticate, asyncHandler(ProductController.getProductById))
 router.post('/',authenticate, asyncHandler(ProductController.searchProducts));

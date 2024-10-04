@@ -56,7 +56,7 @@ paths:
           description: Product added to cart
         400:
           description: Bad request
-  /cart/:productId:  
+  /cart/{productId}:  
     delete:
       tags:
         - Cart

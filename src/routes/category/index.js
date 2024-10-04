@@ -8,7 +8,7 @@ const router = express.Router();
 router.get('/', authenticate, asyncHandler(CategoryController.getAllCategories));
 router.get('/buildTree', authenticate, asyncHandler(CategoryController.buildCategoryTree))
 
-router.post('/create', authenticate, authorize(['admin']), asyncHandler(CategoryController.addCategory));
+router.post('/', authenticate, authorize(['admin']), asyncHandler(CategoryController.addCategory));
 router.post('/search', authenticate, asyncHandler(CategoryController.searchCategory));
 router.get('/root', authenticate, asyncHandler(CategoryController.getCategoryRoot));
 

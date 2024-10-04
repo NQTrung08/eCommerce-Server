@@ -7,8 +7,11 @@ const { vnpayConfig } = require('../configs/payment.config')
 
 
 // Hàm tạo URL thanh toán VNPAY
-const createVnpayPaymentUrl = async (order, ipAddr) => {
-  console.log('order', order);
+const createVnpayPaymentUrl = async ({
+  orderIds,
+  totalAmount,
+  ipAddr
+}) => {
 
   let tmnCode = vnpayConfig.vnp_TmnCode; // Mã TMN của VNPAY
   let secretKey = vnpayConfig.vnp_HashSecret; // Secret key để tạo chữ ký
@@ -19,8 +22,9 @@ const createVnpayPaymentUrl = async (order, ipAddr) => {
 
   let date = new Date();
   let createDate = moment(date).format('YYYYMMDDHHmmss'); // Ngày tạo đơn hàng theo định dạng VNPAY
-  const orderId = order._id.toString(); // Mã đơn hàng (order ID)
-  const amount = order.order_total_price; // Tổng giá trị đơn hàng (VND)
+  const orderId = orderIds.join(','); // Mã đơn hàng (order ID)
+  console.log(orderId);
+  const amount = totalAmount; // Tổng giá trị đơn hàng (VND)
 
   let vnpParams = {}; // Đối tượng chứa các tham số gửi đến VNPAY
   vnpParams['vnp_Version'] = '2.1.0';
@@ -51,6 +55,10 @@ const createVnpayPaymentUrl = async (order, ipAddr) => {
 
   vnpParams['vnp_SecureHash'] = signed; // Thêm chữ ký vào tham số
   vnpUrl += '?' + querystring.stringify(vnpParams, { encode: false });
+  
+  // log url
+  console.log('VNPAY URL:', vnpUrl);
+
   return vnpUrl;
 };
 

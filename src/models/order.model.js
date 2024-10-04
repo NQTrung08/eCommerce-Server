@@ -10,11 +10,6 @@ const orderProductSchema = new Schema({
     ref: 'Product',
     required: true
   },
-  shopId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Shop', // Tham chiếu đến mô hình shop
-    required: true
-  },
   quantity: {
     type: Number,
     required: true,
@@ -31,13 +26,18 @@ const orderProductSchema = new Schema({
   product_thumb: {
     type: String,
     required: true
-  }
+  },
 })
 
 const orderSchema = new Schema({
   order_userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
+    required: true
+  },
+  order_shopId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Shop',
     required: true
   },
   order_trackingNumber: {
@@ -71,6 +71,15 @@ const orderSchema = new Schema({
   order_payment_gateway: {
     type: String,
     default: ''
+  },
+  discount_code: {  // Mã giảm giá áp dụng cho đơn hàng
+    type: String,
+    default: ''  
+  },
+  order_discounted_total_price: {  // Tổng sau khi giảm giá
+    type: Number,
+    // required: true,
+    default: 0  // Có thể tính toán và lưu giá trị
   },
 }, {
   timestamps: true,

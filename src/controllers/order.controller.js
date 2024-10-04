@@ -10,45 +10,45 @@ class OrderController {
   // Hàm xử lý yêu cầu tạo đơn hàng
   createOrder = async (req, res, next) => {
     const { _id } = req.user; // Lấy id người dùng từ req.user
-    console.log("idđ", _id);
-    const { products, totalValue, paymentMethod, shippingAddress, paymentGateway } = req.body; // Nhận luôn paymentGateway từ req.body
+    const { orders, paymentMethod, shippingAddress, paymentGateway } = req.body; // Nhận luôn paymentGateway từ req.body
     let ipAddr = req.headers['x-forwarded-for'] ||
-        req.connection.remoteAddress ||
-        req.socket.remoteAddress ||
-        req.connection.socket.remoteAddress;
+      req.connection.remoteAddress ||
+      req.socket.remoteAddress ||
+      req.connection.socket.remoteAddress;
     // Tạo đơn hàng
-    const newOrder = await createOrder({
+    const newOrders = await createOrder({
       userId: _id,
-      products,
-      totalValue,
+      orders,
       paymentMethod,
       shippingAddress,
       paymentGateway
     });
 
-    console.log('new orderrr', newOrder)
+    console.log('new orderrr', newOrders)
+    const orderIds = newOrders.orders.map(order => order._id); // Hoặc thuộc tính nào đó chứa ID
+
 
     // Xử lý thanh toán online (nếu có)
     if (paymentMethod === 'online') {
       let paymentUrl;
       if (paymentGateway === 'VNPAY') {
-        paymentUrl = await createVnpayPaymentUrl(newOrder, ipAddr);
+        paymentUrl = await createVnpayPaymentUrl({ orderIds, totalAmount: newOrders.totalAmountOrders, ipAddr });
       } else if (paymentGateway === 'Momo') {
         // Giả sử hàm createMomoPaymentUrl đã được định nghĩa
-        paymentUrl = await createMomoPaymentUrl(newOrder, ipAddr);
+        paymentUrl = await createMomoPaymentUrl(newOrders.totalAmountOrders, ipAddr);
       } else {
         throw new BadRequestError('Unsupported payment gateway');
       }
 
-      // return res.redirect(paymentUrl); // Chuyển hướng đến URL thanh toán
-
-      // Trả về phản hồi thành công cho đơn hàng COD
-      return res.status(200).json({
-        message: 'Order created successfully',
-        redirect: paymentUrl, // Trả về URL thanh toán
-        data: newOrder,
-      });
+      // Chuyển hướng đến URL thanh toán
+      return res.redirect(paymentUrl);
     };
+    // Trả về phản hồi thành công
+    new SuccessReponse({
+      message: 'Order created successfully',
+      data: newOrders,
+    }).send(res);
+
   }
 
   // Hàm nhận thông tin thanh toán thành công từ VNPAY

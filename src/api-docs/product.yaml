@@ -1,0 +1,168 @@
+openapi: 3.0.0
+info:
+  title: Product Management API
+  description: API cho việc quản lý sản phẩm, bao gồm tạo sản phẩm và upload ảnh nhiều file với JWT authentication.
+  version: 1.0.0
+
+servers:
+  - url: https://api.example.com/v1
+    description: API server
+
+tags:
+  - name: Product
+    description: Các API liên quan đến sản phẩm
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Invalid JWT token
+
+paths:
+  /product/create:
+    post:
+      tags:
+        - Product
+      summary: Tạo sản phẩm mới
+      description: Tạo sản phẩm mới và upload nhiều ảnh cho sản phẩm
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                product_name:
+                  type: string
+                  description: Tên sản phẩm
+                  example: Áo thun
+                product_desc:
+                  type: string
+                  description: Mô tả sản phẩm
+                  example: Áo thun chất liệu cotton
+                product_price:
+                  type: number
+                  description: Giá sản phẩm
+                  example: 150000
+                product_quantity:
+                  type: number
+                  description: Số lượng sản phẩm
+                  example: 100
+                category_id:
+                  type: string
+                  description: ID danh mục sản phẩm
+                  example: 60f731a1b540ef001f5d73d9
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Hình ảnh sản phẩm (cho phép upload nhiều file)
+      responses:
+        '201':
+          description: Tạo sản phẩm thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Product created successfully
+                  data:
+                    type: object
+                    properties:
+                      product_id:
+                        type: string
+                        example: 64ff4c5d7fbe3e1f5fdc8bcd
+                      product_name:
+                        type: string
+                        example: Áo thun
+                      product_img:
+                        type: array
+                        items:
+                          type: string
+                        example: 
+                          - https://res.cloudinary.com/.../image1.jpg
+                          - https://res.cloudinary.com/.../image2.jpg
+        '401':
+          description: Unauthorized - JWT token không hợp lệ hoặc thiếu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Bad request - Lỗi khi tạo sản phẩm
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /product/{id}:
+    get:
+      tags:
+        - Product
+      summary: Lấy thông tin sản phẩm theo ID
+      description: Lấy thông tin chi tiết của sản phẩm dựa trên ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID sản phẩm
+      responses:
+        '200':
+          description: Thông tin sản phẩm
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  product_id:
+                    type: string
+                    example: 64ff4c5d7fbe3e1f5fdc8bcd
+                  product_name:
+                    type: string
+                    example: Áo thun
+                  product_img:
+                    type: array
+                    items:
+                      type: string
+                    example: 
+                      - https://res.cloudinary.com/.../image1.jpg
+                      - https://res.cloudinary.com/.../image2.jpg
+                  product_price:
+                    type: number
+                    example: 150000
+                  product_quantity:
+                    type: number
+                    example: 100
+        '401':
+          description: Unauthorized - JWT token không hợp lệ hoặc thiếu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Sản phẩm không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+security:
+  - bearerAuth: []

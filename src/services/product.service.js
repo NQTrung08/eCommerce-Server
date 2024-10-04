@@ -1,5 +1,5 @@
 'use strict';
-const { NotFoundError } = require('../core/error.response');
+const { NotFoundError, BadRequestError } = require('../core/error.response');
 const productModel = require('../models/product.model');
 const shopModel = require('../models/shop.model');
 const categoryModel = require('../models/category.model');
@@ -7,67 +7,123 @@ const skuModel = require('../models/sku.model');
 const reviewModel = require('../models/review.model');
 const orderModel = require('../models/order.model');
 const skuService = require('../services/sku.service');
+const { uploadProductThumbnail } = require('../services/upload.service');
+const { uploadToCloudinary } = require('../helpers/cloudinary.helper');
 
-const newProduct = async (owner_id, body, file) => {
-  try {
-    const { product_name, product_desc, category_id, attributes, stock_status, reviewCount, averageRating, sold_count, skus } = body;
-    const shop = await shopModel.findOne({ owner_id });
-    const category = await categoryModel.findById(category_id);
-    const productExist = await productModel.findOne({ product_name: product_name})
-    if (!shop) {
-      throw new NotFoundError('Shop not found');
-    }
-    if (!category) {
-      throw new NotFoundError('Category not found');
-    }
-    if (productExist) {
-      throw new Error('Product already exists');
-    }
-    const product = new productModel({
-      shop_id: shop._id,
-      product_name,
-      product_desc,
-      category_id: category._id,
-      attributes,
-      product_thumb: '',
-      stock_status,
-      skus: [],
-    });
 
-    // Lưu sản phẩm vào cơ sở dữ liệu
-    const newProduct = await product.save();
+//   try {
+//     const { product_name, product_desc, category_id, attributes, stock_status, reviewCount, averageRating, sold_count, skus } = body;
+//     const shop = await shopModel.findOne({ owner_id });
+//     const category = await categoryModel.findById(category_id);
+//     const productExist = await productModel.findOne({ product_name: product_name})
+//     if (!shop) {
+//       throw new NotFoundError('Shop not found');
+//     }
+//     if (!category) {
+//       throw new NotFoundError('Category not found');
+//     }
+//     if (productExist) {
+//       throw new Error('Product already exists');
+//     }
+//     const product = new productModel({
+//       shop_id: shop._id,
+//       product_name,
+//       product_desc,
+//       category_id: category._id,
+//       attributes,
+//       product_thumb: '',
+//       stock_status,
+//     });
 
-    // Tạo và lưu SKUs
-    const savedSkus = await skuService.createSkus(skus, newProduct._id);
+//     // Lưu sản phẩm vào cơ sở dữ liệu
+//     const newProduct = await product.save();
 
-    // Cập nhật sản phẩm với các SKU đã lưu
-    newProduct.skus = savedSkus.map(sku => sku._id);
-    await newProduct.save();
+//     let productThumbUrl = '';
 
-    let productThumbUrl = '';
+//     // Nếu có tệp ảnh, upload ảnh lên Cloudinary
+//     if (file) {
+//       const uploadResult = await uploadProductThumbnail({
+//         filePath: file.path,
+//         shopId: shop._id,
+//         productId: newProduct._id.toString(), // Sử dụng ID của sản phẩm đã lưu
+//       });
+//       productThumbUrl = uploadResult.image_url;
 
-    // Nếu có tệp ảnh, upload ảnh lên Cloudinary
-    if (file) {
-      const uploadResult = await uploadService.uploadProductThumbnail({
-        filePath: file.path,
-        shopId: shop._id,
-        productId: newProduct._id.toString(), // Sử dụng ID của sản phẩm đã lưu
-      });
-      productThumbUrl = uploadResult.image_url;
+//       // Cập nhật sản phẩm với URL ảnh
+//       newProduct.product_thumb = productThumbUrl;
+//       await newProduct.save();
+//     }
 
-      // Cập nhật sản phẩm với URL ảnh
-      newProduct.product_thumb = productThumbUrl;
-      await newProduct.save();
-    }
+//     return newProduct;
 
-    return newProduct;
+//   } catch (error) {
+//     console.error('[E]::newProduct::', error);
+//     throw error;
+//   }
 
-  } catch (error) {
-    console.error('[E]::newProduct::', error);
-    throw error;
+// }
+
+// Service tạo sản phẩm mới
+const newProduct = async (owner_id, productData, files) => {
+  // Truy vấn shopId từ owner_id
+  const shop = await shopModel.findOne({ owner_id });
+  if (!shop) {
+    throw new NotFoundError('Shop not found for the owner');
   }
 
-}
+  // Kiểm tra xem danh mục sản phẩm có tồn tại không
+  const category = await categoryModel.findById(productData.category_id);
+  if (!category) {
+    throw new NotFoundError('Category not found');
+  }
+
+  // Kiểm tra xem sản phẩm có tồn tại không
+  const existingProduct = await productModel.findOne({ 
+    product_name: productData.product_name, 
+    shop_id: shop._id 
+  });
+  if (existingProduct) {
+    throw new BadRequestError('Product already exists in this shop');
+  }
+
+  // Upload các hình ảnh của sản phẩm
+  const productImages = await uploadProductImages({
+    files,
+    shopId: shop._id,
+    productId: productData.product_name, // Tạo productId tạm thời cho tên folder
+  });
+
+  // Gắn hình ảnh vào productData
+  productData.product_img = productImages;
+
+  // Lưu thông tin sản phẩm vào database
+  return await productModel.create({
+    ...productData,
+    shop_id: shop._id,
+  });
+};
+
+
+const uploadProductImages = async ({ files, shopId, productId }) => {
+  try {
+    const uploadedImages = [];
+
+    for (const file of files) {
+      const folder = `products/${shopId}/${productId}/images`;
+      const publicId = `${productId}-${file.originalname.split('.')[0]}`;
+      
+      // Upload từng file lên Cloudinary
+      const result = await uploadToCloudinary({ filePath: file.path, folder, publicId });
+      
+      uploadedImages.push(result.secure_url); // Lưu URL của ảnh đã upload
+    }
+
+    return uploadedImages;
+  } catch (error) {
+    console.error('[E]::uploadProductImages::', error);
+    throw error;
+  }
+};
 
 const getRatingAndSoldCount = async (productId) => {
   const ratingCount = await reviewModel.countDocuments({ product_id: productId });
@@ -116,9 +172,6 @@ const getAllProducts = async ({
         path: 'category_id',
         select: 'category_name -_id', // Chọn trường 'category_name', loại bỏ '_id'
       })
-      .populate({
-        path:'skus'
-      })
       .limit(limitNumber)
       .skip((pageNumber - 1) * limitNumber)
       .sort(sortBy)
@@ -161,9 +214,6 @@ const getProductById = async (id) => {
     .populate({
       path:'category_id',
       select: 'category_name',
-    })
-    .populate({
-      path:'skus'
     })
     .lean();
 
@@ -294,4 +344,5 @@ module.exports = {
   updateProduct,
   deleteProduct,
   searchProducts,
+  uploadProductImages,
 };

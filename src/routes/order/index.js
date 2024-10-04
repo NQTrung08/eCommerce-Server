@@ -4,7 +4,7 @@ const { authenticate } = require('../../middewares/authenticate.middleware');
 const  {asyncHandler} = require('../../helpers/asyncHandler');
 const router = express.Router();
 // Endpoint nhận thông tin thanh toán từ VNPAY
-router.post('/create', authenticate, asyncHandler(orderController.createOrder));
+router.post('/', authenticate, asyncHandler(orderController.createOrder));
 router.get('/vnpay_return', asyncHandler(orderController.vnpayReturn));
 
 module.exports = router;

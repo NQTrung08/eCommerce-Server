@@ -4,14 +4,17 @@ const { SuccessReponse } = require('../core/success.response');
 const ProductService = require('../services/product.service');
 
 class ProductController {
-  newProduct = async(req, res, next) => {
+  newProduct = async (req, res, next) => {
     const owner_id = req.user._id; // Giả sử bạn có thông tin người dùng trong req.user
     const body = req.body;
-    const file = req.file; // Giả sử bạn đang sử dụng middleware như multer để xử lý file upload
+    const files = req.files; // Giả sử bạn đang sử dụng middleware như multer để xử lý file upload
+
+    // Tạo sản phẩm mới
+    const newProduct = await ProductService.newProduct(owner_id, body, files);
 
     return new SuccessReponse({
       message: 'Product created successfully',
-      data: await ProductService.newProduct(owner_id, body, file)
+      data: await newProduct
     }).send(res)
   }
 

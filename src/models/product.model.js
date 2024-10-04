@@ -27,18 +27,11 @@ const productSchema = new Schema({
   },
 
   product_img: [{ type: String}] ,
-  product_thumb: {
-    type: String,
-    // required: true
-  },
   category_id: {
     type: Schema.Types.ObjectId,
     ref: 'Category',
     required: true
   },
-  // skus: [
-  //   skuSchema
-  // ],
   product_desc: {
     type: String,
     default: ''
