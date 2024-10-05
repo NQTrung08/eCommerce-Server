@@ -1,0 +1,143 @@
+paths:
+  /profile/own:
+    get:
+      tags:
+        - Profile
+      summary: Lấy thông tin cá nhân của người dùng đã đăng nhập
+      security:
+        - bearerAuth: []  # Thêm yêu cầu xác thực token
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+    post:
+      tags:
+        - Profile
+      summary: Cập nhật thông tin cá nhân của người dùng
+      security:
+        - bearerAuth: []  # Thêm yêu cầu xác thực token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProfileUpdate"
+      responses:
+        "200":
+          description: Cập nhật profile thành công
+
+  /profile/{id}:
+    get:
+      tags:
+        - Profile
+      summary: Lấy thông tin người dùng theo ID
+      security:
+        - bearerAuth: []  # Thêm yêu cầu xác thực token
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  /profile/admin/{id}:
+    get:
+      tags:
+        - Profile
+      summary: Lấy thông tin người dùng theo ID (cho admin)
+      security:
+        - bearerAuth: []  # Thêm yêu cầu xác thực token
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+
+  /profile:
+    get:
+      tags:
+        - Profile
+      summary: Lấy tất cả thông tin người dùng (chỉ cho admin)
+      security:
+        - bearerAuth: []  # Thêm yêu cầu xác thực token
+      responses:
+        "200":
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Profile"
+
+  /profile/avatar-own:
+    post:
+      tags:
+        - Profile
+      summary: Cập nhật ảnh đại diện của người dùng đã đăng nhập
+      security:
+        - bearerAuth: []  # Thêm yêu cầu xác thực token
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Cập nhật avatar thành công
+
+components:
+  schemas:
+    Profile:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        fullName:
+          type: string
+        avatar:
+          type: string
+        phoneNumber:
+          type: string
+        address:
+          type: string
+
+    ProfileUpdate:
+      type: object
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+        phoneNumber:
+          type: string
+        address:
+          type: string

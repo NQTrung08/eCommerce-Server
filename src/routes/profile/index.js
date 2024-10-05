@@ -7,8 +7,6 @@ const { uploadStorage } = require('../../configs/multer.config');
 const router = express.Router();
 
 
-
-
 router.get('/own', authenticate, asyncHandler(ProfileController.getProfileOwn));
 router.get('/:id', authenticate, authorize(['user']), asyncHandler(ProfileController.getProfileForUser));
 router.get('/admin/:id', authenticate, authorize(['admin']), asyncHandler(ProfileController.getProfileForAdmin));

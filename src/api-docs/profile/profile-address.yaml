@@ -1,0 +1,123 @@
+openapi: 3.0.0
+info:
+  title: Profile Management API
+  description: API cho việc quản lý
+  version: 1.0.0
+
+tags:
+  - name: Profile
+    description: Các API liên quan đến profile
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Address:
+      type: object
+      properties:
+        id:
+          type: string
+          description: "Mã địa chỉ"
+        userId:
+          type: string
+          description: "Mã người dùng sở hữu địa chỉ"
+        street:
+          type: string
+          description: "Tên đường"
+        city:
+          type: string
+          description: "Thành phố"
+        state:
+          type: string
+          description: "Bang hoặc khu vực"
+        zipCode:
+          type: string
+          description: "Mã bưu điện"
+        country:
+          type: string
+          description: "Quốc gia"
+
+paths:
+  /profile/address:
+    post:
+      tags:
+        - Profile
+      summary: Thêm địa chỉ mới cho người dùng
+      security:
+        - bearerAuth: []  # Thêm yêu cầu xác thực token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Address"
+      responses:
+        '201':
+          description: Địa chỉ đã được thêm thành công
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Address"
+
+  /profile/addresses:
+    get:
+      tags:
+        - Profile
+      summary: Lấy danh sách địa chỉ của người dùng
+      security:
+        - bearerAuth: []  # Thêm yêu cầu xác thực token
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Address"
+
+  /profile/address/{addressId}:
+    put:
+      tags:
+        - Profile
+      summary: Cập nhật địa chỉ theo ID
+      security:
+        - bearerAuth: []  # Thêm yêu cầu xác thực token
+      parameters:
+        - name: addressId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Address"
+      responses:
+        '200':
+          description: Cập nhật địa chỉ thành công
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Address"
+
+    delete:
+      tags:
+        - Profile
+      summary: Xóa địa chỉ theo ID
+      security:
+        - bearerAuth: []  # Thêm yêu cầu xác thực token
+      parameters:
+        - name: addressId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Xóa địa chỉ thành công

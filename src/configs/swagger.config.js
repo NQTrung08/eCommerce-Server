@@ -27,9 +27,10 @@ const swaggerDefinition = {
 const options = {
   swaggerDefinition,
   apis: [
-    path.join(__dirname, '../api-docs/*.yaml'), // Đọc tất cả các tệp YAML trong thư mục docs
+    path.join(__dirname, '../api-docs/**/*.yaml'), // Đọc tất cả các tệp YAML trong thư mục docs
   ],
 };
+
 const swaggerSpec = swaggerJSDoc(options);
 
 
