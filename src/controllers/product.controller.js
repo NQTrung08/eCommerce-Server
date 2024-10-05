@@ -39,15 +39,28 @@ class ProductController {
   updateProduct = async (req, res, next) => {
     return new SuccessReponse({
       message: 'Product updated successfully',
-      data: await ProductService.updateProduct(req.params.id, req.body)
+      data: await ProductService.updateProduct({
+        userId: req.user._id,
+        id: req.params.id,
+        body: req.body
+      })
     }).send(res)
   }
 
-  deleteProduct = async (req, res, next) => {
+  deleteProducts = async (req, res, next) => {
+
+    const { ids } = req.body;
+
+  // Kiểm tra xem mảng ids có tồn tại và có ít nhất một phần tử không
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).send({
+      message: 'No product IDs provided for deletion',
+    });
+  }
 
     return new SuccessReponse({
       message: 'Product deleted successfully',
-      data: await ProductService.deleteProduct(req.params.id)
+      data: await ProductService.deleteProducts(ids)
     }).send(res)
   }
 
@@ -65,6 +78,37 @@ class ProductController {
 
 
   };
+
+  publicProducts = async (req, res, next) => {
+    const { ids } = req.body;
+
+  // Kiểm tra xem mảng ids có tồn tại và có ít nhất một phần tử không
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).send({
+      message: 'No product IDs provided for deletion',
+    });
+  }
+    return new SuccessReponse({
+      message: 'Public Products',
+      data: await ProductService.publicProducts(ids)
+    }).send(res)
+  }
+  privateProducts = async (req, res, next) => {
+    const { ids } = req.body;
+
+  // Kiểm tra xem mảng ids có tồn tại và có ít nhất một phần tử không
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).send({
+      message: 'No product IDs provided for deletion',
+    });
+  }
+
+    return new SuccessReponse({
+      message: 'Private Products',
+      data: await ProductService.privateProducts(ids)
+    }).send(res)
+  }
+
 
 
 }

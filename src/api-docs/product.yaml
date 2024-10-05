@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Product Management API
-  description: API cho việc quản lý sản phẩm, bao gồm tạo sản phẩm và upload ảnh nhiều file với JWT authentication.
+  description: API cho việc quản lý sản phẩm, bao gồm tạo sản phẩm, tìm kiếm sản phẩm, lấy tất cả sản phẩm và cập nhật sản phẩm với JWT authentication.
   version: 1.0.0
 
 servers:
@@ -28,7 +28,7 @@ components:
           example: Invalid JWT token
 
 paths:
-  /product/create:
+  /product:
     post:
       tags:
         - Product
@@ -70,7 +70,7 @@ paths:
                     format: binary
                   description: Hình ảnh sản phẩm (cho phép upload nhiều file)
       responses:
-        '201':
+        "201":
           description: Tạo sản phẩm thành công
           content:
             application/json:
@@ -93,21 +93,141 @@ paths:
                         type: array
                         items:
                           type: string
-                        example: 
+                        example:
                           - https://res.cloudinary.com/.../image1.jpg
                           - https://res.cloudinary.com/.../image2.jpg
-        '401':
+        "401":
           description: Unauthorized - JWT token không hợp lệ hoặc thiếu
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '400':
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
           description: Bad request - Lỗi khi tạo sản phẩm
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
+    get:
+      tags:
+        - Product
+      summary: Lấy tất cả sản phẩm
+      description: Lấy danh sách tất cả sản phẩm
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Danh sách sản phẩm
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    product_id:
+                      type: string
+                      example: 64ff4c5d7fbe3e1f5fdc8bcd
+                    product_name:
+                      type: string
+                      example: Áo thun
+        "401":
+          description: Unauthorized - JWT token không hợp lệ hoặc thiếu
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+    delete:
+      tags:
+        - Product
+      summary: Xóa nhiều sản phẩm
+      description: Chuyển nhiều sản phẩm vào trạng thái xóa (không xóa vĩnh viễn)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                  example: ["id1", "id2", "id3"]
+      responses:
+        "200":
+          description: Các sản phẩm đã được chuyển sang trạng thái xóa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Products deleted successfully
+        "401":
+          description: Unauthorized - JWT token không hợp lệ hoặc thiếu
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Một hoặc nhiều sản phẩm không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /product/search:
+    post:
+      tags:
+        - Product
+      summary: Tìm kiếm sản phẩm
+      description: Tìm kiếm các sản phẩm theo tiêu chí đã cho
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: Từ khóa tìm kiếm
+                  example: "áo"
+      responses:
+        "200":
+          description: Danh sách sản phẩm tìm thấy
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    product_id:
+                      type: string
+                      example: 64ff4c5d7fbe3e1f5fdc8bcd
+                    product_name:
+                      type: string
+                      example: Áo thun
+        "401":
+          description: Unauthorized - JWT token không hợp lệ hoặc thiếu
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Bad request - Lỗi tìm kiếm
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   /product/{id}:
     get:
@@ -125,7 +245,7 @@ paths:
             type: string
           description: ID sản phẩm
       responses:
-        '200':
+        "200":
           description: Thông tin sản phẩm
           content:
             application/json:
@@ -142,7 +262,7 @@ paths:
                     type: array
                     items:
                       type: string
-                    example: 
+                    example:
                       - https://res.cloudinary.com/.../image1.jpg
                       - https://res.cloudinary.com/.../image2.jpg
                   product_price:
@@ -151,18 +271,174 @@ paths:
                   product_quantity:
                     type: number
                     example: 100
-        '401':
+        "401":
           description: Unauthorized - JWT token không hợp lệ hoặc thiếu
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
           description: Sản phẩm không tồn tại
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
-security:
-  - bearerAuth: []
+    put:
+      tags:
+        - Product
+      summary: Cập nhật thông tin sản phẩm theo ID
+      description: Cập nhật thông tin chi tiết của sản phẩm dựa trên ID. Các trường bắt buộc phải có được đánh dấu.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID sản phẩm
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                product_name:
+                  type: string
+                  description: Tên sản phẩm (bắt buộc)
+                  example: Áo thun
+                product_desc:
+                  type: string
+                  description: Mô tả sản phẩm
+                  example: Áo thun chất liệu cotton
+                product_price:
+                  type: number
+                  description: Giá sản phẩm (bắt buộc)
+                  example: 150000
+                product_quantity:
+                  type: number
+                  description: Số lượng sản phẩm (bắt buộc)
+                  example: 100
+                category_id:
+                  type: string
+                  description: ID danh mục sản phẩm (bắt buộc)
+                  example: 60f731a1b540ef001f5d73d9
+                product_img:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Hình ảnh sản phẩm (có thể upload nhiều file)
+      responses:
+        "200":
+          description: Cập nhật sản phẩm thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Product updated successfully
+        "401":
+          description: Unauthorized - JWT token không hợp lệ hoặc thiếu
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Sản phẩm không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /product/publish:
+    post:
+      tags:
+        - Product
+      summary: Đưa nhiều sản phẩm về trạng thái công khai
+      description: Đưa nhiều sản phẩm vào trạng thái công khai để hiển thị trên trang web
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                  example: ["id1", "id2", "id3"]
+      responses:
+        "200":
+          description: Các sản phẩm đã được đưa vào trạng thái công khai
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Products published successfully
+        "401":
+          description: Unauthorized - JWT token không hợp lệ hoặc thiếu
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Một hoặc nhiều sản phẩm không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /product/draft:
+    post:
+      tags:
+        - Product
+      summary: Đưa nhiều sản phẩm về trạng thái riêng tư
+      description: Đưa nhiều sản phẩm vào trạng thái riêng tư để không hiển thị trên trang web
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ids:
+                  type: array
+                  items:
+                    type: string
+                  example: ["id1", "id2", "id3"]
+      responses:
+        "200":
+          description: Các sản phẩm đã được đưa vào trạng thái riêng tư
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Products set to private successfully
+        "401":
+          description: Unauthorized - JWT token không hợp lệ hoặc thiếu
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Một hoặc nhiều sản phẩm không tồn tại
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"

@@ -10,58 +10,15 @@ const skuService = require('../services/sku.service');
 const { uploadProductThumbnail } = require('../services/upload.service');
 const { uploadToCloudinary } = require('../helpers/cloudinary.helper');
 
+const slugify = require('slugify');
 
-//   try {
-//     const { product_name, product_desc, category_id, attributes, stock_status, reviewCount, averageRating, sold_count, skus } = body;
-//     const shop = await shopModel.findOne({ owner_id });
-//     const category = await categoryModel.findById(category_id);
-//     const productExist = await productModel.findOne({ product_name: product_name})
-//     if (!shop) {
-//       throw new NotFoundError('Shop not found');
-//     }
-//     if (!category) {
-//       throw new NotFoundError('Category not found');
-//     }
-//     if (productExist) {
-//       throw new Error('Product already exists');
-//     }
-//     const product = new productModel({
-//       shop_id: shop._id,
-//       product_name,
-//       product_desc,
-//       category_id: category._id,
-//       attributes,
-//       product_thumb: '',
-//       stock_status,
-//     });
-
-//     // Lưu sản phẩm vào cơ sở dữ liệu
-//     const newProduct = await product.save();
-
-//     let productThumbUrl = '';
-
-//     // Nếu có tệp ảnh, upload ảnh lên Cloudinary
-//     if (file) {
-//       const uploadResult = await uploadProductThumbnail({
-//         filePath: file.path,
-//         shopId: shop._id,
-//         productId: newProduct._id.toString(), // Sử dụng ID của sản phẩm đã lưu
-//       });
-//       productThumbUrl = uploadResult.image_url;
-
-//       // Cập nhật sản phẩm với URL ảnh
-//       newProduct.product_thumb = productThumbUrl;
-//       await newProduct.save();
-//     }
-
-//     return newProduct;
-
-//   } catch (error) {
-//     console.error('[E]::newProduct::', error);
-//     throw error;
-//   }
-
-// }
+/**
+ * 1. Tạo sản phẩm (public hoặc draft)
+ * 2. xóa sản phẩm (draft hoặc vĩnh viễn)
+ * 3. liệt kê sản phẩm
+ * 4. tìm kiếm sản phẩm
+ * 5. lọc sản phẩm (ctime, brand, giá, đánh giá, danh mục)
+ */
 
 // Service tạo sản phẩm mới
 const newProduct = async (owner_id, productData, files) => {
@@ -78,9 +35,9 @@ const newProduct = async (owner_id, productData, files) => {
   }
 
   // Kiểm tra xem sản phẩm có tồn tại không
-  const existingProduct = await productModel.findOne({ 
-    product_name: productData.product_name, 
-    shop_id: shop._id 
+  const existingProduct = await productModel.findOne({
+    product_name: productData.product_name,
+    shop_id: shop._id
   });
   if (existingProduct) {
     throw new BadRequestError('Product already exists in this shop');
@@ -111,10 +68,10 @@ const uploadProductImages = async ({ files, shopId, productId }) => {
     for (const file of files) {
       const folder = `products/${shopId}/${productId}/images`;
       const publicId = `${productId}-${file.originalname.split('.')[0]}`;
-      
+
       // Upload từng file lên Cloudinary
       const result = await uploadToCloudinary({ filePath: file.path, folder, publicId });
-      
+
       uploadedImages.push(result.secure_url); // Lưu URL của ảnh đã upload
     }
 
@@ -124,6 +81,8 @@ const uploadProductImages = async ({ files, shopId, productId }) => {
     throw error;
   }
 };
+
+
 
 const getRatingAndSoldCount = async (productId) => {
   const ratingCount = await reviewModel.countDocuments({ product_id: productId });
@@ -177,7 +136,7 @@ const getAllProducts = async ({
       .sort(sortBy)
       .lean();
 
-    
+
     // Sử dụng Promise.all để đồng thời tính ratingCount và soldCount cho tất cả sản phẩm
     const productsWithCounts = await Promise.all(products.map(async (product) => {
       const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
@@ -208,20 +167,20 @@ const getAllProducts = async ({
 const getProductById = async (id) => {
   try {
     const product = await productModel.findById(id).populate({
-      path:'shop_id',
+      path: 'shop_id',
       select: 'shop_name',
     })
-    .populate({
-      path:'category_id',
-      select: 'category_name',
-    })
-    .lean();
+      .populate({
+        path: 'category_id',
+        select: 'category_name',
+      })
+      .lean();
 
     if (!product) {
       throw new NotFoundError('Product not found');
     }
     const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
-    
+
     return {
       ...product,
       ratingCount,
@@ -234,37 +193,102 @@ const getProductById = async (id) => {
   }
 }
 
-const updateProduct = async (id, body) => {
-  try {
-    const product = await productModel.findByIdAndUpdate(id, body, { new: true }).populate('category_id shop_id');
+const updateProduct = async ({
+  userId, id, body
+}) => {
 
-    if (!product) {
-      throw new NotFoundError('Product not found');
+  // Kiểm tra các trường bắt buộc trong body
+  const requiredFields = ['product_name', 'product_price', 'product_quantity', 'category_id'];
+
+  for (const field of requiredFields) {
+    if (!body[field]) {
+      throw new BadRequestError(`Missing required field: ${field}`);
     }
-
-    return product;
-  } catch (error) {
-    console.error('[E]::updateProduct::', error);
-    throw error;
   }
+
+
+  // Tìm shop với owner_id xem có tồn tại không
+  const shop = await shopModel.findOne({ owner_id: userId });
+  if (!shop) {
+    throw new NotFoundError('Shop not found for the owner');
+  }
+
+  // Kiểm tra xem sản phẩm có tồn tại trong shop đó không
+  const existingProduct = await productModel.findOne({
+    _id: id,
+    shop_id: shop._id
+  });
+  if (!existingProduct) {
+    throw new NotFoundError('Product not found in this shop');
+  }
+
+  // Kiểm tra xem nếu product_name có trong body thì tạo lại product_slug
+  if (body.product_name) {
+    body.product_slug = slugify(body.product_name, { lower: true });
+  }
+
+  // Kiểm tra xem sản phẩm đã có tồn tại trước đó hay chưa
+  const productToUpdate = await productModel.findByIdAndUpdate(id, body, { new: true });
+
+  if (!productToUpdate) {
+    throw new NotFoundError('Product not found');
+  }
+
+  return productToUpdate;
 }
 
-const deleteProduct = async (id) => {
-  try {
-    const product = await productModel.findByIdAndDelete(id);
-
-    if (!product) {
-      throw new NotFoundError('Product not found');
+const deleteProducts = async (ids) => {
+  const products = await productModel.updateMany(
+    { _id: { $in: ids } }, // Tìm kiếm theo danh sách ID
+    {
+      isPublic: false,
+      isDraft: false,
+      isDeleted: true
     }
+  );
 
-    await skuModel.deleteMany({ product_id: id });
-
-    return product;
-  } catch (error) {
-    console.error('[E]::deleteProduct::', error);
-    throw error;
+  if (products.modifiedCount === 0) {
+    throw new NotFoundError('No products found to delete');
   }
+
+  return products;
 }
+
+const publicProducts = async (ids) => {
+  const products = await productModel.updateMany(
+    { _id: { $in: ids } }, // Tìm kiếm theo danh sách ID
+    {
+      isPublic: true,
+      isDraft: false,
+      isDeleted: false
+    }
+  );
+
+  if (products.modifiedCount === 0) {
+    throw new NotFoundError('No products found to publish');
+  }
+
+  return products;
+}
+
+const privateProducts = async (ids) => {
+  const products = await productModel.updateMany(
+    { _id: { $in: ids } }, // Tìm kiếm theo danh sách ID
+    {
+      isPublic: false,
+      isDraft: false,
+      isDeleted: false
+    }
+  );
+
+  if (products.modifiedCount === 0) {
+    throw new NotFoundError('No products found to make private');
+  }
+
+  return products;
+}
+
+
 
 const searchProducts = async ({
   searchQuery = '',
@@ -272,7 +296,7 @@ const searchProducts = async ({
   limit = 20,
   sortBy = '-createdAt'
 }) => {
-  try {
+ 
     const pageNumber = parseInt(page, 10) || 1;
     const limitNumber = parseInt(limit, 10) || 10;
 
@@ -297,7 +321,7 @@ const searchProducts = async ({
     const products = await productModel.find(query)
       .populate({
         path: 'shop_id',
-        select: 'shop_name -_id', // Chọn trường 'shop_name', loại bỏ '_id'
+        select: 'shop_name shop_id', // Chọn trường 'shop_name', loại bỏ '_id'
       })
       .populate({
         path: 'category_id',
@@ -308,7 +332,7 @@ const searchProducts = async ({
       .sort(sortQuery)
       .lean();
 
-    
+
     // Sử dụng Promise.all để đồng thời tính ratingCount và soldCount cho tất cả sản phẩm
     const productsWithCounts = await Promise.all(products.map(async (product) => {
       const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
@@ -320,7 +344,7 @@ const searchProducts = async ({
       };
     }));
 
-      // Lấy tổng số sản phẩm để tính tổng số trang
+    // Lấy tổng số sản phẩm để tính tổng số trang
     const totalCount = await productModel.countDocuments(query);
 
     return {
@@ -329,10 +353,7 @@ const searchProducts = async ({
       totalPages: Math.ceil(totalCount / limitNumber),
       currentPage: pageNumber
     };
-  } catch (error) {
-    console.error('[E]::searchProducts::', error);
-    throw error;
-  }
+  
 };
 
 
@@ -342,7 +363,9 @@ module.exports = {
   getAllProducts,
   getProductById,
   updateProduct,
-  deleteProduct,
+  deleteProducts,
   searchProducts,
   uploadProductImages,
+  publicProducts,
+  privateProducts,
 };
