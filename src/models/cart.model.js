@@ -24,9 +24,7 @@ const cartSchema = new Schema({
         quantity,
         price,
         product_name,
-        product_thumb,
         product_desc,
-        product_attributes,
       }
     ]
    */

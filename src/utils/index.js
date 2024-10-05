@@ -47,7 +47,7 @@ const createAccessTokenForUser = async (object) => {
 }
 
 const convertToObjectId = (id) => {
-  return Types.ObjectId(id);
+  return new Types.ObjectId(id);
 };
 
 module.exports = {

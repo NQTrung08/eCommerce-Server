@@ -16,8 +16,6 @@ const updateAvatarProfile = async({
     if (!user) {
       throw new ConflictError('User not found');
     }
-
-
     // Nếu có ảnh logo, upload và cập nhật lại
     if (filePath) {
       const uploadResult = await uploadUserAvatar({

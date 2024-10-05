@@ -10,7 +10,7 @@ const router = express.Router();
 router.get('/',authenticate, asyncHandler(cartController.getCart));
 router.post('/',authenticate, asyncHandler(cartController.addToCart));
 router.delete('/products',authenticate, asyncHandler(cartController.removeProductsFromCart));
-router.post('/update',authenticate, asyncHandler(cartController.updateQuantityFromCart));
+router.post('/products/quantity',authenticate, asyncHandler(cartController.updateQuantityFromCart));
 router.delete('/:productId',authenticate, asyncHandler(cartController.removeFromCart));
 
 

@@ -49,7 +49,6 @@ const productSchema = new Schema({
   },
   product_unit: {
     type: String,
-    // required: true,
   },
   properties: {
     type: Schema.Types.Mixed,
@@ -58,13 +57,13 @@ const productSchema = new Schema({
     type: Boolean,
     default: false,
     index: true,
-    select: false
+    // select: false
   },
   isPublic: {
     type: Boolean,
     default: true,
     index: true,
-    select: false
+    // select: false
   },
   isDeleted: {
     type: Boolean,
