@@ -17,6 +17,13 @@ class ShopController {
     }).send(res)
   }
 
+  getAllShopForUser = async(req, res, next) => {
+    return new SuccessReponse({
+      message: 'All shops for user',
+      data: await ShopService.getAllShopForUser()
+    }).send(res)
+  }
+
   getAllShops = async(req, res, next) => {
     return new SuccessReponse({
       message: 'All shops',

@@ -12,11 +12,13 @@ router.post('/create',authenticate, uploadStorage.single('file'),  asyncHandler(
 // get in4 cho chỉ shop đó mới được xem thông tin (sau này có 1 số thông tin nhạy cảm như số dư, mã thuế,...)
 router.get('/view-own', authenticate, authorize(['shop']), asyncHandler(ShopController.getShopByOwnerId));
 
-// get id cho tất cả các user view
-router.get('/:id', authenticate, asyncHandler(ShopController.getShopById));
 // get all shop chỉ cho admin
 router.get('/', authenticate, authorize(['admin']), asyncHandler(ShopController.getAllShops));
 
+// get all for user
+router.get('/all', asyncHandler(ShopController.getAllShopForUser));
 router.post('update/logo', authenticate, authorize(['shop']), asyncHandler(ShopController.updateShopLogo));
+// get id cho tất cả các user view
+router.get('/:id', asyncHandler(ShopController.getShopById));
 
 module.exports = router;

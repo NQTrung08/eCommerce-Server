@@ -69,13 +69,19 @@ const newShop = async ({ owner_id, body, file }) => {
   }
 };
 
+const getAllShopForUser =  async () => {
+  const shop = await shopModel.find()
+
+  return shop
+}
+
 const getAllShop = async ({
   page = 1,
   limit = 4,
   sortBy = 'asc',
   query = {},
 }) => {
-  try {
+
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
     console.log(query)
@@ -109,10 +115,7 @@ const getAllShop = async ({
       currentPage: pageNumber,
     };
 
-  } catch (error) {
-    console.log('[E]::getAllShop::', error);
-    throw error;
-  }
+
 }
 
 
@@ -191,4 +194,5 @@ module.exports = {
   getShop,
   updateShop,
   deleteShop,
+  getAllShopForUser
 };

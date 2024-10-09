@@ -1,0 +1,138 @@
+openapi: 3.0.0
+info:
+  title: Shop API
+  description: API for managing shops
+  version: 1.0.0
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  /shop/create:
+    post:
+      summary: Create a new shop
+      description: Creates a new shop with the provided details and uploads a file.
+      tags:
+        - Shops
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                name:
+                  type: string
+                  description: Name of the shop
+                description:
+                  type: string
+                  description: Description of the shop
+      responses:
+        '201':
+          description: Shop created successfully
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+
+  /shop/view-own:
+    get:
+      summary: Get shop information for the owner
+      description: Retrieves shop information for the logged-in owner.
+      tags:
+        - Shops
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful response with shop information
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /shop/:
+    get:
+      summary: Get all shops chỉ cho admin
+      description: Retrieves a list of all shops, only accessible to admin users.
+      tags:
+        - Shops
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of shops
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /shop/all:
+    get:
+      summary: Get all shops for users
+      description: Retrieves a list of all shops accessible to regular users.
+      tags:
+        - Shops
+      responses:
+        '200':
+          description: List of shops for users
+        '404':
+          description: No shops found
+
+  /shop/update/logo:
+    post:
+      summary: Update shop logo
+      description: Updates the logo of the shop for the logged-in owner.
+      tags:
+        - Shops
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Logo updated successfully
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+
+  /shop/{id}:
+    get:
+      summary: Get shop by ID for all (user admin)
+      description: Retrieves the details of a specific shop by its ID.
+      tags:
+        - Shops
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the shop
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response with shop details
+        '404':
+          description: Shop not found
+        '401':
+          description: Unauthorized
