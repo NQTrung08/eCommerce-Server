@@ -1,6 +1,6 @@
 const { BadRequestError } = require("../core/error.response");
 const orderModel = require("../models/order.model");
-
+const productModel = require("../models/product.model");
 
 /**
  * 
@@ -8,8 +8,9 @@ const orderModel = require("../models/order.model");
  *     { shopId, 
  *       products: [
  *                     {
- * 
- *                      }
+ *                      productId,
+ *                      quantity
+ *                     }
  *                    ],
  *        total_price
  *       }
@@ -21,15 +22,6 @@ const createOrder = async ({ userId, orders, paymentMethod, shippingAddress, pay
   if (!userId) {
     throw new BadRequestError('User id is required');
   }
-  // if (!products || products.length === 0) {
-  //   throw new BadRequestError('Products are required');
-  // }
-  // if (!totalValue || totalValue <= 0) {
-  //   throw new BadRequestError('Total value must be greater than zero');
-  // }
-  // if (!shippingAddress) {
-  //   throw new BadRequestError('Shipping address is required');
-  // }
 
   if (!orders || orders.length === 0) {
     throw new BadRequestError('Không có đơn hàng để xử lý');
@@ -37,8 +29,24 @@ const createOrder = async ({ userId, orders, paymentMethod, shippingAddress, pay
 
   let createdOrders = [];
   let totalAmountOrders = 0;
+
+  // Kiểm tra số lượng sản phẩm trước khi tạo đơn hàng
   for (const orderData of orders) {
-    // Tạo đơn hàng mới
+    for (const product of orderData.products) {
+      const existingProduct = await productModel.findById(product.productId);
+      if (!existingProduct) {
+        throw new BadRequestError(`Sản phẩm với ID ${product.productId} không tồn tại`);
+      }
+
+      // Kiểm tra số lượng sản phẩm có đủ không
+      if (existingProduct.product_quantity < product.quantity) {
+        throw new BadRequestError(`Không đủ số lượng sản phẩm ${existingProduct.product_name}`);
+      }
+    }
+  }
+
+  // Nếu kiểm tra số lượng sản phẩm thành công, tiến hành tạo đơn hàng
+  for (const orderData of orders) {
     const newOrder = new orderModel({
       order_userId: userId,
       order_trackingNumber: `t3g${Date.now()}`, // Tạo số tracking mới
@@ -50,10 +58,21 @@ const createOrder = async ({ userId, orders, paymentMethod, shippingAddress, pay
       order_payment_gateway: paymentMethod === 'online' ? paymentGateway : 'none', // Lưu thông tin cổng thanh toán
       order_status: 'pending', // Trạng thái đơn hàng mặc định là đang chờ xử lý
     });
+    
     await newOrder.save(); // Lưu đơn hàng vào DB
     createdOrders.push(newOrder);
+    
     // Cộng dồn tổng tiền
-    totalAmountOrders += orderData.totalPrice; 
+    totalAmountOrders += orderData.totalPrice;
+
+    // Giảm số lượng sản phẩm sau khi đặt hàng
+    for (const product of orderData.products) {
+      const existingProduct = await productModel.findById(product.productId);
+
+      // Giảm số lượng sản phẩm
+      existingProduct.product_quantity -= product.quantity;
+      await existingProduct.save(); // Lưu thay đổi vào DB
+    }
   }
 
   return {
@@ -61,9 +80,6 @@ const createOrder = async ({ userId, orders, paymentMethod, shippingAddress, pay
     totalAmountOrders, // Tổng tiền của các đơn hàng
   };
 };
-
-
-
 
 module.exports = {
   createOrder,

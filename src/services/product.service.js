@@ -62,24 +62,20 @@ const newProduct = async (owner_id, productData, files) => {
 
 
 const uploadProductImages = async ({ files, shopId, productId }) => {
-  try {
-    const uploadedImages = [];
+  const uploadedImages = [];
 
-    for (const file of files) {
-      const folder = `products/${shopId}/${productId}/images`;
-      const publicId = `${productId}-${file.originalname.split('.')[0]}`;
+  for (const file of files) {
+    const folder = `products/${shopId}/${productId}/images`;
+    const publicId = `${productId}-${file.originalname.split('.')[0]}`;
 
-      // Upload từng file lên Cloudinary
-      const result = await uploadToCloudinary({ filePath: file.path, folder, publicId });
+    // Upload từng file lên Cloudinary
+    const result = await uploadToCloudinary({ filePath: file.path, folder, publicId });
 
-      uploadedImages.push(result.secure_url); // Lưu URL của ảnh đã upload
-    }
-
-    return uploadedImages;
-  } catch (error) {
-    console.error('[E]::uploadProductImages::', error);
-    throw error;
+    uploadedImages.push(result.secure_url); // Lưu URL của ảnh đã upload
   }
+
+  return uploadedImages;
+
 };
 
 
@@ -148,7 +144,7 @@ const getAllProducts = async ({
       };
     }));
     // Lấy tổng số sản phẩm để tính tổng số trang
-    const totalCount = await productModel.countDocuments();
+    const totalCount = products.length;
 
     return {
       productsWithCounts,
@@ -296,64 +292,64 @@ const searchProducts = async ({
   limit = 20,
   sortBy = '-createdAt'
 }) => {
- 
-    const pageNumber = parseInt(page, 10) || 1;
-    const limitNumber = parseInt(limit, 10) || 10;
 
-    // Xây dựng truy vấn tìm kiếm
-    const query = {
-      $text: {
-        $search: searchQuery,
-        $caseSensitive: false,
-        $diacriticSensitive: false
-      }
-    };
+  const pageNumber = parseInt(page, 10) || 1;
+  const limitNumber = parseInt(limit, 10) || 10;
 
-    // Xử lý sắp xếp
-    let sortQuery = sortBy;
-    if (sortBy === 'sold_count') {
-      sortQuery = { sold_count: -1 };
-    } else {
-      sortQuery = { [sortBy]: 1 };
+  // Xây dựng truy vấn tìm kiếm
+  const query = {
+    $text: {
+      $search: searchQuery,
+      $caseSensitive: false,
+      $diacriticSensitive: false
     }
+  };
 
-    // Tìm kiếm sản phẩm với phân trang, sắp xếp và chọn trường
-    const products = await productModel.find(query)
-      .populate({
-        path: 'shop_id',
-        select: 'shop_name shop_id', // Chọn trường 'shop_name', loại bỏ '_id'
-      })
-      .populate({
-        path: 'category_id',
-        select: 'category_name -_id', // Chọn trường 'category_name', loại bỏ '_id'
-      })
-      .limit(limitNumber)
-      .skip((pageNumber - 1) * limitNumber)
-      .sort(sortQuery)
-      .lean();
+  // Xử lý sắp xếp
+  let sortQuery = sortBy;
+  if (sortBy === 'sold_count') {
+    sortQuery = { sold_count: -1 };
+  } else {
+    sortQuery = { [sortBy]: 1 };
+  }
+
+  // Tìm kiếm sản phẩm với phân trang, sắp xếp và chọn trường
+  const products = await productModel.find(query)
+    .populate({
+      path: 'shop_id',
+      select: 'shop_name shop_id', // Chọn trường 'shop_name', loại bỏ '_id'
+    })
+    .populate({
+      path: 'category_id',
+      select: 'category_name -_id', // Chọn trường 'category_name', loại bỏ '_id'
+    })
+    .limit(limitNumber)
+    .skip((pageNumber - 1) * limitNumber)
+    .sort(sortQuery)
+    .lean();
 
 
-    // Sử dụng Promise.all để đồng thời tính ratingCount và soldCount cho tất cả sản phẩm
-    const productsWithCounts = await Promise.all(products.map(async (product) => {
-      const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
-      return {
-        ...product,
-        ratingCount,
-        soldCount,
-        avgRating
-      };
-    }));
-
-    // Lấy tổng số sản phẩm để tính tổng số trang
-    const totalCount = await productModel.countDocuments(query);
-
+  // Sử dụng Promise.all để đồng thời tính ratingCount và soldCount cho tất cả sản phẩm
+  const productsWithCounts = await Promise.all(products.map(async (product) => {
+    const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
     return {
-      productsWithCounts,
-      totalCount,
-      totalPages: Math.ceil(totalCount / limitNumber),
-      currentPage: pageNumber
+      ...product,
+      ratingCount,
+      soldCount,
+      avgRating
     };
-  
+  }));
+
+  // Lấy tổng số sản phẩm để tính tổng số trang
+  const totalCount = await productModel.countDocuments(query);
+
+  return {
+    productsWithCounts,
+    totalCount,
+    totalPages: Math.ceil(totalCount / limitNumber),
+    currentPage: pageNumber
+  };
+
 };
 
 
