@@ -442,3 +442,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+
+  /product/shop/{shopId}/category/{categoryId}:
+    get:
+      tags:
+        - Product
+      summary: Lọc sản phẩm theo shop và category
+      description: Lọc sản phẩm theo shop và category
+      parameters:
+        - name: shopId
+          in: path
+          required: true
+          description: ID of the shop
+          schema:
+            type: string
+        - name: categoryId
+          in: path
+          required: true
+          description: ID of the category
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Danh sách sản phẩm
