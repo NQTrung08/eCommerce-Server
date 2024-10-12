@@ -14,7 +14,7 @@ class ProductController {
 
     return new SuccessReponse({
       message: 'Product created successfully',
-      data: await newProduct
+      data: newProduct
     }).send(res)
   }
 
@@ -106,6 +106,20 @@ class ProductController {
     return new SuccessReponse({
       message: 'Private Products',
       data: await ProductService.privateProducts(ids)
+    }).send(res)
+  }
+
+  getProductsByShopIdAndCategoryId = async (req, res, next) => {
+    const { shopId, categoryId } = req.params;
+    if (!shopId ||!categoryId) {
+     throw new BadRequestError('Shop id and category id is required');
+    }
+    return new SuccessReponse({
+      message: 'Get products by shop id and category id',
+      data: await ProductService.getProductsByShopIdAndCategoryId({
+        shopId,
+        categoryId
+      })
     }).send(res)
   }
 

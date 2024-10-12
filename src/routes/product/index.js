@@ -22,4 +22,6 @@ router.post('/public', authenticate, authorize(['shop']), asyncHandler(ProductCo
 // Đưa sản phẩm về trạng thái riêng tư
 router.post('/draft', authenticate, authorize(['shop']), asyncHandler(ProductController.privateProducts));
 
+// get products by shop id and category id
+router.get('/shop/:shopId/category/:categoryId', asyncHandler(ProductController.getProductsByShopIdAndCategoryId));
 module.exports = router

@@ -18,6 +18,7 @@ const slugify = require('slugify');
  * 3. liệt kê sản phẩm
  * 4. tìm kiếm sản phẩm
  * 5. lọc sản phẩm (ctime, brand, giá, đánh giá, danh mục)
+ * 6. get products theo category, shop, brand, giá, đánh giá, danh mục của shop
  */
 
 // Service tạo sản phẩm mới
@@ -110,7 +111,6 @@ const getAllProducts = async ({
   limit = 24,
   sortBy = '-createdAt',
 }) => {
-  try {
     // Kiểm tra các giá trị đầu vào để đảm bảo chúng không phải là undefined
     const pageNumber = Number.isInteger(page) ? parseInt(page, 10) : 1;
     const limitNumber = Number.isInteger(limit) ? parseInt(limit, 10) : 10;
@@ -152,17 +152,17 @@ const getAllProducts = async ({
       totalPages: Math.ceil(totalCount / limitNumber),
       currentPage: pageNumber,
     };
-  } catch (error) {
-    console.error('[E]::getAllProducts::', error);
-    throw error;
-  }
+  
 };
 
 
 
 const getProductById = async (id) => {
   try {
-    const product = await productModel.findById(id).populate({
+    const product = await productModel.findOne({
+      _id: id,
+      isPublic: true,
+    }).populate({
       path: 'shop_id',
       select: 'shop_name',
     })
@@ -349,8 +349,28 @@ const searchProducts = async ({
     totalPages: Math.ceil(totalCount / limitNumber),
     currentPage: pageNumber
   };
-
 };
+
+// get products by shop id and category id
+const getProductsByShopIdAndCategoryId = async ({
+  shopId, categoryId
+}) => {
+  const shopExists = await shopModel.exists({ _id: shopId });
+  if (!shopExists) {
+    throw new NotFoundError('Shop not found');
+  }
+
+  const categoryExists = await categoryModel.exists({ _id: categoryId });
+  if (!categoryExists) {
+    throw new NotFoundError('Category not found');
+  }
+  const products = await productModel.find({
+    shop_id: shopId,
+    category_id: categoryId,
+    isPublic: true
+  }).lean();
+  return products;
+}
 
 
 
@@ -364,4 +384,5 @@ module.exports = {
   uploadProductImages,
   publicProducts,
   privateProducts,
+  getProductsByShopIdAndCategoryId
 };
