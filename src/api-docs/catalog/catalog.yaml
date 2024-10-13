@@ -29,9 +29,6 @@ paths:
             schema:
               type: object
               properties:
-                shopId:
-                  type: string
-                  description: "ID of the shop"
                 catalog_name:
                   type: string
                   description: "Name of the catalog"
