@@ -111,48 +111,48 @@ const getAllProducts = async ({
   limit = 24,
   sortBy = '-createdAt',
 }) => {
-    // Kiểm tra các giá trị đầu vào để đảm bảo chúng không phải là undefined
-    const pageNumber = Number.isInteger(page) ? parseInt(page, 10) : 1;
-    const limitNumber = Number.isInteger(limit) ? parseInt(limit, 10) : 10;
+  // Kiểm tra các giá trị đầu vào để đảm bảo chúng không phải là undefined
+  const pageNumber = Number.isInteger(page) ? parseInt(page, 10) : 1;
+  const limitNumber = Number.isInteger(limit) ? parseInt(limit, 10) : 10;
 
-    // Thực hiện truy vấn với phân trang, sắp xếp và chọn trường
-    const products = await productModel.find({
-      isPublic: true,
+  // Thực hiện truy vấn với phân trang, sắp xếp và chọn trường
+  const products = await productModel.find({
+    isPublic: true,
+  })
+    .populate({
+      path: 'shop_id',
+      select: 'shop_name -_id', // Chọn trường 'shop_name', loại bỏ '_id'
     })
-      .populate({
-        path: 'shop_id',
-        select: 'shop_name -_id', // Chọn trường 'shop_name', loại bỏ '_id'
-      })
-      .populate({
-        path: 'category_id',
-        select: 'category_name -_id', // Chọn trường 'category_name', loại bỏ '_id'
-      })
-      .limit(limitNumber)
-      .skip((pageNumber - 1) * limitNumber)
-      .sort(sortBy)
-      .lean();
+    .populate({
+      path: 'category_id',
+      select: 'category_name -_id', // Chọn trường 'category_name', loại bỏ '_id'
+    })
+    .limit(limitNumber)
+    .skip((pageNumber - 1) * limitNumber)
+    .sort(sortBy)
+    .lean();
 
 
-    // Sử dụng Promise.all để đồng thời tính ratingCount và soldCount cho tất cả sản phẩm
-    const productsWithCounts = await Promise.all(products.map(async (product) => {
-      const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
-      return {
-        ...product,
-        ratingCount,
-        soldCount,
-        avgRating
-      };
-    }));
-    // Lấy tổng số sản phẩm để tính tổng số trang
-    const totalCount = products.length;
-
+  // Sử dụng Promise.all để đồng thời tính ratingCount và soldCount cho tất cả sản phẩm
+  const productsWithCounts = await Promise.all(products.map(async (product) => {
+    const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
     return {
-      productsWithCounts,
-      totalCount,
-      totalPages: Math.ceil(totalCount / limitNumber),
-      currentPage: pageNumber,
+      ...product,
+      ratingCount,
+      soldCount,
+      avgRating
     };
-  
+  }));
+  // Lấy tổng số sản phẩm để tính tổng số trang
+  const totalCount = products.length;
+
+  return {
+    productsWithCounts,
+    totalCount,
+    totalPages: Math.ceil(totalCount / limitNumber),
+    currentPage: pageNumber,
+  };
+
 };
 
 
@@ -373,7 +373,19 @@ const getProductsByShopIdAndCategoryId = async ({
 }
 
 const getProductsByShopId = async (
-  {shopId}) => {
+  { shopId,
+    page = 1,
+    limit = 20,
+    sortBy = '-createdAt'
+  }) => {
+  const pageNumber = parseInt(page, 10) || 1;
+  const limitNumber = parseInt(limit, 10) || 10;
+  let sortQuery = sortBy;
+  if (sortBy === 'sold_count') {
+    sortQuery = { sold_count: -1 };
+  } else {
+    sortQuery = { [sortBy]: 1 };
+  }
   const shopExists = await shopModel.exists({ _id: shopId });
   if (!shopExists) {
     throw new NotFoundError('Shop not found');
@@ -382,11 +394,29 @@ const getProductsByShopId = async (
     shop_id: shopId,
     isPublic: true
   })
-  .populate({
-    path: 'category_id',
-  })
-  .lean();
-  return products;
+    .populate({
+      path: 'category_id',
+    })
+    .lean();
+  // Sử dụng Promise.all để đồng thời tính ratingCount và soldCount cho tất cả sản phẩm
+  const productsWithCounts = await Promise.all(products.map(async (product) => {
+    const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
+    return {
+      ...product,
+      ratingCount,
+      soldCount,
+      avgRating
+    };
+  }));
+  // Lấy tổng số sản phẩm để tính tổng số trang
+  const totalCount = products.length;
+
+  return {
+    productsWithCounts,
+    totalCount,
+    totalPages: Math.ceil(totalCount / limitNumber),
+    currentPage: pageNumber,
+  };
 }
 
 
