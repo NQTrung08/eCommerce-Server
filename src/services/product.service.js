@@ -11,6 +11,8 @@ const { uploadProductThumbnail } = require('../services/upload.service');
 const { uploadToCloudinary } = require('../helpers/cloudinary.helper');
 
 const slugify = require('slugify');
+const { handlePaginationAndSorting, mapProductWithCounts } = require('../models/repo/product.repo');
+const catalogShopModel = require('../models/catalogShop.model');
 
 /**
  * 1. Tạo sản phẩm (public hoặc draft)
@@ -111,10 +113,7 @@ const getAllProducts = async ({
   limit = 24,
   sortBy = '-createdAt',
 }) => {
-  // Kiểm tra các giá trị đầu vào để đảm bảo chúng không phải là undefined
-  const pageNumber = Number.isInteger(page) ? parseInt(page, 10) : 1;
-  const limitNumber = Number.isInteger(limit) ? parseInt(limit, 10) : 10;
-
+  const { pageNumber, limitNumber, sortQuery, skip } = handlePaginationAndSorting(page, limit, sortBy);
   // Thực hiện truy vấn với phân trang, sắp xếp và chọn trường
   const products = await productModel.find({
     isPublic: true,
@@ -128,23 +127,13 @@ const getAllProducts = async ({
       select: 'category_name -_id', // Chọn trường 'category_name', loại bỏ '_id'
     })
     .limit(limitNumber)
-    .skip((pageNumber - 1) * limitNumber)
-    .sort(sortBy)
+    .skip(skip)
+    .sort(sortQuery)
     .lean();
 
-
-  // Sử dụng Promise.all để đồng thời tính ratingCount và soldCount cho tất cả sản phẩm
-  const productsWithCounts = await Promise.all(products.map(async (product) => {
-    const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
-    return {
-      ...product,
-      ratingCount,
-      soldCount,
-      avgRating
-    };
-  }));
-  // Lấy tổng số sản phẩm để tính tổng số trang
   const totalCount = products.length;
+  // Sử dụng Promise.all để đồng thời tính ratingCount và soldCount cho tất cả sản phẩm
+  const productsWithCounts = await mapProductWithCounts(products);
 
   return {
     productsWithCounts,
@@ -158,35 +147,31 @@ const getAllProducts = async ({
 
 
 const getProductById = async (id) => {
-  try {
-    const product = await productModel.findOne({
-      _id: id,
-      isPublic: true,
-    }).populate({
-      path: 'shop_id',
-      select: 'shop_name',
+  const product = await productModel.findOne({
+    _id: id,
+    isPublic: true,
+  }).populate({
+    path: 'shop_id',
+    select: 'shop_name',
+  })
+    .populate({
+      path: 'category_id',
+      select: 'category_name',
     })
-      .populate({
-        path: 'category_id',
-        select: 'category_name',
-      })
-      .lean();
+    .lean();
 
-    if (!product) {
-      throw new NotFoundError('Product not found');
-    }
-    const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
-
-    return {
-      ...product,
-      ratingCount,
-      soldCount,
-      avgRating,
-    };
-  } catch (error) {
-    console.error('[E]::getProductById::', error);
-    throw error;
+  if (!product) {
+    throw new NotFoundError('Product not found');
   }
+  const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
+
+  return {
+    ...product,
+    ratingCount,
+    soldCount,
+    avgRating,
+  };
+
 }
 
 const updateProduct = async ({
@@ -352,40 +337,37 @@ const searchProducts = async ({
 };
 
 // get products by shop id and category id
-const getProductsByShopIdAndCategoryId = async ({
-  shopId, categoryId
+const getProductsByCatalogShop = async ({
+  shopId, catalogId
 }) => {
   const shopExists = await shopModel.exists({ _id: shopId });
   if (!shopExists) {
     throw new NotFoundError('Shop not found');
   }
 
-  const categoryExists = await categoryModel.exists({ _id: categoryId });
-  if (!categoryExists) {
-    throw new NotFoundError('Category not found');
+  const catalogShop = await catalogShopModel.exists({ _id: catalogId });
+  if (!catalogShop) {
+    throw new NotFoundError('Catalog not found');
   }
   const products = await productModel.find({
     shop_id: shopId,
-    category_id: categoryId,
+    catalog_id: catalogId,
     isPublic: true
   }).lean();
+
   return products;
 }
 
-const getProductsByShopId = async (
-  { shopId,
-    page = 1,
-    limit = 20,
-    sortBy = '-createdAt'
-  }) => {
-  const pageNumber = parseInt(page, 10) || 1;
-  const limitNumber = parseInt(limit, 10) || 10;
-  let sortQuery = sortBy;
-  if (sortBy === 'sold_count') {
-    sortQuery = { sold_count: -1 };
-  } else {
-    sortQuery = { [sortBy]: 1 };
-  }
+const getProductsByShopId = async ({
+  shopId,
+  page = 1,
+  limit = 20,
+  sortBy = '-createdAt'
+}
+) => {
+
+
+  const { pageNumber, limitNumber, sortQuery, skip } = handlePaginationAndSorting(page, limit, sortBy);
   const shopExists = await shopModel.exists({ _id: shopId });
   if (!shopExists) {
     throw new NotFoundError('Shop not found');
@@ -398,18 +380,10 @@ const getProductsByShopId = async (
       path: 'category_id',
     })
     .lean();
-  // Sử dụng Promise.all để đồng thời tính ratingCount và soldCount cho tất cả sản phẩm
-  const productsWithCounts = await Promise.all(products.map(async (product) => {
-    const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
-    return {
-      ...product,
-      ratingCount,
-      soldCount,
-      avgRating
-    };
-  }));
   // Lấy tổng số sản phẩm để tính tổng số trang
   const totalCount = products.length;
+
+  const productsWithCounts = await mapProductWithCounts(products);
 
   return {
     productsWithCounts,
@@ -417,6 +391,43 @@ const getProductsByShopId = async (
     totalPages: Math.ceil(totalCount / limitNumber),
     currentPage: pageNumber,
   };
+}
+
+// add products in catalog of shop
+const addProductsToCatalog = async ({
+  shopId,
+  catalogId,
+  productIds
+}) => {
+  const shopExists = await shopModel.exists({ _id: shopId });
+  if (!shopExists) {
+    throw new NotFoundError('Shop not found');
+  }
+
+  const catalogShopExists = await catalogShopModel.exists({ _id: catalogId });
+  if (!catalogShopExists) {
+    throw new NotFoundError('Category not found');
+  }
+
+  const existingProducts = await productModel.find({ _id: { $in: productIds } });
+
+  if (existingProducts.length !== productIds.length) {
+    throw new BadRequestError('Some products not found in the shop');
+  }
+
+  // Cập nhật catalog_id cho các sản phẩm
+  await productModel.updateMany(
+    { _id: { $in: productIds } }, // Điều kiện để tìm sản phẩm
+    { $set: { catalog_id: catalogId } } // Gán catalog_id mới cho sản phẩm
+  );
+
+  return {
+    message: 'Products successfully added to catalog',
+    catalogId,
+    updatedProductsCount: productIds.length,
+  };
+
+
 }
 
 
@@ -431,6 +442,7 @@ module.exports = {
   uploadProductImages,
   publicProducts,
   privateProducts,
-  getProductsByShopIdAndCategoryId,
+  getProductsByCatalogShop,
   getProductsByShopId,
+  addProductsToCatalog,
 };

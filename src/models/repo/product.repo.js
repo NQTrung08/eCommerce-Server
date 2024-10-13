@@ -1,5 +1,7 @@
-const { convertToObjectId } = require("../../utils")
-const productModel = require("../product.model")
+const { convertToObjectId } = require("../../utils");
+const orderModel = require("../order.model");
+const productModel = require("../product.model");
+const reviewModel = require("../review.model");
 
 const getProductById = async(productId) => {
   const id = convertToObjectId(productId)
@@ -37,8 +39,68 @@ const checkProductByServer = async (products) => {
   }));
 };
 
+// Hàm xử lý phân trang và sắp xếp
+const handlePaginationAndSorting = (page = 1, limit = 10, sortBy = '-createdAt') => {
+  const pageNumber = parseInt(page, 10) || 1;
+  const limitNumber = parseInt(limit, 10) || 10;
+
+  let sortQuery;
+  if (sortBy === 'sold_count') {
+    sortQuery = { soldCount: -1 };
+  } else {
+    sortQuery = { [sortBy]: 1 };
+  }
+
+  const skip = (pageNumber - 1) * limitNumber;
+
+  return { pageNumber, limitNumber, sortQuery, skip };
+};
+
+// Hàm lấy thông tin ratingCount, soldCount và avgRating cho sản phẩm
+const getRatingAndSoldCount = async (productId) => {
+  const ratingCount = await reviewModel.countDocuments({ product_id: productId });
+
+  const soldCount = await orderModel.aggregate([
+    { $match: { product_id: productId } },
+    { $group: { _id: null, totalSold: { $sum: '$quantity' } } },
+  ]);
+
+  const soldCountValue = soldCount[0]?.totalSold || 0;
+
+  const avgRatingResult = await reviewModel.aggregate([
+    { $match: { product_id: productId } },
+    { $group: { _id: null, avgRating: { $avg: '$rating' } } },
+  ]);
+
+  const avgRating = avgRatingResult[0]?.avgRating || 0;
+
+  return {
+    ratingCount,
+    soldCount: soldCountValue,
+    avgRating,
+  };
+};
+
+// Hàm gắn ratingCount và soldCount vào danh sách sản phẩm
+const mapProductWithCounts = async (products) => {
+  return await Promise.all(
+    products.map(async (product) => {
+      const { ratingCount, soldCount, avgRating } = await getRatingAndSoldCount(product._id);
+      return {
+        ...product,
+        ratingCount,
+        soldCount,
+        avgRating,
+      };
+    })
+  );
+};
+
 
 module.exports = {
   getProductById,
   checkProductByServer,
+  handlePaginationAndSorting,
+  mapProductWithCounts,
+  getRatingAndSoldCount,
 }

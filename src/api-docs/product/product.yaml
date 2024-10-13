@@ -443,12 +443,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /product/shop/{shopId}/category/{categoryId}:
+  /product/shop/{shopId}/catalog/{catalogId}:
     get:
       tags:
         - Product
-      summary: Lọc sản phẩm theo shop và category
-      description: Lọc sản phẩm theo shop và category
+      summary: Lọc sản phẩm theo shop và catalogShop
+      description: Lọc sản phẩm theo shop và catalogShop
       parameters:
         - name: shopId
           in: path
@@ -456,10 +456,10 @@ paths:
           description: ID of the shop
           schema:
             type: string
-        - name: categoryId
+        - name: catalogId
           in: path
           required: true
-          description: ID of the category
+          description: ID of the catalog
           schema:
             type: string
       responses:

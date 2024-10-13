@@ -21,11 +21,16 @@ const productSchema = new Schema({
     ref: 'Shop',
     required: true
   },
+  catalog_id: {
+    type: Schema.Types.ObjectId,
+    ref: 'CatalogShop',
+    // required: true
+    default: null
+  },
   product_name: {
     type: String,
     required: true
   },
-
   product_img: [{ type: String}] ,
   category_id: {
     type: Schema.Types.ObjectId,

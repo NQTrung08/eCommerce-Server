@@ -1,6 +1,8 @@
 'use strict';
 
+const { BadRequestError } = require('../core/error.response');
 const { SuccessReponse } = require('../core/success.response');
+const shopModel = require('../models/shop.model');
 const ProductService = require('../services/product.service');
 
 class ProductController {
@@ -109,16 +111,16 @@ class ProductController {
     }).send(res)
   }
 
-  getProductsByShopIdAndCategoryId = async (req, res, next) => {
-    const { shopId, categoryId } = req.params;
-    if (!shopId ||!categoryId) {
-     throw new BadRequestError('Shop id and category id is required');
+  getProductsByCatalogShop = async (req, res, next) => {
+    const { shopId, catalogId } = req.params;
+    if (!shopId ||!catalogId) {
+     throw new BadRequestError('Shop id and catalog id is required');
     }
     return new SuccessReponse({
-      message: 'Get products by shop id and category id',
-      data: await ProductService.getProductsByShopIdAndCategoryId({
+      message: 'Get products by shop id and catalog id',
+      data: await ProductService.getProductsByCatalogShop({
         shopId,
-        categoryId
+        catalogId
       })
     }).send(res)
   }
@@ -132,6 +134,30 @@ class ProductController {
       message: 'Get products by shop id',
       data: await ProductService.getProductsByShopId({
         shopId
+      })
+    }).send(res)
+  }
+
+  // add products to catalog shop
+  addProductsToCatalogShop = async (req, res, next) => {
+    const { _id } = req.user;
+    const { catalogId } = req.params;
+    const { productIds } = req.body;
+    const shop = await shopModel.findOne({
+      owner_id: _id
+    })
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
+    if (!shop._id ||!catalogId ||!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+      throw new BadRequestError('Invalid input');
+    }
+    return new SuccessReponse({
+      message: 'Products added to catalog shop successfully',
+      data: await ProductService.addProductsToCatalog({
+        shopId: shop._id,
+        catalogId,
+        productIds
       })
     }).send(res)
   }

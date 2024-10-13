@@ -23,8 +23,11 @@ router.post('/public', authenticate, authorize(['shop']), asyncHandler(ProductCo
 router.post('/draft', authenticate, authorize(['shop']), asyncHandler(ProductController.privateProducts));
 
 // get products by shop id and category id
-router.get('/shop/:shopId/category/:categoryId', asyncHandler(ProductController.getProductsByShopIdAndCategoryId));
+router.get('/shop/:shopId/catalog/:catalogId', asyncHandler(ProductController.getProductsByCatalogShop));
 
 // get products by shop id
 router.get('/shop/:shopId', asyncHandler(ProductController.getProductsByShopId));
+
+// add products to catalog shop
+router.post('/catalog/:catalogId', authenticate, authorize(['shop']), asyncHandler(ProductController.addProductsToCatalogShop));
 module.exports = router
