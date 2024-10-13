@@ -372,7 +372,8 @@ const getProductsByShopIdAndCategoryId = async ({
   return products;
 }
 
-const getProductsByShopId = async (shopId) => {
+const getProductsByShopId = async (
+  {shopId}) => {
   const shopExists = await shopModel.exists({ _id: shopId });
   if (!shopExists) {
     throw new NotFoundError('Shop not found');
@@ -380,7 +381,11 @@ const getProductsByShopId = async (shopId) => {
   const products = await productModel.find({
     shop_id: shopId,
     isPublic: true
-  }).lean();
+  })
+  .populate({
+    path: 'category_id',
+  })
+  .lean();
   return products;
 }
 

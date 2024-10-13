@@ -465,3 +465,20 @@ paths:
       responses:
         "200":
           description: Danh sách sản phẩm
+
+  /product/shop/{shopId}:
+    get:
+      tags:
+        - Product
+      summary: Lọc sản phẩm theo shop
+      description: Lọc sản phẩm theo shop
+      parameters:
+        - name: shopId
+          in: path
+          required: true
+          description: ID of the shop
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Danh sách sản phẩm
