@@ -8,9 +8,9 @@ const router = express.Router();
 
 router.post('/',authenticate, authorize(['shop']), uploadStorage.array('files', 10), asyncHandler(ProductController.newProduct));
 
-router.post('/search',authenticate, asyncHandler(ProductController.searchProducts));
+router.post('/search', asyncHandler(ProductController.searchProducts));
 router.get('/', asyncHandler(ProductController.getAllProducts));
-router.get('/:id', authenticate, asyncHandler(ProductController.getProductById))
+router.get('/:id', asyncHandler(ProductController.getProductById))
 router.put('/:id', authenticate, authorize(['shop']), uploadStorage.array('files', 10), asyncHandler(ProductController.updateProduct));
 
 // Xóa sản phẩm (chỉ chuyển sang trạng thái xóa, không xóa vĩnh viễn)
@@ -24,4 +24,7 @@ router.post('/draft', authenticate, authorize(['shop']), asyncHandler(ProductCon
 
 // get products by shop id and category id
 router.get('/shop/:shopId/category/:categoryId', asyncHandler(ProductController.getProductsByShopIdAndCategoryId));
+
+// get products by shop id
+router.get('/shop/:shopId', asyncHandler(ProductController.getProductsByShopId));
 module.exports = router

@@ -272,7 +272,7 @@ const privateProducts = async (ids) => {
     { _id: { $in: ids } }, // Tìm kiếm theo danh sách ID
     {
       isPublic: false,
-      isDraft: false,
+      isDraft: true,
       isDeleted: false
     }
   );
@@ -372,6 +372,18 @@ const getProductsByShopIdAndCategoryId = async ({
   return products;
 }
 
+const getProductsByShopId = async (shopId) => {
+  const shopExists = await shopModel.exists({ _id: shopId });
+  if (!shopExists) {
+    throw new NotFoundError('Shop not found');
+  }
+  const products = await productModel.find({
+    shop_id: shopId,
+    isPublic: true
+  }).lean();
+  return products;
+}
+
 
 
 module.exports = {
@@ -384,5 +396,6 @@ module.exports = {
   uploadProductImages,
   publicProducts,
   privateProducts,
-  getProductsByShopIdAndCategoryId
+  getProductsByShopIdAndCategoryId,
+  getProductsByShopId,
 };

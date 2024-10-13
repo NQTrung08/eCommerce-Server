@@ -123,6 +123,19 @@ class ProductController {
     }).send(res)
   }
 
+  getProductsByShopId = async (req, res, next) => {
+    const { shopId } = req.params;
+    if (!shopId) {
+      throw new BadRequestError('Shop id is required');
+    }
+    return new SuccessReponse({
+      message: 'Get products by shop id',
+      data: await ProductService.getProductsByShopId({
+        shopId
+      })
+    }).send(res)
+  }
+
 
 
 }
