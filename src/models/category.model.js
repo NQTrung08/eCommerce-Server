@@ -11,6 +11,9 @@ const categorySchema = new Schema({
     type: String,
     required: true
   },
+  category_img: {
+    type: String
+  },
   parent_id: {
     type: Schema.Types.ObjectId,
     ref: 'Category',

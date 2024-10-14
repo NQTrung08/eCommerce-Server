@@ -40,6 +40,49 @@ class CatalogShopController {
       data: catalogShop
     }).send(res)
   }
+
+  updateCatalogShop = async (req, res, next) => {
+    const { _id } = req.user;
+    const { catalogId } = req.params
+    const { catalogName, catalogDescription } = req.body
+    // find shop id by _id is owner
+    const shop = await shopModel.findOne({
+      owner_id: _id
+    })
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
+    const catalogShop = await CatalogShopService.updateCatalogShop({
+      shopId: shop._id,
+      catalogId,
+      catalogName,
+      catalogDescription
+    })
+    new SuccessReponse({
+      message: 'Update catalog shop successfully',
+      data: catalogShop
+    }).send(res)
+  }
+
+  deleteCatalogShop = async (req, res, next) => {
+    const { _id } = req.user;
+    const { catalogId } = req.params
+    // find shop id by _id is owner
+    const shop = await shopModel.findOne({
+      owner_id: _id
+    })
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
+    const catalogShop = await CatalogShopService.deleteCatalogShop({
+      shopId: shop._id,
+      catalogId
+    })
+    new SuccessReponse({
+      message: 'Delete catalog shop successfully',
+      data: catalogShop
+    }).send(res)
+  }
 }
 
 module.exports = new CatalogShopController();

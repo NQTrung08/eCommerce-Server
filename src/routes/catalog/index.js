@@ -9,5 +9,11 @@ const router = express.Router();
 // create catalog shop
 router.post('/', authenticate, authorize(['shop']), asyncHandler(CatalogShopController.newCatalogShop));
 // get catalog shop
-router.get('/:shopId', asyncHandler(CatalogShopController.getCatalogShop));
+router.get('/shop/:shopId', asyncHandler(CatalogShopController.getCatalogShop));
+
+// update catalog
+router.put('/:catalogId', authenticate, authorize(['shop']), asyncHandler(CatalogShopController.updateCatalogShop));
+
+// delete catalog
+router.delete('/:catalogId', authenticate, authorize(['shop']), asyncHandler(CatalogShopController.deleteCatalogShop));
 module.exports = router;

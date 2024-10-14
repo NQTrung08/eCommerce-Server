@@ -1,6 +1,6 @@
 'use strict';
 
-const { BadRequestError } = require('../core/error.response');
+const { BadRequestError, NotFoundError } = require('../core/error.response');
 const categoryModel = require('../models/category.model');
 const catalogShopModel = require('../models/catalogShop.model');
 
@@ -37,7 +37,7 @@ const createShopCategory = async ({
 };
 
 
-// GET /api/shop-categories
+// GET /api/catalogShop/
 const getShopCategories = async ({
   shopId
 }) => {
@@ -46,25 +46,50 @@ const getShopCategories = async ({
 
 };
 
+// UPDATE /api/catalogShop/:catalogId
+const updateCatalogShop = async ({
+  shopId,
+  catalogId,
+  catalogName,
+  catalogDescription
+}) => {
+
+  const catalogShop = await catalogShopModel.findOneAndUpdate(
+    {
+      _id: catalogId,
+      shop_id: shopId
+    },
+    { catalog_name: catalogName, catalog_description: catalogDescription },
+    { new: true }
+  );
+  if (!catalogShop) {
+    throw new NotFoundError('Catalog not found');
+  }
+  return catalogShop;
+};
+
+
 
 // DELETE /api/shop-categories/:categoryId
-const deleteShopCategory = async ({
+const deleteCatalogShop = async ({
   shopId,
-  categoryId
+  catalogId
 }) => {
-  try {
-    const category = await shopCategoryModel.findOneAndDelete({ shop_id: shopId, category_id: categoryId });
-    if (!category) {
-      return res.status(404).json({ message: 'Shop category not found' });
-    }
-    res.status(200).json({ message: 'Shop category deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error deleting shop category', error });
+  const catalog = await catalogShopModel.findOneAndDelete({
+    shop_id: shopId,
+    _id: catalogId
+  });
+  if (!catalog) {
+    throw new NotFoundError('Catalog of shop not found');
   }
+
+  return catalog;
+
 };
 
 module.exports = {
   createShopCategory,
   getShopCategories,
-  deleteShopCategory,
+  updateCatalogShop,
+  deleteCatalogShop
 };

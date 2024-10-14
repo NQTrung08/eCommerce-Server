@@ -61,7 +61,7 @@ paths:
       security:
         - bearerAuth: []
 
-  /catalogShop/{shopId}:
+  /catalogShop/shop/{shopId}:
     get:
       tags:
         - "Catalog Shop"
@@ -93,8 +93,84 @@ paths:
           description: "Shop not found"
         400:
           description: "Invalid shop ID"
+  
+  /catalogShop/{catalogId}:
+    put:
+      tags:
+        - "Catalog Shop"
+      summary: "Update a Catalog Shop"
+      description: "Update a catalog for the shop."
+      operationId: "updateCatalogShop"
+      parameters:
+        - name: "catalogId"
+          in: "path"
+          required: true
+          description: "ID of the catalog"
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                catalog_name:
+                  type: string
+                  description: "Name of the catalog"
+                catalog_description:
+                  type: string
+                  description: "Description of the catalog"
+              example:
+                catalog_name: "Áo Thun chan che Team"
+                catalog_description: "Đây là khong phai la cai gi"
+      responses:
+        200:
+          description: "Catalog updated successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      catalogId:
+                        type: string
+        400:
+          description: "Bad request"
+        401:
+          description: "Unauthorized"
       security:
-        - bearerAuth: []
-
+      - bearerAuth: []
+    delete:
+      tags:
+        - "Catalog Shop"
+      summary: "Delete a Catalog Shop"
+      description: "Delete a catalog for the shop."
+      operationId: "deleteCatalogShop"
+      parameters:
+        - name: "catalogId"
+          in: "path"
+          required: true
+          description: "ID of the catalog"
+          schema:
+            type: string
+      responses:
+        200:
+            description: "Catalog deleted successfully"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+      security:
+      - bearerAuth: []
 security:
   - bearerAuth: []
