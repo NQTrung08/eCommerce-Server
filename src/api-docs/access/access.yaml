@@ -119,8 +119,8 @@ paths:
     post:
       tags:
         - Access
-      summary: Đừa sửa mật khách hãng
-      description: API này đừa sửa mật khách hãng bằng cách sử dụng email hiện tại.
+      summary: Lấy lại mật khẩu 
+      description: API này để lấy lại mật khẩu bằng cách sử dụng email hiện tại.
       requestBody:
         required: true
         content:
@@ -133,6 +133,6 @@ paths:
                   example: "a41954@gmail.com"
       responses:
         200:
-          description: Đừa sửa mật khách hãng thành công
+          description: Gửi mail lấy lại mật khẩu thành công
         400:
-          description: Bad request - Email hãng không hoặc trảng thái kết nối
+          description: Bad request - Email không tồn tại
