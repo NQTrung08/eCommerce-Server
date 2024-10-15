@@ -3,7 +3,8 @@ const dev = {
     port: process.env.DEV_APP_PORT || 3052,
     redirectUrl: process.env.DEV_REDIRECT_URL,
     callbackUrl: process.env.DEV_CALLBACK_URL,
-    url: 'http://localhost:8080'
+    url: 'http://localhost:8080',
+    resetPasswordUrl: process.env.DEV_RESET_PASSWORD_LINK
   },
 }
 
@@ -12,7 +13,8 @@ const pro = {
     port: process.env.DEV_APP_PORT || 3052,
     redirectUrl: process.env.PRO_REDIRECT_URL,
     callbackUrl: process.env.PRO_CALLBACK_URL,
-    url: 'https://ecommerce-server-0mcc.onrender.com'
+    url: 'https://ecommerce-server-0mcc.onrender.com',
+    resetPasswordUrl: process.env.PRO_RESET_PASSWORD_LINK
   },
 }
 

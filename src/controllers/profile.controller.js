@@ -96,6 +96,17 @@ class ProfileController {
     }).send(res)
   }
 
+  changePassword = async(req, res, next) => {
+    return new SuccessReponse({
+      message: 'Password changed successfully',
+      data: await ProfileService.changePassword({
+        id: req.user._id,
+        currentPassword: req.body.currentPassword,
+        newPassword: req.body.newPassword
+      })
+    }).send(res)
+  }
+
   
 }
 

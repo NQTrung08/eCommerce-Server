@@ -31,6 +31,15 @@ class AccessController {
     }).send(res)
   }
 
+  forgotPasswordHandler = async (req, res, next) => {
+    const { email } = req.body;
+    new SuccessReponse({ message: 'Forgot password OK',
+      data: await AccessService.forgotPasswordHandler({
+        email
+      })
+    }).send(res)
+  }
+
 }
 
 module.exports = new AccessController;

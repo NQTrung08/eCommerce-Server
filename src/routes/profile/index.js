@@ -13,6 +13,7 @@ router.get('/admin/:id', authenticate, authorize(['admin']), asyncHandler(Profil
 router.get('/', authenticate, authorize(['admin']), asyncHandler(ProfileController.getAllProfiles));
 router.post('/avatar-own', authenticate, uploadStorage.single('file'), asyncHandler(ProfileController.updateAvatar));
 router.post('/own', authenticate, asyncHandler(ProfileController.updateProfile));
+router.post('/change-password', authenticate, asyncHandler(ProfileController.changePassword));
 
 router.post('/address', authenticate, asyncHandler(ProfileController.addAddress));
 router.get('/addresses', authenticate, asyncHandler(ProfileController.getAddresses));

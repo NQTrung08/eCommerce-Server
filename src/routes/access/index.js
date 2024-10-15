@@ -138,6 +138,9 @@ router.post('/logout', authenticate, asyncHandler(accessController.logOut));
  */
 router.post('/refresh-token', asyncHandler(accessController.refreshTokenHandler));
 
+// TODO: forgot password
+
+router.post('/forgot-password', asyncHandler(accessController.forgotPasswordHandler));
 
 
 module.exports = router;

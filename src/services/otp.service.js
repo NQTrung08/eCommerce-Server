@@ -5,7 +5,7 @@ const nodemailer = require('nodemailer');
 const handlebars = require('handlebars');
 const { BadRequestError, InvalidError } = require('../core/error.response');
 const { getTemplate } = require('./template.service');
-const transporter  = require('../dbs/init.nodemailer');
+const transporter = require('../dbs/init.nodemailer');
 
 
 const generateOTP = () => {
@@ -71,12 +71,12 @@ const sendEmailLinkVerify = async ({ html, toEmail, subject, replacements }) => 
   }
 };
 
-const sendOTPEmail = async (email) => {
+const sendOTPEmail = async (email, templateName) => {
   try {
     const token = await newOTP(email);
     console.log('Generated OTP:', token.otp);
 
-    const template = await getTemplate({ tem_name: 'register' });
+    const template = await getTemplate({ tem_name: templateName });
 
     // Gọi hàm gửi email và chờ nó hoàn thành
     await sendEmailLinkVerify({
@@ -98,6 +98,24 @@ const sendOTPEmail = async (email) => {
   }
 };
 
+// Dịch vụ gửi email với đường dẫn thiết lập lại mật khẩu
+const sendResetPasswordEmail = async (email, resetPasswordLink) => {
+  const template = await getTemplate({ tem_name: 'forgot-password' }); // Lấy template cho email thiết lập lại mật khẩu
+
+  await sendEmailLinkVerify({
+    html: template.tem_html,
+    toEmail: email,
+    subject: template.tem_subject,
+    replacements: {
+      resetLink: resetPasswordLink, // Đường dẫn thiết lập lại mật khẩu
+      name: email, // Tên người dùng (hoặc có thể là tên thực tế nếu có)
+      expires: '15 minutes', // Thời gian hết hạn cho token
+    },
+  });
+
+};
+
+
 
 
 module.exports = {
@@ -107,4 +125,5 @@ module.exports = {
   verifyOTP,
   sendOTPEmail,
   generateOTP,
+  sendResetPasswordEmail,
 };

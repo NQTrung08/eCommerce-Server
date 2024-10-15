@@ -12,8 +12,10 @@ const { getInfoData, createTokenForUser, createAccessTokenForUser } = require('.
 
 const { ConflictError, InternalServerError, BadRequestError } = require('../core/error.response');
 const roleModel = require('../models/role.model');
-const { sendOTPEmail } = require('./otp.service');
+const { sendOTPEmail, sendResetPasswordEmail } = require('./otp.service');
 
+
+const { app: {resetPasswordUrl}} = require('../configs/config.app');
 class AccessService {
 
   static signUp = async ({ userName, full_name, email, phoneNumber, password}) => {
@@ -41,7 +43,7 @@ class AccessService {
     });
 
     // Gửi OTP qua email
-    await sendOTPEmail(newUser.email);
+    await sendOTPEmail(newUser.email, 'register');
     return {
       message: 'User created successfully, please verify your email to complete the registration'
     }
@@ -116,6 +118,26 @@ class AccessService {
 
   };
 
+  // forgot password 
+  static forgotPasswordHandler = async ({ email }) => {
+    const user = await userModel.findOne({ email }).lean();
+    if (!user) {
+        throw new BadRequestError('Email not found');
+    }
+
+    // Tạo token cho việc thiết lập lại mật khẩu
+    const token = jwt.sign({ email }, process.env.JWT_ACCESS_TOKEN, { expiresIn: '15m' }); // Token sẽ hết hạn sau 15 phút
+
+    // Tạo đường dẫn thiết lập lại mật khẩu
+    const resetPasswordLink = `${resetPasswordUrl}?token=${token}`; // Thay đổi link nếu cần
+    console.log(resetPasswordLink)
+    // Gửi OTP qua email
+    await sendResetPasswordEmail(email, resetPasswordLink); // Sử dụng hàm mới để gửi email
+
+    return {
+        message: 'Please check your email for password reset instructions'
+    };
+}
 }
 
 module.exports = AccessService;

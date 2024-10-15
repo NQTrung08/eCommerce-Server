@@ -110,6 +110,73 @@ paths:
         '200':
           description: Cập nhật avatar thành công
 
+  /profile/change-password:
+   post:
+      tags:
+        - Profile
+      summary: "Thay đổi mật khẩu của người dùng đã đăng nhập"
+      description: "Endpoint cho phép người dùng đã xác thực thay đổi mật khẩu của họ."
+      security:
+        - bearerAuth: []  # Thêm yêu cầu xác thực token
+      parameters:
+        - in: body
+          name: body
+          description: "Đối tượng chứa thông tin mật khẩu hiện tại và mật khẩu mới."
+          required: true
+          schema:
+            type: "object"
+            properties:
+              currentPassword:
+                type: "string"
+                description: "Mật khẩu hiện tại của người dùng."
+                example: "OldPassword123"
+              newPassword:
+                type: "string"
+                description: "Mật khẩu mới mà người dùng muốn đặt."
+                example: "NewPassword456"
+      responses:
+        200:
+          description: "Thay đổi mật khẩu thành công."
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Password changed successfully"
+              user:
+                type: "object"
+                properties:
+                  id:
+                    type: "string"
+                    example: "60b8d24c564f8b001c1e3d11"
+                  userName:
+                    type: "string"
+                    example: "john_doe"
+        400:
+          description: "Yêu cầu không hợp lệ (ví dụ: mật khẩu hiện tại không đúng)."
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Current password is incorrect"
+        401:
+          description: "Không có quyền truy cập (ví dụ: không có token hoặc token không hợp lệ)."
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "No token provided" 
+        500:
+          description: "Lỗi máy chủ nội bộ."
+          schema:
+            type: "object"
+            properties:
+              message:
+                type: "string"
+                example: "Internal server error"
+
 components:
   schemas:
     Profile:
