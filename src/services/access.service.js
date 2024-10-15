@@ -77,7 +77,7 @@ class AccessService {
     })
 
     if (!keyStore) {
-      throw new InternalServerError('Failed to save keyStore')
+      throw new BadRequestError('Failed to save keyStore')
     }
 
     return {
