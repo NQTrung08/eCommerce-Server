@@ -5,11 +5,11 @@ const jwt = require('jsonwebtoken');
 const createTokenPair = async ( payload ) => {
   try {
     const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN, { 
-      expiresIn: '7d' 
+      expiresIn: '365d' 
     });
     
     const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN, {
-      expiresIn: '7d'
+      expiresIn: '365d'
     });
 
 

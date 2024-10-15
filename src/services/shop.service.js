@@ -69,7 +69,7 @@ const newShop = async ({ owner_id, body, file }) => {
   }
 };
 
-const getAllShopForUser =  async () => {
+const getAllShopForUser = async () => {
   const shop = await shopModel.find()
 
   return shop
@@ -82,66 +82,62 @@ const getAllShop = async ({
   query = {},
 }) => {
 
-    const pageNumber = parseInt(page, 10);
-    const limitNumber = parseInt(limit, 10);
-    console.log(query)
+  const pageNumber = parseInt(page, 10);
+  const limitNumber = parseInt(limit, 10);
+  console.log(query)
 
-    // Xác định thứ tự sắp xếp (1: A-Z, -1: Z-A)
-    const sortOrder = sortBy.toLowerCase() === 'desc' ? -1 : 1;
+  // Xác định thứ tự sắp xếp (1: A-Z, -1: Z-A)
+  const sortOrder = sortBy.toLowerCase() === 'desc' ? -1 : 1;
 
-    const searchQuery = {};
-    if (query.shop_name) {
-      searchQuery.shop_name = new RegExp(query.shop_name, 'i'); // Tìm kiếm không phân biệt chữ hoa chữ thường
-    }
+  const searchQuery = {};
+  if (query.shop_name) {
+    searchQuery.shop_name = new RegExp(query.shop_name, 'i'); // Tìm kiếm không phân biệt chữ hoa chữ thường
+  }
 
-    const shops = await shopModel.find(searchQuery)
-      .populate({
-        path: 'owner_id',
-        select: 'userName roles',
-      })
-      .sort({
-        shop_name: sortOrder,
-      })
-      .skip((pageNumber - 1) * limitNumber)
-      .limit(limitNumber)
-      .lean();
-    
-    const totalShops = await shopModel.countDocuments();
+  const shops = await shopModel.find(searchQuery)
+    .populate({
+      path: 'owner_id',
+      select: 'userName roles',
+    })
+    .sort({
+      shop_name: sortOrder,
+    })
+    .skip((pageNumber - 1) * limitNumber)
+    .limit(limitNumber)
+    .lean();
 
-    return {
-      shops,
-      totalShops,
-      totalPages: Math.ceil(totalShops / limitNumber),
-      currentPage: pageNumber,
-    };
+  const totalShops = await shopModel.countDocuments();
+
+  return {
+    shops,
+    totalShops,
+    totalPages: Math.ceil(totalShops / limitNumber),
+    currentPage: pageNumber,
+  };
 
 
 }
 
 
 const getShop = async ({ id }) => {
-  try {
-    console.log('[E]::getShop', id)
-    const shop = await shopModel.findById(id).lean();
 
-    if (!shop) {
-      throw new ConflictError('Shop not found');
-    }
+  const shop = await shopModel.findById(id).lean();
 
-    return shop;
-  } catch (error) {
-    console.log('[E]::getShopById::', error);
-    throw error;
+  if (!shop) {
+    throw new NotFoundError('Shop not found');
   }
+  // count products of shop
+  const productsCount = await productModel.countDocuments({ shop_id: id });
+  return { ...shop, productsCount };
 };
 
 const getShopByOwnerId = async (owner_id) => {
   try {
     const shop = await shopModel.findOne({ owner_id })
-    .populate({
-      path: 'owner_id',
-    })
-    .lean();
+      .populate({
+        path: 'owner_id',
+      })
+      .lean();
 
     if (!shop) {
       throw new ConflictError('Shop not found');
