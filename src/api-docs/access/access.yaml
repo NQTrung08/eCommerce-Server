@@ -136,3 +136,31 @@ paths:
           description: Gửi mail lấy lại mật khẩu thành công
         400:
           description: Bad request - Email không tồn tại
+  /reset-password:
+    post:
+      tags:
+        - Access
+      summary: Thay đổi mật khẩu
+      description: API để đăng thay đổi mật khẩu bằng cách sử dụng email hiện tại.
+      parameters:
+        - in: query
+          name: token
+          schema:
+            type: string
+          required: true
+          description: Mã xác thực để thay đổi mật khẩu
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: "12345678"
+      responses:
+        200:
+          description: Đăng thay đổi mật không thành công
+        400:
+          description: Bad request - Email không tồn tại

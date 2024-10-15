@@ -49,5 +49,5 @@ const checkPermissions = ( permission ) => {
 module.exports = {
   checkApiKey,
   checkPermissions,
-  asyncHandler
+
 }

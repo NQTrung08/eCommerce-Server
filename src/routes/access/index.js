@@ -142,5 +142,9 @@ router.post('/refresh-token', asyncHandler(accessController.refreshTokenHandler)
 
 router.post('/forgot-password', asyncHandler(accessController.forgotPasswordHandler));
 
+// TODO: reset password
+
+router.post('/reset-password', asyncHandler(accessController.resetPasswordHandler));
+
 
 module.exports = router;

@@ -137,7 +137,25 @@ class AccessService {
     return {
         message: 'Please check your email for password reset instructions'
     };
-}
+
+  }
+  // đổi mật khẩu mới
+  static resetPasswordHandler = async ({ token, password }) => {
+    if (!token) {
+        throw new BadRequestError('Token is required');
+    }
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_TOKEN);
+    const user = await userModel.findOne({ email: decoded.email }).lean();
+    if (!user) {
+        throw new BadRequestError('User not found');
+    }
+    const passwordHash = await bcrypt.hash(password, 10);
+    user.password = passwordHash;
+    await user.save();
+    return {
+        message: 'Password reset successfully'
+    };
+  }   
 }
 
 module.exports = AccessService;

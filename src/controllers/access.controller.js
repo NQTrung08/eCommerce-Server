@@ -3,7 +3,7 @@ const { CREATED, SuccessReponse } = require('../core/success.response');
 const AccessService = require('../services/access.service');
 
 class AccessController {
-  signIn = async(req, res, next) => {
+  signIn = async (req, res, next) => {
     new SuccessReponse({
       message: 'Login OKKK',
       data: await AccessService.signIn(req.body)
@@ -19,23 +19,37 @@ class AccessController {
   }
 
   logOut = async (req, res, next) => {
-    new SuccessReponse({ message: 'Logged out',
+    new SuccessReponse({
+      message: 'Logged out',
       data: await AccessService.logOut(req.user)
-     }).send(res)
-  
+    }).send(res)
+
   }
 
   refreshTokenHandler = async (req, res, next) => {
-    new SuccessReponse({ message: 'Refresh token OK',
+    new SuccessReponse({
+      message: 'Refresh token OK',
       data: await AccessService.refreshTokenHandler(req.body)
     }).send(res)
   }
 
   forgotPasswordHandler = async (req, res, next) => {
     const { email } = req.body;
-    new SuccessReponse({ message: 'Forgot password OK',
+    new SuccessReponse({
+      message: 'Forgot password OK',
       data: await AccessService.forgotPasswordHandler({
         email
+      })
+    }).send(res)
+  }
+
+  resetPasswordHandler = async (req, res, next) => {
+    const { password } = req.body;
+    new SuccessReponse({
+      message: 'Reset password OK',
+      data: await AccessService.resetPasswordHandler({
+        token: req.query.token,
+        password
       })
     }).send(res)
   }
