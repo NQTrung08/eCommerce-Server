@@ -4,8 +4,9 @@ const shopModel = require('../models/shop.model')
 const userModel = require('../models/user.model')
 const roleModel = require('../models/role.model')
 
-const { ConflictError, BadRequestError, InternalServerError } = require('../core/error.response');
+const { ConflictError, BadRequestError, InternalServerError, NotFoundError } = require('../core/error.response');
 const { uploadShopLogo } = require('./upload.service');
+const productModel = require('../models/product.model');
 
 
 const newShop = async ({ owner_id, body, file }) => {
