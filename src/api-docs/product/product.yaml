@@ -113,8 +113,6 @@ paths:
         - Product
       summary: Lấy tất cả sản phẩm
       description: Lấy danh sách tất cả sản phẩm
-      security:
-        - bearerAuth: []
       responses:
         "200":
           description: Danh sách sản phẩm
@@ -187,8 +185,6 @@ paths:
         - Product
       summary: Tìm kiếm sản phẩm
       description: Tìm kiếm các sản phẩm theo tiêu chí đã cho
-      security:
-        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -235,8 +231,6 @@ paths:
         - Product
       summary: Lấy thông tin sản phẩm theo ID
       description: Lấy thông tin chi tiết của sản phẩm dựa trên ID
-      security:
-        - bearerAuth: []
       parameters:
         - in: path
           name: id

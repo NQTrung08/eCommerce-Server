@@ -44,8 +44,6 @@ paths:
         - Category
       summary: Lấy tất cả danh mục
       description: API này lấy danh sách tất cả các danh mục.
-      security:
-        - bearerAuth: []
       responses:
         200:
           description: Danh sách tất cả các danh mục
@@ -90,8 +88,6 @@ paths:
         - Category
       summary: Lấy danh mục gốc
       description: API này lấy danh mục gốc (những danh mục không có cha).
-      security:
-        - bearerAuth: []
       responses:
         200:
           description: Danh mục gốc được lấy thành công
@@ -108,8 +104,6 @@ paths:
         - Category
       summary: Xây dựng cây danh mục
       description: API này xây dựng cây danh mục để hiển thị cấu trúc phân cấp của danh mục.
-      security:
-        - bearerAuth: []
       responses:
         200:
           description: Cây danh mục được xây dựng thành công
@@ -120,14 +114,12 @@ paths:
                 items:
                   $ref: '#/components/schemas/Category'
 
-  /search:
+  /category/search:
     post:
       tags:
         - Category
       summary: Tìm kiếm danh mục
       description: API này tìm kiếm danh mục dựa trên các tiêu chí.
-      security:
-        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -150,7 +142,7 @@ paths:
         400:
           description: Bad request
 
-  /{id}:
+  /category/{id}:
     get:
       tags:
         - Category
@@ -162,8 +154,6 @@ paths:
           required: true
           schema:
             type: string
-      security:
-        - bearerAuth: []
       responses:
         200:
           description: Danh mục được lấy thành công
@@ -225,7 +215,7 @@ paths:
         404:
           description: Danh mục không tìm thấy
 
-  /{id}/children:
+  /category/{id}/children:
     get:
       tags:
         - Category
@@ -237,8 +227,6 @@ paths:
           required: true
           schema:
             type: string
-      security:
-        - bearerAuth: []
       responses:
         200:
           description: Danh sách danh mục con

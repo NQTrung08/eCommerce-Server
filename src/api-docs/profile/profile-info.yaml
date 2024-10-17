@@ -35,8 +35,6 @@ paths:
       tags:
         - Profile
       summary: Lấy thông tin người dùng theo ID
-      security:
-        - bearerAuth: []  # Thêm yêu cầu xác thực token
       parameters:
         - name: id
           in: path

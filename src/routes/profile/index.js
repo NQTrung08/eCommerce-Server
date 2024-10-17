@@ -8,9 +8,9 @@ const router = express.Router();
 
 
 router.get('/own', authenticate, asyncHandler(ProfileController.getProfileOwn));
-router.get('/:id', authenticate, authorize(['user']), asyncHandler(ProfileController.getProfileForUser));
 router.get('/admin/:id', authenticate, authorize(['admin']), asyncHandler(ProfileController.getProfileForAdmin));
 router.get('/', authenticate, authorize(['admin']), asyncHandler(ProfileController.getAllProfiles));
+
 router.post('/avatar-own', authenticate, uploadStorage.single('file'), asyncHandler(ProfileController.updateAvatar));
 router.post('/own', authenticate, asyncHandler(ProfileController.updateProfile));
 router.post('/change-password', authenticate, asyncHandler(ProfileController.changePassword));
@@ -19,4 +19,6 @@ router.post('/address', authenticate, asyncHandler(ProfileController.addAddress)
 router.get('/addresses', authenticate, asyncHandler(ProfileController.getAddresses));
 router.put('/address/:addressId', authenticate, asyncHandler(ProfileController.updateAddress));
 router.delete('/address/:addressId', authenticate, asyncHandler(ProfileController.deleteAddress));
+
+router.get('/:id', asyncHandler(ProfileController.getProfileForUser));
 module.exports = router
