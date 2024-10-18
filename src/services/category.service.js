@@ -3,71 +3,79 @@
 const { BadRequestError } = require('../core/error.response');
 const categoryModel = require('../models/category.model');
 const mongoose = require('mongoose');
+const { uploadCategoryImage } = require('./upload.service');
 
-const newCategory = async (body) => {
+const newCategory = async ({
+  category_name,
+  parent_id,
+  file,
+}) => {
 
-    const category = await categoryModel.findOne({
-      category_name: body.category_name
-    });
+  const category = await categoryModel.findOne({
+    category_name
+  });
 
-    if (!body.category_name || body.category_name.trim() === '') {
-      throw new BadRequestError('Category name is required');
+  console.log(category_name);
+
+  if (!category_name || category_name.trim() === '') {
+    throw new BadRequestError('Category name is required');
+  }
+
+  if (category) {
+    throw new BadRequestError('Category already exists');
+  }
+
+  if (category?.isDeleted) {
+    throw new BadRequestError('Category exists and is in the trash');
+  }
+
+  let parentCategory = null;
+  if (parent_id) {
+    if (!mongoose.Types.ObjectId.isValid(parent_id)) {
+      throw new BadRequestError('Invalid parent_id');
     }
-
-    if (category) {
-      throw new BadRequestError('Category already exists');
+    parentCategory = await categoryModel.findById(parent_id);
+    if (!parentCategory) {
+      throw new BadRequestError('Parent category not found');
     }
+  }
 
-    if (category?.isDeleted) {
-      throw new BadRequestError('Category exists and is in the trash');
-    }
+  // upload images
+  const uploadResult = await uploadCategoryImage({
+    filePath: file.path,
+    categoryId: category_name,
+  });
 
-    let parentCategory = null;
-    if (body.parent_id) {
-      if (!mongoose.Types.ObjectId.isValid(body.parent_id)) {
-        throw new BadRequestError('Invalid parent_id');
-      }
-      parentCategory = await categoryModel.findById(body.parent_id);
-      if (!parentCategory) {
-        throw new BadRequestError('Parent category not found');
-      }
-    }
 
-    const newCategory = await categoryModel.create({
-      category_name: body.category_name,
-      parent_id: parentCategory ? body.parent_id : null,
-      level: parentCategory ? parentCategory.level + 1 : 0,
-    });
+  const newCategory = await categoryModel.create({
+    category_name,
+    parent_id: parentCategory ? parent_id : null,
+    level: parentCategory ? parentCategory.level + 1 : 0,
+    category_img: uploadResult.url,
+  });
 
-    return newCategory;
+
+
+  return newCategory;
 }
 
 
 const getCategories = async () => {
-  try {
-    const categories = await categoryModel.find({
-      isSystemCategory: true,
-    }).populate('parent_id');
-    return categories;
-  } catch (error) {
-    console.error('[E]::getCategories::', error);
-    throw error;
-  }
+
+  const categories = await categoryModel.find({
+    isSystemCategory: true,
+  }).populate('parent_id');
+
+  return categories;
+
 }
 
 const getCategoryById = async (id) => {
-  try {
-    const category = await categoryModel.findById(id).populate('parent_id');
-    return category;
-  } catch (error) {
-    console.error('[E]::getCategoryById::', error);
-    throw error;
-  }
+  const category = await categoryModel.findById(id).populate('parent_id');
+  return category;
 }
 
-const updateCategory = async (id, body) => {
-  try {
-
+const updateCategory = async (id, body, file) => {
     if (id == body.parent_id) {
       throw new BadRequestError('Parent category cannot be the same as the current category');
     }
@@ -85,10 +93,17 @@ const updateCategory = async (id, body) => {
       level = parentCategory.level + 1;
     }
 
+    const uploadResult = await uploadCategoryImage({
+      filePath: file.path,
+      categoryId: category_name,
+    });
+
+
     const category = await categoryModel.findByIdAndUpdate(id, {
       category_name: body.category_name,
       parent_id: parentId,
-      level: level
+      level: level,
+      category_img: uploadResult.url,
     }, {
       new: true,
     });
@@ -97,10 +112,6 @@ const updateCategory = async (id, body) => {
     }
 
     return category;
-  } catch (error) {
-    console.error('[E]::updateCategory::', error);
-    throw error;
-  }
 }
 
 const deleteCategory = async (id) => {

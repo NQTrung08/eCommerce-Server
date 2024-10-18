@@ -46,10 +46,17 @@ const uploadProductSKU = async ({ filePath, shopId, productId, skuId }) => {
   return await uploadToCloudinary({ filePath, folder, publicId });
 };
 
-// Ví dụ service cho ảnh chung chung
+// service cho ảnh chung chung
 const uploadGeneralImage = async ({ filePath, category }) => {
   const folder = `general/${category}`;
   const publicId = `${category}-${new Date().getTime()}`;
+  return await uploadToCloudinary({ filePath, folder, publicId });
+};
+
+// service cho ảnh category
+const uploadCategoryImage = async ({ filePath, categoryId }) => {
+  const folder = `categories/${categoryId}`;
+  const publicId = `${categoryId}-${new Date().getTime()}`;
   return await uploadToCloudinary({ filePath, folder, publicId });
 };
 
@@ -59,4 +66,5 @@ module.exports = {
   uploadProductThumbnail,
   uploadProductSKU,
   uploadGeneralImage,
+  uploadCategoryImage,
 };

@@ -64,7 +64,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
@@ -76,6 +76,10 @@ paths:
                   type: string
                   description: ID của danh mục cha (nếu có)
                   example: "66ff884d6c5fdd23b7cb8cfb"
+                file:
+                  type: string
+                  format: binary
+                  description: Ảnh category
       responses:
         201:
           description: Danh mục được tạo thành công
@@ -179,16 +183,20 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
-                name:
+                cateogry_name:
                   type: string
                   description: Tên của danh mục
-                parentId:
+                parent_id:
                   type: string
                   description: ID của danh mục cha (nếu có)
+                file:
+                  type: string
+                  format: binary
+                  description: Ảnh category
       responses:
         200:
           description: Danh mục được cập nhật thành công

@@ -2,13 +2,14 @@ const express = require('express');
 const { grantAccess } = require('../../middewares/rbac');
 const CategoryController = require('../../controllers/category.controller');
 const { authenticate, authorize } = require('../../middewares/authenticate.middleware')
-const { asyncHandler } = require('../../helpers/asyncHandler')
+const { asyncHandler } = require('../../helpers/asyncHandler');
+const { uploadStorage } = require('../../configs/multer.config');
 const router = express.Router();
 
 router.get('/', asyncHandler(CategoryController.getAllCategories));
 router.get('/buildTree', asyncHandler(CategoryController.buildCategoryTree))
 
-router.post('/', authenticate, authorize(['admin']), asyncHandler(CategoryController.addCategory));
+router.post('/', authenticate, authorize(['admin']), uploadStorage.single('file'), asyncHandler(CategoryController.addCategory));
 router.post('/search', asyncHandler(CategoryController.searchCategory));
 router.get('/root', asyncHandler(CategoryController.getCategoryRoot));
 

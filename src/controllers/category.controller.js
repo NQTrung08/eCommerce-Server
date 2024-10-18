@@ -1,13 +1,24 @@
 'use strict';
 
+const { BadRequestError } = require('../core/error.response');
 const { SuccessReponse, CREATED } = require('../core/success.response');
 const CategoryService = require('../services/category.service');
 
 class CategoryController {
   addCategory = async(req, res, next) => {
+    const file = req.file
+    const { category_name, parent_id } = req.body
+    if (!file) {
+      throw new BadRequestError('Please upload a file')
+    }
+    console.log('category', category_name)
     return new CREATED({
       message: 'Category created successfully',
-      data: await CategoryService.newCategory(req.body)
+      data: await CategoryService.newCategory({
+        category_name,
+        parent_id,
+        file
+      })
     }).send(res)
   }
 
@@ -26,6 +37,10 @@ class CategoryController {
   }
 
   updateCategory = async(req, res, next) => {
+    const file = req.file
+    if (!file) {
+      throw new BadRequestError('Please upload a file')
+    }
     return new SuccessReponse({
       message: 'Category updated successfully',
       data: await CategoryService.updateCategory(req.params.id, req.body)
