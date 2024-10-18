@@ -273,6 +273,7 @@ const privateProducts = async (ids) => {
 
 const searchProducts = async ({
   searchQuery = '',
+  category = '',  // Thêm trường category để lọc theo danh mục
   page = 1,
   limit = 20,
   sortBy = '-createdAt'
@@ -282,20 +283,37 @@ const searchProducts = async ({
   const limitNumber = parseInt(limit, 10) || 10;
 
   // Xây dựng truy vấn tìm kiếm
-  const query = {
-    $text: {
+  let query = {};
+  
+  // Nếu searchQuery không phải chuỗi rỗng, thực hiện tìm kiếm văn bản
+  if (searchQuery.trim() !== '') {
+    query.$text = {
       $search: searchQuery,
       $caseSensitive: false,
       $diacriticSensitive: false
-    }
-  };
+    };
+  }
+
+  // Nếu có category, thêm điều kiện lọc theo category_id
+  if (category) {
+    query.category_id = category;
+  }
 
   // Xử lý sắp xếp
-  let sortQuery = sortBy;
+  let sortQuery = {};
+  
   if (sortBy === 'sold_count') {
+    // Sắp xếp theo sản phẩm bán chạy nhất
     sortQuery = { sold_count: -1 };
+  } else if (sortBy === 'price_asc') {
+    // Sắp xếp theo giá tăng dần
+    sortQuery = { price: 1 };
+  } else if (sortBy === 'price_desc') {
+    // Sắp xếp theo giá giảm dần
+    sortQuery = { price: -1 };
   } else {
-    sortQuery = { [sortBy]: 1 };
+    // Mặc định sắp xếp theo mới nhất (createdAt)
+    sortQuery = { createdAt: -1 };
   }
 
   // Tìm kiếm sản phẩm với phân trang, sắp xếp và chọn trường
@@ -312,7 +330,6 @@ const searchProducts = async ({
     .skip((pageNumber - 1) * limitNumber)
     .sort(sortQuery)
     .lean();
-
 
   // Sử dụng Promise.all để đồng thời tính ratingCount và soldCount cho tất cả sản phẩm
   const productsWithCounts = await Promise.all(products.map(async (product) => {
@@ -335,6 +352,7 @@ const searchProducts = async ({
     currentPage: pageNumber
   };
 };
+
 
 // get products by shop id and category id
 const getProductsByCatalogShop = async ({

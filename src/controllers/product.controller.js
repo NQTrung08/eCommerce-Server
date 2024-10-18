@@ -67,11 +67,12 @@ class ProductController {
   }
 
   searchProducts = async (req, res, next) => {
-    const { searchQuery, page, limit, sortBy } = req.query;
+    const { searchQuery, page, limit, sortBy, category } = req.query;
     return new SuccessReponse({
       message: 'Search Products',
       data: await ProductService.searchProducts({
         searchQuery: searchQuery || '',
+        category: category || '',
         page: page || 1,
         limit: limit || 10,
         sortBy: sortBy || '-createdAt'
