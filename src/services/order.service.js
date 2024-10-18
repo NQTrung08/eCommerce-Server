@@ -81,6 +81,36 @@ const createOrder = async ({ userId, orders, paymentMethod, shippingAddress, pay
   };
 };
 
+const getAllOrders = async () => {
+  const orders = await orderModel.find();
+  return orders;
+} 
+
+// get order by user id filter by status
+const getOrdersByUserId = async ({ userId, status }) => {
+  const query = { order_userId: userId };
+
+  // Nếu có truyền status, thêm điều kiện lọc theo status
+  if (status) {
+    query.order_status = status;
+  }
+
+  const orders = await orderModel.find(query);
+  return orders;
+};
+
+// update status order
+const updateOrderStatus = async ({ orderId, status }) => {
+  const query = { _id: orderId };
+  const update = { order_status: status };
+  const options = { new: true };
+  const updatedOrder = await orderModel.findOneAndUpdate(query, update, options);
+  return updatedOrder;
+}
+
 module.exports = {
   createOrder,
+  getAllOrders,
+  getOrdersByUserId,
+  updateOrderStatus
 };

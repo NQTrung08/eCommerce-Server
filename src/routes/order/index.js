@@ -7,4 +7,8 @@ const router = express.Router();
 router.post('/', authenticate, asyncHandler(orderController.createOrder));
 router.get('/vnpay_return', asyncHandler(orderController.vnpayReturn));
 
+router.get('/user', authenticate, asyncHandler(orderController.getOrdersByUserId));
+
+// update trạng thái đơn hàng
+router.put('/:id', authenticate, asyncHandler(orderController.updateOrderStatus));
 module.exports = router;

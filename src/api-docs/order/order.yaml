@@ -178,3 +178,137 @@ paths:
                     type: string
                     description: Thông báo lỗi
                     example: "User id is required"
+
+  
+  /order/{id}:
+    get:
+      summary: Lọc đơn hang
+      description: Lọc đơn hang theo ID
+      tags:
+        - Orders
+      security:
+        - bearerAuth: []  # Chỉ định JWT bảo mật cho endpoint không
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Thành cảc
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order:
+                    type: object
+                    properties:
+                      order_userId:
+                        type: string
+                        description: ID của người dùng
+                        example: 60a6c6d8f1e1c300b0fcb6d9
+                      order_trackingNumber:
+                        type: string
+                        description: Mã tracking của đơn hang
+                        example: "t3g1624876405000"
+                      order_shopId:
+                        type: string
+                        description: ID của cửa hàng
+                        example: 60a6c6d8f1e1c300b0fcb6e9
+                      order_products:
+                        type: array
+                        description: Danh sách san pham trong don hang
+                        items:
+                          type: object
+                          properties:
+                            productId:
+                              type: string
+                              description: ID san pham
+                              example: 60a6c6d8f1e1c300b0fcb6e8
+                            quantity:
+                              type: integer
+                              description: So luong san pham
+                              example: 1
+                            price:
+                              type: integer
+                              description: Gia san pham
+                              example: 2500
+                            product_name:
+                              type: string
+                              description: Ten san pham
+                              example: "San pham A"
+    # put:
+    #   summary: Chinh sua don hang
+    #   description: Chinh sua don hang theo ID
+    #   tags:
+    #     - Orders
+    #   security:
+    #     - bearerAuth: []  # Chỉ định JWT bảo mật cho endpoint không
+    #   parameters:
+    #     - in: path
+    #       name: id
+    #       required: true
+    #       schema:
+    #         type: string
+    #   requestBody:
+    #     required: true
+    #     content:
+    #       application/json:
+    #         schema:
+    #           type: object
+    #           properties:
+    #             order_userId:
+    #               type: string
+    #               description: ID user
+    #               example: 60a6c6d8f1e1c300b0fcb6d9
+    #             order_trackingNumber:
+    #               type: string
+    #               description: Mã tracking
+    #               example: "t3g1624876405000"
+    #             order_shopId:
+    #               type: string
+    #               description: ID cửa
+    #               example: 60a6c6d8f1e1c300b0fcb6e9
+    #             order_products:
+    #               type: array
+    #               description: Danh sách san pham trong don hang
+    #               items:
+    #                 type: object
+    #                 properties:
+  
+  /order/user:
+    get:
+      summary: list đơn hàng của user
+      description: list đơn hang theo userId
+      tags:
+        - Orders
+      security:
+        - bearerAuth: []  # Chỉ định JWT bảo mật cho endpoint không
+      parameters:
+        - in: query
+          name: userId
+          schema:
+            type: string
+          required: true
+          description: userId
+      responses:
+        '200':
+          description: các đơn hàng của user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    description: Danh sách đơn hang của user
+                    items:
+                      type: object
+                      properties:
+                        order_userId:
+                          type: string
+                          description: ID user
+                          example: 60a6c6d8f1e1c300b0fcb6d9
+ 

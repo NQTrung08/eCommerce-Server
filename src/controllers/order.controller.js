@@ -1,6 +1,6 @@
 // order.controller.js
 'use strict';
-const { createOrder } = require('../services/order.service');
+const { createOrder, getOrdersByUserId } = require('../services/order.service');
 const { createVnpayPaymentUrl } = require('../services/payment.service');
 const { SuccessResponse, SuccessReponse } = require('../core/success.response');
 const { BadRequestError } = require('../core/error.response');
@@ -67,6 +67,27 @@ class OrderController {
     }).send(res);
   };
 
+  // get order by user id filter by status
+  getOrdersByUserId = async (req, res, next) => {
+    const { _id } = req.user;
+    const { status } = req.query;
+    const orders = await getOrdersByUserId({ userId: _id, status });
+    new SuccessReponse({
+      message: 'Get orders successfully',
+      data: orders
+    }).send(res);
+  }
+
+  // update status order
+  updateStatusOrder = async (req, res, next) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    const order = await this.updateStatusOrder({ orderId: id, status });
+    new SuccessReponse({
+      message: 'Update status order successfully',
+      data: order
+    }).send(res);
+  }
 
 }
 module.exports = new OrderController();
