@@ -162,6 +162,19 @@ class ProductController {
     }).send(res)
   }
 
+  // filter products by category id
+  getProductsByCategoryId = async (req, res, next) => {
+    const { categoryId } = req.params;
+    if (!categoryId) {
+      throw new BadRequestError('Category id is required');
+    }
+    return new SuccessReponse({
+      message: 'Get products by category id',
+      data: await ProductService.getProductsByCategoryId({
+        categoryId
+      })
+    }).send(res)
+  }
 
 
 }

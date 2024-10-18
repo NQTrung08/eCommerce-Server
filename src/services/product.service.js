@@ -430,6 +430,16 @@ const addProductsToCatalog = async ({
 
 }
 
+const getProductsByCategoryId = async ({
+  catalogId
+}) => {
+  const products = await productModel.find({
+    catalog_id: catalogId,
+    isPublic: true
+  }).lean();
+  return products;
+}
+
 
 
 module.exports = {
@@ -445,4 +455,5 @@ module.exports = {
   getProductsByCatalogShop,
   getProductsByShopId,
   addProductsToCatalog,
+  getProductsByCategoryId
 };
