@@ -179,133 +179,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /product/search:
-    post:
-      tags:
-        - Products
-      summary: Tìm kiếm sản phẩm
-      description: API này tìm kiếm các sản phẩm dựa trên từ khóa, danh mục, sắp xếp, phân trang và các tiêu chí khác thông qua `req.query` mặc dù sử dụng phương thức `POST`.
-      operationId: searchProducts
-      parameters:
-        - in: query
-          name: searchQuery
-          schema:
-            type: string
-          description: Từ khóa tìm kiếm sản phẩm. Nếu không có sẽ trả về tất cả sản phẩm.
-          example: "áo thun"
-        - in: query
-          name: category
-          schema:
-            type: string
-          description: ID của danh mục sản phẩm. Dùng để lọc sản phẩm theo danh mục.
-          example: "66ff884d6c5fdd23b7cb8cfb"
-        - in: query
-          name: page
-          schema:
-            type: integer
-            default: 1
-          description: Số trang hiện tại. Mặc định là 1.
-          example: 1
-        - in: query
-          name: limit
-          schema:
-            type: integer
-            default: 10
-          description: Số lượng sản phẩm trên mỗi trang. Mặc định là 10.
-          example: 10
-        - in: query
-          name: sortBy
-          schema:
-            type: string
-          description: | 
-           Tiêu chí sắp xếp sản phẩm. Các giá trị hợp lệ là:
-            - "-createdAt": Sắp xếp theo mới nhất.
-            - "sold_count": Sắp xếp theo số lượng bán được nhiều nhất.
-            - "price_asc": Sắp xếp theo giá tăng dần.
-            - "price_desc": Sắp xếp theo giá giảm dần.
-          example: "-createdAt"
-      responses:
-        '200':
-          description: Trả về danh sách sản phẩm theo tiêu chí tìm kiếm
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Search Products"
-                  data:
-                    type: object
-                    properties:
-                      productsWithCounts:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            _id:
-                              type: string
-                              example: "5f50ca3b6b50a41654baf1e3"
-                            name:
-                              type: string
-                              example: "Áo thun nam"
-                            price:
-                              type: number
-                              example: 200000
-                            soldCount:
-                              type: integer
-                              example: 50
-                            ratingCount:
-                              type: integer
-                              example: 25
-                            avgRating:
-                              type: number
-                              example: 4.5
-                            shop_id:
-                              type: object
-                              properties:
-                                shop_id:
-                                  type: string
-                                  example: "5f50ca3b6b50a41654baf1e2"
-                                shop_name:
-                                  type: string
-                                  example: "Shop Thời Trang ABC"
-                            category_id:
-                              type: object
-                              properties:
-                                category_name:
-                                  type: string
-                                  example: "Áo thun"
-                      totalCount:
-                        type: integer
-                        example: 100
-                      totalPages:
-                        type: integer
-                        example: 10
-                      currentPage:
-                        type: integer
-                        example: 1
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Invalid parameters"
-        '500':
-          description: Internal Server Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Internal Server Error"
-
   /product/{id}:
     get:
       tags:
@@ -680,3 +553,132 @@ paths:
           description: "Forbidden"
         404:
           description: "Category not found"
+
+  /product/search:
+    post:
+      tags:
+        - Product
+      summary: Tìm kiếm sản phẩm
+      description: API này tìm kiếm các sản phẩm dựa trên từ khóa, danh mục, sắp xếp, phân trang và các tiêu chí khác thông qua `req.query` mặc dù sử dụng phương thức `POST`.
+      operationId: searchProducts
+      parameters:
+        - in: query
+          name: searchQuery
+          schema:
+            type: string
+          description: Từ khóa tìm kiếm sản phẩm. Nếu không có sẽ trả về tất cả sản phẩm.
+          example: "áo thun"
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: ID của danh mục sản phẩm. Dùng để lọc sản phẩm theo danh mục.
+          example: "66ff884d6c5fdd23b7cb8cfb"
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Số trang hiện tại. Mặc định là 1.
+          example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Số lượng sản phẩm trên mỗi trang. Mặc định là 10.
+          example: 10
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+          description: | 
+           Tiêu chí sắp xếp sản phẩm. Các giá trị hợp lệ là:
+            - "-createdAt": Sắp xếp theo mới nhất.
+            - "sold_count": Sắp xếp theo số lượng bán được nhiều nhất.
+            - "price_asc": Sắp xếp theo giá tăng dần.
+            - "price_desc": Sắp xếp theo giá giảm dần.
+          example: "-createdAt"
+      responses:
+        '200':
+          description: Trả về danh sách sản phẩm theo tiêu chí tìm kiếm
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Search Products"
+                  data:
+                    type: object
+                    properties:
+                      productsWithCounts:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            _id:
+                              type: string
+                              example: "5f50ca3b6b50a41654baf1e3"
+                            name:
+                              type: string
+                              example: "Áo thun nam"
+                            price:
+                              type: number
+                              example: 200000
+                            soldCount:
+                              type: integer
+                              example: 50
+                            ratingCount:
+                              type: integer
+                              example: 25
+                            avgRating:
+                              type: number
+                              example: 4.5
+                            shop_id:
+                              type: object
+                              properties:
+                                shop_id:
+                                  type: string
+                                  example: "5f50ca3b6b50a41654baf1e2"
+                                shop_name:
+                                  type: string
+                                  example: "Shop Thời Trang ABC"
+                            category_id:
+                              type: object
+                              properties:
+                                category_name:
+                                  type: string
+                                  example: "Áo thun"
+                      totalCount:
+                        type: integer
+                        example: 100
+                      totalPages:
+                        type: integer
+                        example: 10
+                      currentPage:
+                        type: integer
+                        example: 1
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid parameters"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal Server Error"
+
+
