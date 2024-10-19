@@ -4,6 +4,7 @@ const roleModel = require('../models/role.model')
 
 const { ConflictError, BadRequestError, InternalServerError, NotFoundError } = require('../core/error.response');
 const { uploadUserAvatar } = require('./upload.service');
+const bcrypt = require('bcrypt');
 
 
 
