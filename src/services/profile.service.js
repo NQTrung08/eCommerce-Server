@@ -137,7 +137,7 @@ const addAddress = async ({
   return user.address;
 }
 
-const getAddresses = async (userId) => {
+const getAddresses = async ({userId}) => {
   const user = await userModel.findOne({ _id: userId }).select('address');
   return user ? user.address : [];
 };

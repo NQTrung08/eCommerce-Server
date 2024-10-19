@@ -44,7 +44,7 @@ class ProfileController {
   getAddresses = async(req, res, next) => {
     return new SuccessReponse({
       message: 'Addresses',
-      data: await ProfileService.getAddresses(req.user._id)
+      data: await ProfileService.getAddresses({userId: req.user._id})
     }).send(res)
   }
 
