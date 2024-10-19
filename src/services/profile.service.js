@@ -130,7 +130,7 @@ const addAddress = async ({
   newAddress,
 }) => {
   const user = await userModel.findOneAndUpdate(
-    { userId: id },
+    { _id: id },
     { $push: { address: newAddress } }, // Thêm địa chỉ mới vào mảng
     { new: true }
   );
@@ -138,13 +138,13 @@ const addAddress = async ({
 }
 
 const getAddresses = async (userId) => {
-  const user = await userModel.findOne({ userId: userId }).select('address');
+  const user = await userModel.findOne({ _id: userId }).select('address');
   return user ? user.address : [];
 };
 
 const updateAddress = async (userId, addressId, updatedAddress) => {
   const user = await userModel.findOneAndUpdate(
-    { userId: userId, 'address._id': addressId },
+    { _id: userId, 'address._id': addressId },
     { $set: { 'address.$': updatedAddress } }, // Cập nhật địa chỉ tại vị trí cụ thể
     { new: true }
   );
@@ -153,7 +153,7 @@ const updateAddress = async (userId, addressId, updatedAddress) => {
 
 const deleteAddress = async (userId, addressId) => {
   const user = await userModel.findOneAndUpdate(
-    { userId: userId },
+    { _id: userId },
     { $pull: { address: { _id: addressId } } }, // Xóa địa chỉ dựa trên ID
     { new: true }
   );
