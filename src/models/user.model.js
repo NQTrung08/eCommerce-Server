@@ -5,12 +5,12 @@ const { model, Schema} = require('mongoose'); // Erase if already required
 const { User: { DOCUMENT_NAME, COLLECTION_NAME } } = require('../constant/index')
 
 
-const addressSchema = Schema({
+const addressSchema = new Schema({
   district: String,
   city: String,
   village: String,
   specific_address: String
-});
+}, { _id: false });
 
 // Declare the Schema of the Mongo model
 var userSchema = new Schema({

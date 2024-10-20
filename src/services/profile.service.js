@@ -36,7 +36,10 @@ const updateAvatarProfile = async ({
 
 const getProfileOwn = async ({ id }) => {
   const user = await userModel.findById(id)
-    .populate('roles');
+    .populate({
+      path: 'roles',
+      select: 'roleName -_id',
+    });
 
   if (!user) {
     throw new ConflictError('User not found');
