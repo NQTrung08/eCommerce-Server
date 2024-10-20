@@ -288,11 +288,10 @@ paths:
         - bearerAuth: []  # Chỉ định JWT bảo mật cho endpoint không
       parameters:
         - in: query
-          name: userId
+          name: status
           schema:
             type: string
-          required: true
-          description: userId
+          description: status
       responses:
         '200':
           description: các đơn hàng của user
