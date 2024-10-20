@@ -311,3 +311,20 @@ paths:
                           description: ID user
                           example: 60a6c6d8f1e1c300b0fcb6d9
  
+  /order/cancel/{orderId}:
+    put:
+      summary: Hủy đơn hàng
+      description: Hủy đơn hàng theo ID
+      tags:
+        - Orders
+      security:
+      - bearerAuth: []  # Chỉ định JWT bảo mật cho endpoint không
+      parameters:
+        - in: path
+          name: orderId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: hủy đơn hàng thành công
