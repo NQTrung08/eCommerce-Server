@@ -14,7 +14,7 @@ router.post('/search', asyncHandler(CategoryController.searchCategory));
 router.get('/root', asyncHandler(CategoryController.getCategoryRoot));
 
 router.get('/:id', asyncHandler(CategoryController.getCategoryById));
-router.put('/:id', authenticate, authorize(['admin']), asyncHandler(CategoryController.updateCategory));
+router.put('/:id', authenticate, authorize(['admin']), uploadStorage.single('file'), asyncHandler(CategoryController.updateCategory));
 router.delete('/:id', authenticate, authorize(['admin']), asyncHandler(CategoryController.deleteCategory));
 
 router.get('/:id/children', asyncHandler(CategoryController.getCategoryWithChildren));

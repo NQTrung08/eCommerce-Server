@@ -15,8 +15,7 @@ class CartController {
 
   // update + -
   updateQuantityFromCart = async (req, res, next) => {
-    const { _id } = req.user;
-    const cart = await CartService.updateQuantityFromCart({ userId: _id, product: req.body })
+    const cart = await CartService.updateQuantityFromCart({ userId: req.user._id, product: req.body })
     new SuccessReponse({
       message: 'Quantity updated in cart',
       data: cart
@@ -25,9 +24,8 @@ class CartController {
 
   // delete product
   removeFromCart = async (req, res, next) => {
-    const { _id } = req.user;
     const cart = await CartService.removeFromCart({
-      userId: _id,
+      userId: req.user._id,
       productId: req.params.productId,
     })
     new SuccessReponse({

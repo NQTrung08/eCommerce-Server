@@ -43,7 +43,7 @@ class CategoryController {
     }
     return new SuccessReponse({
       message: 'Category updated successfully',
-      data: await CategoryService.updateCategory(req.params.id, req.body)
+      data: await CategoryService.updateCategory(req.params.id, req.body, file)
     }).send(res)
   }
 
