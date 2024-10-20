@@ -1,6 +1,6 @@
 // order.controller.js
 'use strict';
-const { createOrder, getOrdersByUserId, cancelOrder } = require('../services/order.service');
+const { createOrder, getOrdersByUserId, cancelOrder, updateOrderStatus } = require('../services/order.service');
 const { createVnpayPaymentUrl } = require('../services/payment.service');
 const { SuccessResponse, SuccessReponse } = require('../core/success.response');
 const { BadRequestError } = require('../core/error.response');
