@@ -10,5 +10,8 @@ router.get('/vnpay_return', asyncHandler(orderController.vnpayReturn));
 router.get('/user', authenticate, asyncHandler(orderController.getOrdersByUserId));
 
 // update trạng thái đơn hàng
-router.put('/:id', authenticate, asyncHandler(orderController.updateOrderStatus));
+router.put('/:id', authenticate, authorize(['shop']), asyncHandler(orderController.updateOrderStatus));
+
+// cancel đơn hàng
+router.put('/cancel/:orderId', authenticate, asyncHandler(orderController.cancelOrder));
 module.exports = router;

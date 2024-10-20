@@ -108,9 +108,39 @@ const updateOrderStatus = async ({ orderId, status }) => {
   return updatedOrder;
 }
 
+// cancel order if order status is pending
+const cancelOrder = async ({ userId,orderId }) => {
+  const query = { _id: orderId };
+  const order = await orderModel.findById(orderId);
+
+  if (!order) {
+    throw new BadRequestError('Order not found');
+  }
+
+  // check order is belong to user
+  if (order.order_userId.toString() !== userId) {
+    throw new BadRequestError('Order is not belong to user');
+  }
+
+  // Kiểm tra nếu trạng thái đơn hàng là 'pending'
+  if (order.order_status === 'pending') {
+    const update = { order_status: 'cancelled' };
+    const options = { new: true };
+    
+    // Cập nhật trạng thái đơn hàng thành 'cancelled'
+    const updatedOrder = await orderModel.findOneAndUpdate(query, update, options);
+    return updatedOrder;
+  } else {
+    // Nếu trạng thái không phải 'pending', trả về lỗi
+    throw new BadRequestError(`Order cannot be cancelled because its status is ${order.order_status}`);
+  }
+};
+
+
 module.exports = {
   createOrder,
   getAllOrders,
   getOrdersByUserId,
-  updateOrderStatus
+  updateOrderStatus,
+  cancelOrder,
 };

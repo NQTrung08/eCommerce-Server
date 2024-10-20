@@ -1,6 +1,6 @@
 // order.controller.js
 'use strict';
-const { createOrder, getOrdersByUserId } = require('../services/order.service');
+const { createOrder, getOrdersByUserId, cancelOrder } = require('../services/order.service');
 const { createVnpayPaymentUrl } = require('../services/payment.service');
 const { SuccessResponse, SuccessReponse } = require('../core/success.response');
 const { BadRequestError } = require('../core/error.response');
@@ -82,9 +82,20 @@ class OrderController {
   updateStatusOrder = async (req, res, next) => {
     const { id } = req.params;
     const { status } = req.body;
-    const order = await this.updateStatusOrder({ orderId: id, status });
+    const order = await updateStatusOrder({ orderId: id, status });
     new SuccessReponse({
       message: 'Update status order successfully',
+      data: order
+    }).send(res);
+  }
+  // cancel order if order status is pending
+  cancelOrder = async (req, res, next) => {
+    const order = await cancelOrder({ 
+      userId: req.user._id,
+      orderId: req.params.orderId,
+     });
+    new SuccessReponse({
+      message: 'Cancel order successfully',
       data: order
     }).send(res);
   }
