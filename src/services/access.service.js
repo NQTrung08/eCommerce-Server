@@ -145,7 +145,7 @@ class AccessService {
         throw new BadRequestError('Token is required');
     }
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_TOKEN);
-    const user = await userModel.findOne({ email: decoded.email }).lean();
+    const user = await userModel.findOne({ email: decoded.email });
     if (!user) {
         throw new BadRequestError('User not found');
     }

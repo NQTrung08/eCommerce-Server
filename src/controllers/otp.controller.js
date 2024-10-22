@@ -3,10 +3,10 @@ const { SuccessReponse } = require('../core/success.response');
 const OTPService = require('../services/otp.service');
 
 const requestOTP = async (req, res) => {
-  const { email } = req.body;
+  const { email, templateName } = req.body;
   
   // Send OTP to user's email
-  const otp = await OTPService.sendOTPEmail(email);
+  const otp = await OTPService.sendOTPEmail(email, templateName);
 
   return new SuccessReponse({
     message: 'OTP sent to your email',
