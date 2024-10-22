@@ -41,7 +41,13 @@ class OrderController {
       }
 
       // Chuyển hướng đến URL thanh toán
-      return res.redirect(paymentUrl);
+      return res.status(200).json({
+        message: 'Order created successfully, redirect to payment',
+        paymentUrl, // Trả về paymentUrl
+        data: newOrders,
+      });
+
+
     };
     // Trả về phản hồi thành công
     new SuccessReponse({
@@ -98,10 +104,10 @@ class OrderController {
   }
   // cancel order if order status is pending
   cancelOrder = async (req, res, next) => {
-    const order = await cancelOrder({ 
+    const order = await cancelOrder({
       userId: req.user._id,
       orderId: req.params.orderId,
-     });
+    });
     new SuccessReponse({
       message: 'Cancel order successfully',
       data: order
