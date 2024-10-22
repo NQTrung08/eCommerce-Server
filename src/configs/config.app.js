@@ -6,6 +6,9 @@ const dev = {
     url: 'http://localhost:8080',
     resetPasswordUrl: process.env.DEV_RESET_PASSWORD_LINK
   },
+  vnpay: {
+    vnp_ReturnUrl: process.env.DEV_VNP_RETURN_URL,
+  },
 }
 
 const pro = {
@@ -15,6 +18,9 @@ const pro = {
     callbackUrl: process.env.PRO_CALLBACK_URL,
     url: 'https://ecommerce-server-0mcc.onrender.com',
     resetPasswordUrl: process.env.PRO_RESET_PASSWORD_LINK
+  },
+  vnpay: {
+    vnp_ReturnUrl: process.env.PRO_VNP_RETURN_URL,
   },
 }
 
