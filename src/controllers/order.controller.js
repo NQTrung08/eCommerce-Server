@@ -33,7 +33,7 @@ class OrderController {
       let paymentUrl;
       if (paymentGateway === 'VNPAY') {
         paymentUrl = await createVnpayPaymentUrl({ orderIds, totalAmount: newOrders.totalAmountOrders, ipAddr });
-      } else if (paymentGateway === 'Momo') {
+      } else if (paymentGateway === 'MOMO') {
         // Giả sử hàm createMomoPaymentUrl đã được định nghĩa
         paymentUrl = await createMomoPaymentUrl(newOrders.totalAmountOrders, ipAddr);
       } else {

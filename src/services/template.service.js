@@ -29,8 +29,8 @@ const newTemplate = async ({
 }
 
 const getTemplate = async ({
-  
-}) => {tem_name
+  tem_name
+}) => {
     const template = await templateModel.findOne({
       tem_name: tem_name,
     })
