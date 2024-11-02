@@ -109,7 +109,7 @@ const updateProfile = async ({
 // POST /api/profile/change-password
 const changePassword = async ({ id, currentPassword, newPassword }) => {
   const user = await userModel.findById(id);
-  
+
   if (!user) {
     throw new NotFoundError('User not found');
   }
@@ -148,16 +148,20 @@ const addAddress = async ({ id, newAddress }) => {
 };
 
 
-const getAddresses = async ({userId}) => {
+const getAddresses = async ({ userId }) => {
   const user = await userModel.findOne({ _id: userId }).select('address');
   return user ? user.address : [];
 };
 
 const updateAddress = async (userId, addressId, updatedAddress) => {
   const user = await userModel.findById(userId);
-
+  const address = user.address.find(address => address._id.toString() === addressId);
   if (!user) {
     throw new NotFoundError('User not found');
+  }
+
+  if (!address) {
+    throw new NotFoundError('Address not found');
   }
 
   // Nếu cập nhật địa chỉ này thành mặc định, loại bỏ mặc định khỏi các địa chỉ khác
@@ -169,15 +173,23 @@ const updateAddress = async (userId, addressId, updatedAddress) => {
     });
   }
 
-  // Cập nhật địa chỉ tại vị trí cụ thể
-  const addressIndex = user.address.findIndex(address => address._id.toString() === addressId);
-  if (addressIndex > -1) {
-    user.address[addressIndex] = { ...user.address[addressIndex], ...updatedAddress };
+  // Tìm địa chỉ theo `addressId` và cập nhật các thuộc tính mà không thay đổi `_id`
+  const addressToUpdate = user.address.find(address => address._id.toString() === addressId);
+  if (addressToUpdate) {
+    // Chỉ cập nhật các thuộc tính có giá trị trong `updatedAddress`
+    for (const key in updatedAddress) {
+      if (updatedAddress[key] !== undefined) {
+        addressToUpdate[key] = updatedAddress[key];
+      }
+    }
+
     await user.save();
   }
 
+
   return user.address;
 };
+
 
 
 const deleteAddress = async (userId, addressId) => {
