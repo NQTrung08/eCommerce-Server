@@ -48,7 +48,7 @@ const orderSchema = new Schema({
   order_products: [orderProductSchema],
   order_status: {
     type: String,
-    enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'paid'],
+    enum: ['pending', 'processing', 'shipped', 'completed', 'cancelled', 'paid'],
     default: 'pending'
   },
   order_payment_method: {

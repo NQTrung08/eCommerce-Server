@@ -26,6 +26,7 @@ router.use('/v1/api/order', require('./order'))
 router.use('/v1/api/transaction', require('./transaction'))
 router.use('/v1/api/catalogShop', require('./catalog'))
 router.use('/v1/api/template', require('./template'))
+router.use('/v1/api/review', require('./review'))
 
 
 
