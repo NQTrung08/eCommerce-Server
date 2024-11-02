@@ -1,4 +1,5 @@
 const { BadRequestError } = require("../core/error.response");
+const cartModel = require("../models/cart.model");
 const orderModel = require("../models/order.model");
 const productModel = require("../models/product.model");
 
@@ -137,10 +138,28 @@ const cancelOrder = async ({ userId,orderId }) => {
 };
 
 
+const removePurchasedItemsFromCart = async (userId, orders) => {
+  const cart = await cartModel.findOne({ cart_userId: userId });
+  if (!cart) return;
+
+  // Duyệt qua từng sản phẩm trong đơn hàng và loại bỏ khỏi giỏ hàng
+  orders.forEach(order => {
+    order.products.forEach(purchasedProduct => {
+      cart.cart_products = cart.cart_products.filter(cartProduct => {
+        return cartProduct.productId.toString() !== purchasedProduct.productId.toString();
+      });
+    });
+  });
+
+  await cart.save(); // Lưu lại giỏ hàng sau khi cập nhật
+}
+
+
 module.exports = {
   createOrder,
   getAllOrders,
   getOrdersByUserId,
   updateOrderStatus,
   cancelOrder,
+  removePurchasedItemsFromCart
 };

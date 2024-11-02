@@ -1,11 +1,11 @@
 // order.controller.js
 'use strict';
-const { createOrder, getOrdersByUserId, cancelOrder, updateOrderStatus } = require('../services/order.service');
+const { createOrder, getOrdersByUserId, cancelOrder, updateOrderStatus, removePurchasedItemsFromCart } = require('../services/order.service');
 const { createVnpayPaymentUrl } = require('../services/payment.service');
 const { SuccessResponse, SuccessReponse } = require('../core/success.response');
 const { BadRequestError } = require('../core/error.response');
 const { createVnpayTransaction } = require('../services/transaction.service');
-
+const { app: { redirectUrl } } = require('../configs/config.app')
 class OrderController {
   // Hàm xử lý yêu cầu tạo đơn hàng
   createOrder = async (req, res, next) => {
@@ -49,6 +49,10 @@ class OrderController {
 
 
     };
+
+    // Loại bỏ các sản phẩm đã mua khỏi giỏ hàng của người dùng
+    await removePurchasedItemsFromCart(_id, orders);
+
     // Trả về phản hồi thành công
     new SuccessReponse({
       message: 'Order created successfully',
@@ -68,17 +72,17 @@ class OrderController {
 
     // Nếu thanh toán thành công
     const responseCode = vnp_Params['vnp_ResponseCode']; // Lấy response code
-    let redirectUrl;
+    let redirectUrlPayment;
     if (responseCode === '00') {
       // Nếu thành công, chuyển hướng về FE với trạng thái success
-      redirectUrl = `http://localhost:3000/payment-success?transactionId=${vnp_Params['vnp_TxnRef']}&status=success`;
+      redirectUrlPayment = `${redirectUrl}/payment-success?transactionId=${vnp_Params['vnp_TxnRef']}&status=success`;
     } else {
       // Nếu thất bại, chuyển hướng về FE với trạng thái failed
-      redirectUrl = `http://localhost:3000/payment-failed?transactionId=${vnp_Params['vnp_TxnRef']}&status=failed`;
+      redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${vnp_Params['vnp_TxnRef']}&status=failed`;
     }
 
     // Thực hiện chuyển hướng về frontend với kết quả
-    return res.redirect(redirectUrl);
+    return res.redirect(redirectUrlPayment);
   };
 
   // get order by user id filter by status
