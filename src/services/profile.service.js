@@ -128,17 +128,25 @@ const changePassword = async ({ id, currentPassword, newPassword }) => {
   return user;
 }
 
-const addAddress = async ({
-  id,
-  newAddress,
-}) => {
-  const user = await userModel.findOneAndUpdate(
-    { _id: id },
-    { $push: { address: newAddress } }, // Thêm địa chỉ mới vào mảng
-    { new: true }
-  );
+const addAddress = async ({ id, newAddress }) => {
+  const user = await userModel.findById(id);
+
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  // Nếu địa chỉ mới được đặt làm mặc định, loại bỏ mặc định khỏi các địa chỉ khác
+  if (newAddress.isDefault) {
+    user.address.forEach(address => address.isDefault = false);
+  }
+
+  // Thêm địa chỉ mới
+  user.address.push(newAddress);
+  await user.save();
+
   return user.address;
-}
+};
+
 
 const getAddresses = async ({userId}) => {
   const user = await userModel.findOne({ _id: userId }).select('address');
@@ -146,13 +154,31 @@ const getAddresses = async ({userId}) => {
 };
 
 const updateAddress = async (userId, addressId, updatedAddress) => {
-  const user = await userModel.findOneAndUpdate(
-    { _id: userId, 'address._id': addressId },
-    { $set: { 'address.$': updatedAddress } }, // Cập nhật địa chỉ tại vị trí cụ thể
-    { new: true }
-  );
-  return user;
+  const user = await userModel.findById(userId);
+
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  // Nếu cập nhật địa chỉ này thành mặc định, loại bỏ mặc định khỏi các địa chỉ khác
+  if (updatedAddress.isDefault) {
+    user.address.forEach(address => {
+      if (address._id.toString() !== addressId) {
+        address.isDefault = false;
+      }
+    });
+  }
+
+  // Cập nhật địa chỉ tại vị trí cụ thể
+  const addressIndex = user.address.findIndex(address => address._id.toString() === addressId);
+  if (addressIndex > -1) {
+    user.address[addressIndex] = { ...user.address[addressIndex], ...updatedAddress };
+    await user.save();
+  }
+
+  return user.address;
 };
+
 
 const deleteAddress = async (userId, addressId) => {
   const user = await userModel.findOneAndUpdate(
@@ -162,6 +188,23 @@ const deleteAddress = async (userId, addressId) => {
   );
   return user;
 };
+
+const setDefaultAddress = async (userId, addressId) => {
+  const user = await userModel.findById(userId);
+
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  // Đặt tất cả các địa chỉ về không mặc định
+  user.address.forEach((address) => {
+    address.isDefault = address._id.toString() === addressId;
+  });
+
+  await user.save();
+  return user;
+};
+
 
 
 
@@ -177,4 +220,5 @@ module.exports = {
   getProfileForUser,
   getProfileForAdmin,
   getAllProfiles,
+  setDefaultAddress
 };

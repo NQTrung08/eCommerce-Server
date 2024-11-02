@@ -6,11 +6,12 @@ const { User: { DOCUMENT_NAME, COLLECTION_NAME } } = require('../constant/index'
 
 
 const addressSchema = new Schema({
-  district: String,
-  city: String,
-  village: String,
-  specific_address: String
-}, { _id: false });
+  recipient_name: String,
+  recipient_phone: String,
+  address: String,
+  specific_address: String,
+  isDefault: { type: Boolean, default: false },
+}, { _id: true });
 
 // Declare the Schema of the Mongo model
 var userSchema = new Schema({
