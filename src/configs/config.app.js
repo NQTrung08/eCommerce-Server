@@ -4,7 +4,8 @@ const dev = {
     redirectUrl: process.env.DEV_REDIRECT_URL,
     callbackUrl: process.env.DEV_CALLBACK_URL,
     url: 'http://localhost:8080',
-    resetPasswordUrl: process.env.DEV_RESET_PASSWORD_LINK
+    resetPasswordUrl: process.env.DEV_RESET_PASSWORD_LINK,
+    
   },
   vnpay: {
     vnp_ReturnUrl: process.env.DEV_VNP_RETURN_URL,

@@ -96,6 +96,7 @@ class ProductController {
       data: await ProductService.publicProducts(ids)
     }).send(res)
   }
+  
   privateProducts = async (req, res, next) => {
     const { ids } = req.body;
 

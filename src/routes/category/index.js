@@ -13,10 +13,21 @@ router.post('/', authenticate, authorize(['admin']), uploadStorage.single('file'
 router.post('/search', asyncHandler(CategoryController.searchCategory));
 router.get('/root', asyncHandler(CategoryController.getCategoryRoot));
 
+// thống kế doanh thu category cho shop
+router.get('/statistical/shop', authenticate, authorize(['shop']), asyncHandler(CategoryController.getStatisticalCategoryByShop));
+
+// thống kế  doanh thu category cho admin
+router.get('/statistical', authenticate, authorize(['admin']), asyncHandler(CategoryController.getStatisticalCategories));
+
+
 router.get('/:id', asyncHandler(CategoryController.getCategoryById));
 router.put('/:id', authenticate, authorize(['admin']), uploadStorage.single('file'), asyncHandler(CategoryController.updateCategory));
 router.delete('/:id', authenticate, authorize(['admin']), asyncHandler(CategoryController.deleteCategory));
 
 router.get('/:id/children', asyncHandler(CategoryController.getCategoryWithChildren));
+
+
+router.get('/:id/statistical', authenticate, authorize(['admin']), asyncHandler(CategoryController.getStatisticalCategory));
+
 
 module.exports = router

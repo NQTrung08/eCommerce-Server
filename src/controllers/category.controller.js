@@ -2,6 +2,7 @@
 
 const { BadRequestError } = require('../core/error.response');
 const { SuccessReponse, CREATED } = require('../core/success.response');
+const shopModel = require('../models/shop.model');
 const CategoryService = require('../services/category.service');
 
 class CategoryController {
@@ -81,6 +82,50 @@ class CategoryController {
       data: await CategoryService.getCategoryRoot()
     }).send(res)
   }
+
+  // get quantity for category id
+  getStatisticalCategory = async(req, res, next) => {
+    return new SuccessReponse({
+      message: 'Category statistical',
+      data: await CategoryService.getStatisticalCategory(req.params.id)
+    }).send(res)
+  }
+
+  getStatisticalCategories = async(req, res, next) => {
+    return new SuccessReponse({
+      message: 'Categories statistical',
+      data: await CategoryService.getStatisticalCategories({
+        shopId: null,
+        sortBy: req.query.sortBy,
+        order: req.query.order
+      })
+    }).send(res)
+  }
+
+  getStatisticalCategoryByShop = async(req, res, next) => {
+    const _id = req.user._id;
+    console.log(_id)
+    const shop = await shopModel.findOne({
+      owner_id: _id
+    }).lean()
+
+    console.log(shop)
+    console.log(shop._id)
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
+    
+    return new SuccessReponse({
+      message: 'Category statistical by shop',
+      data: await CategoryService.getStatisticalCategories({
+        shopId: shop._id,
+        sortBy: req.query.sortBy,
+        order: req.query.order
+      })
+    }).send(res)
+  }
+
+  
 
   
 }
