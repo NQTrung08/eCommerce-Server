@@ -6,7 +6,7 @@ const ShopService = require('../services/shop.service');
 
 
 class ShopController {
-  newShop = async(req, res, next) => {
+  newShop = async (req, res, next) => {
     return new CREATED({
       message: 'Shop created successfully',
       data: await ShopService.newShop({
@@ -17,49 +17,57 @@ class ShopController {
     }).send(res)
   }
 
-  getAllShopForUser = async(req, res, next) => {
+  getAllShopForUser = async (req, res, next) => {
     return new SuccessReponse({
       message: 'All shops for user',
       data: await ShopService.getAllShopForUser()
     }).send(res)
   }
 
-  getAllShops = async(req, res, next) => {
+  getAllShops = async (req, res, next) => {
     return new SuccessReponse({
       message: 'All shops',
-      data: await ShopService.getAllShop({
+      data: await ShopService.getAllShops({
         page: req.query.page,
         limit: req.query.limit,
         sortBy: req.query.sortBy,
-        query: req.query
+        query: req.query,
+        includeStatistics: req.query.includeStatistics,
+        year: req.query.year,
       })
     }).send(res)
   }
 
-  getShopByOwnerId = async(req, res, next) => {
+  getShopByOwnerId = async (req, res, next) => {
     return new SuccessReponse({
       message: 'Shop by owner id',
-      data: await ShopService.getShopByOwnerId(req.user._id)
+      data: await ShopService.getShopByOwnerId({
+        owner_id: req.user._id,
+        includeStatistics: req.query.includeStatistics,
+        year: req.query.year,
+      })
     }).send(res)
   }
 
-  getShopById = async(req, res, next) => {
+  getShopById = async (req, res, next) => {
+    console.log('Shop', req.query)
     return new SuccessReponse({
       message: 'Shop by id',
       data: await ShopService.getShop({
-        id: req.params.id
+        id: req.params.id,
+        year: req.query.year
       })
     }).send(res)
   }
 
-  updateShopById = async(req, res, next) => {
+  updateShopById = async (req, res, next) => {
     return new SuccessReponse({
       message: 'Shop updated successfully',
       data: await ShopService.updateShop(req.params.id, req.body)
     }).send(res)
   }
 
-  deleteShopById = async(req, res, next) => {
+  deleteShopById = async (req, res, next) => {
     return new SuccessReponse({
       message: 'Shop deleted successfully',
       data: await ShopService.deleteShop(req.params.id)
@@ -83,12 +91,23 @@ class ShopController {
     })
     shop.logo = result.secure_url
     await shop.save();
-    
+
     new SuccessReponse({
       message: "Shop logo uploaded successfully",
       data: shop
     }).send(res)
   };
+
+  getShopForAdmin = async (req, res) => {
+    return new SuccessReponse({
+      message: 'Shop by id for admin',
+      data: await ShopService.getShopForAdmin({
+        id: req.params.shopId,
+        role: req.user.role,
+        year: req.query.year
+      })
+    }).send(res)
+  }
 
 }
 

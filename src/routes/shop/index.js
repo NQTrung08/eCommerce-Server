@@ -14,6 +14,8 @@ router.get('/view-own', authenticate, authorize(['shop']), asyncHandler(ShopCont
 
 // get all shop chỉ cho admin
 router.get('/', authenticate, authorize(['admin']), asyncHandler(ShopController.getAllShops));
+router.get('/admin/:shopId', authenticate, authorize(['admin']), asyncHandler(ShopController.getShopForAdmin));
+
 
 // get all for user
 router.get('/all', asyncHandler(ShopController.getAllShopForUser));
