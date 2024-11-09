@@ -91,6 +91,7 @@ const getAllShops = async ({
   const limitNumber = parseInt(limit, 10);
   const sortOrder = sortBy.toLowerCase() === 'desc' ? -1 : 1;
   let totalRevenueEcommerce = 0;
+  let totalOrdersEcommerce = 0;
   const searchQuery = {};
   if (query.shop_name) {
     searchQuery.shop_name = new RegExp(query.shop_name, 'i');
@@ -115,14 +116,16 @@ const getAllShops = async ({
       shop.statistics = stats.length ? stats[0] : null;
       // total all revenue
       shop.total_revenue = Object.values(shop.statistics || {}).reduce((acc, curr) => acc + (curr.totalRevenue || 0), 0);
-
+      shop.order_count = Object.values(shop.statistics || {}).reduce((acc, curr) => acc + (curr.orderCount || 0), 0);
       totalRevenueEcommerce += shop.total_revenue;
+      totalOrdersEcommerce += shop.order_count;
     }
   }
 
   return {
     totalShops,
     totalRevenueEcommerce,
+    totalOrdersEcommerce,
     totalPages: Math.ceil(totalShops / limitNumber),
     currentPage: pageNumber,
     shops,
@@ -277,6 +280,52 @@ const getStatisticsForShop = async (shopId, year) => {
 };
 
 
+const getPlatformRevenue = async ({
+  startDate,
+  endDate,
+  groupBy = 'year'
+}) => {
+  const matchCondition = { 
+    // order_status: 'completed', 
+    createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } 
+  };
+
+  // Xác định cấu trúc nhóm theo `year` hoặc `year` + `month`
+  const groupStage = groupBy === 'year' || groupBy == '' ? (
+    {
+      _id: { year: { $year: "$createdAt" } },
+      totalOrders: { $sum: 1 },
+      totalRevenue: { $sum: "$order_total_price" }
+    }) : groupBy === 'month' ? ({
+      _id: { 
+        year: { $year: "$createdAt" },
+        month: { $month: "$createdAt" }
+      },
+      totalOrders: { $sum: 1 },
+      totalRevenue: { $sum: "$order_total_price" }
+    } ) : null ;
+
+  const sortStage = groupBy === 'year' ? 
+    { "_id.year": 1 } : 
+    { "_id.year": 1, "_id.month": 1 };
+
+  const statistics = await orderModel.aggregate([
+    { $match: matchCondition },
+    { $group: groupStage },
+    { $sort: sortStage }
+  ]);
+
+  // Định dạng dữ liệu trả về
+  return statistics.map(stat => ({
+    year: stat._id.year,
+    month: stat._id.month || null,
+    totalOrders: stat.totalOrders,
+    totalRevenue: stat.totalRevenue
+  }));
+};
+
+
+
 
 module.exports = {
   newShop,
@@ -287,5 +336,6 @@ module.exports = {
   deleteShop,
   getAllShopForUser,
   getShopsStatisticsForAdmin,
-  getShopForAdmin
+  getShopForAdmin,
+  getPlatformRevenue
 };

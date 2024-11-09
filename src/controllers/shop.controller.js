@@ -109,6 +109,18 @@ class ShopController {
     }).send(res)
   }
 
+  // api dùng cho biểu đồ
+  getPlatformRevenue = async (req, res) => {
+
+    return new SuccessReponse({
+      message: 'Revenue for platform',
+      data: await ShopService.getPlatformRevenue({
+        startDate: req.query.startDate,
+        endDate: req.query.endDate,
+        groupBy: req.query.groupBy
+      })
+    }).send(res)
+  }
 }
 
 module.exports = new ShopController;

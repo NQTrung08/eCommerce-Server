@@ -16,6 +16,8 @@ router.get('/view-own', authenticate, authorize(['shop']), asyncHandler(ShopCont
 router.get('/', authenticate, authorize(['admin']), asyncHandler(ShopController.getAllShops));
 router.get('/admin/:shopId', authenticate, authorize(['admin']), asyncHandler(ShopController.getShopForAdmin));
 
+// api get bieu đồ
+router.get('/admin-revenue', authenticate, authorize(['admin']), asyncHandler(ShopController.getPlatformRevenue));
 
 // get all for user
 router.get('/all', asyncHandler(ShopController.getAllShopForUser));
