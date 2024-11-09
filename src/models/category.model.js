@@ -20,14 +20,6 @@ const categorySchema = new Schema({
     default: null
   },
   level: Number,
-  properties: {
-    type: Schema.Types.Mixed,
-    default: {}
-  },
-  isSystemCategory: {
-    type: Boolean,
-    default: true
-  }
 }, {
   timestamps: true,
   collection: COLLECTION_NAME

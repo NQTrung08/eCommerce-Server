@@ -125,6 +125,16 @@ class CategoryController {
     }).send(res)
   }
 
+
+  // update parent for categories
+  updateParentForCategories = async(req, res, next) => {
+    const { categoryIds, newParentId } = req.body
+    return new SuccessReponse({
+      message: 'Category parent updated successfully',
+      data: await CategoryService.updateParentForCategories(categoryIds, newParentId)
+    }).send(res)
+  }
+
   
 
   

@@ -65,9 +65,7 @@ const newCategory = async ({
 
 const getCategories = async () => {
 
-  const categories = await categoryModel.find({
-    isSystemCategory: true,
-  }).populate('parent_id');
+  const categories = await categoryModel.find().populate('parent_id');
 
   return categories;
 
@@ -79,116 +77,121 @@ const getCategoryById = async (id) => {
 }
 
 const updateCategory = async (id, body, file) => {
+  // Kiểm tra nếu parent_id trùng với id của chính nó
   if (id == body.parent_id) {
     throw new BadRequestError('Parent category cannot be the same as the current category');
   }
+
+  // Kiểm tra id hợp lệ
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new BadRequestError('Invalid id');
   }
-  const parentId = body.parent_id && body.parent_id.trim() !== "" ? body.parent_id : null;
 
-  let level = 0;
-  if (parentId) {
-    const parentCategory = await categoryModel.findById(parentId);
+  const categoryUpdate = {};
+
+  // Xử lý parent_id (nếu có)
+  if (body.parent_id && body.parent_id.trim() !== "" && body.parent_id !== id) {
+    const parentCategory = await categoryModel.findById(body.parent_id);
     if (!parentCategory) {
       throw new NotFoundError('Parent category not found');
     }
-    level = parentCategory.level + 1;
+    categoryUpdate.parent_id = body.parent_id;
+    categoryUpdate.level = parentCategory.level + 1;
   }
 
-  const uploadResult = await uploadCategoryImage({
-    filePath: file.path,
-    categoryId: category_name,
-  });
+  // Kiểm tra và cập nhật tên category
+  if (body.category_name) {
+    categoryUpdate.category_name = body.category_name;
+  }
 
+  // Kiểm tra và cập nhật hình ảnh category (nếu có)
+  if (file && file.path) {
+    const uploadResult = await uploadCategoryImage({
+      filePath: file.path,
+      categoryId: body.category_name,
+    });
+    categoryUpdate.category_img = uploadResult.url;
+  }
 
-  const category = await categoryModel.findByIdAndUpdate(id, {
-    category_name: body.category_name,
-    parent_id: parentId,
-    level: level,
-    category_img: uploadResult.url,
-  }, {
+  // Cập nhật category trong cơ sở dữ liệu
+  const category = await categoryModel.findByIdAndUpdate(id, categoryUpdate, {
     new: true,
   });
+
+  // Nếu không tìm thấy category
   if (!category) {
     throw new NotFoundError('Category not found');
   }
 
   return category;
-}
+};
+
 
 const deleteCategory = async (id) => {
-  try {
-    const categoryToDelete = await categoryModel.findById(id);
-    if (!categoryToDelete) {
-      throw new NotFoundError('Category not found');
-    }
-    // Xác định danh mục cha gần nhất
-    const parentCategory = await categoryModel.findById(categoryToDelete.parent_id);
-
-    // Cập nhật parentId của các danh mục con
-    await categoryModel.updateMany(
-      { parent_id: id },
-      {
-        $set: {
-          parent_id: parentCategory._id,
-          level: parentCategory.level + 1
-        }
-      });
-    // Xóa danh mục hiện tại
-    // await categoryModel.findByIdAndDelete(id);
-    await categoryToDelete.deleteOne();
-    return { message: 'Category deleted successfully' };
-  } catch (error) {
-    console.error('[E]::deleteCategory::', error);
-    throw error;
+  const categoryToDelete = await categoryModel.findById(id);
+  if (!categoryToDelete) {
+    throw new NotFoundError('Category not found');
   }
+
+  // Kiểm tra xem danh mục có children không
+  const hasChildren = await categoryModel.exists({ parent_id: id });
+  if (hasChildren) {
+    throw new BadRequestError('Cannot delete category because it has subcategories.');
+  }
+
+  // Xác định danh mục cha gần nhất (nếu có)
+  const parentCategory = await categoryModel.findById(categoryToDelete.parent_id);
+
+  // Cập nhật parentId của các danh mục con
+  await categoryModel.updateMany(
+    { parent_id: id },
+    {
+      $set: {
+        parent_id: parentCategory ? parentCategory._id : null,
+        level: parentCategory ? parentCategory.level + 1 : 0
+      }
+    });
+
+  // Xóa danh mục hiện tại
+  await categoryToDelete.deleteOne();
+  return { message: 'Category deleted successfully' };
 }
 
+
 const buildCategoryTree = async () => {
-  try {
-    const categories = await categoryModel.find({}).lean();
+  const categories = await categoryModel.find({}).lean();
 
-    // Function to build a tree from the flat list
-    const buildTree = (parentId = null) => {
-      return categories
-        .filter(category => (category.parent_id ? category.parent_id.toString() : null) === (parentId ? parentId.toString() : null))
-        .map(category => ({
-          ...category,
-          children: buildTree(category._id)
-        }));
-    };
+  // Function to build a tree from the flat list
+  const buildTree = (parentId = null) => {
+    return categories
+      .filter(category => (category.parent_id ? category.parent_id.toString() : null) === (parentId ? parentId.toString() : null))
+      .map(category => ({
+        ...category,
+        children: buildTree(category._id)
+      }));
+  };
 
-    const categoryTree = buildTree();
+  const categoryTree = buildTree();
 
-    return categoryTree;
-  } catch (error) {
-    console.error('[E]::buildCategoryTree::', error);
-    throw error;
-  }
+  return categoryTree;
 };
 
 const getCategoryRoot = async () => {
-  try {
-    const categories = await categoryModel.find({}).lean();
+  const categories = await categoryModel.find({}).lean();
 
-    // Function to build a tree from the flat list
-    const buildTree = (parentId = null) => {
-      return categories
-        .filter(category => (category.parent_id ? category.parent_id.toString() : null) === (parentId ? parentId.toString() : null))
-        .map(category => ({
-          ...category,
-          // children: buildTree(category._id)
-        }));
-    };
+  // Function to build a tree from the flat list
+  const buildTree = (parentId = null) => {
+    return categories
+      .filter(category => (category.parent_id ? category.parent_id.toString() : null) === (parentId ? parentId.toString() : null))
+      .map(category => ({
+        ...category,
+        // children: buildTree(category._id)
+      }));
+  };
 
-    const categoryTree = buildTree();
+  const categoryTree = buildTree();
 
-    return categoryTree;
-  } catch (error) {
-    console.error('[E]::getCategoryRoot::', error);
-    throw error;
-  }
+  return categoryTree;
 };
 
 const searchCategory = async ({ category_name }) => {
@@ -382,7 +385,7 @@ const getStatisticalCategories = async ({
         totalProducts,
         totalRevenue
       });
-    } else if(!shopId) { // nếu kp shop thì trả về tất cả category
+    } else if (!shopId) { // nếu kp shop thì trả về tất cả category
       statistics.push({
         _id: category._id,
         categoryName: category.category_name,
@@ -402,6 +405,43 @@ const getStatisticalCategories = async ({
 }
 
 
+// update parent for [ids]
+const updateParentForCategories = async (ids, newParentId) => {
+  if (!mongoose.Types.ObjectId.isValid(newParentId)) {
+    throw new BadRequestError('Invalid parent id');
+  }
+
+  // Check if categories exist
+  const categories = await categoryModel.find({ _id: { $in: ids } });
+  if (categories.length === 0) {
+    throw new NotFoundError('Categories not found');
+  }
+
+  // Check if new parent exists
+  const newParent = await categoryModel.findById(newParentId);
+  if (!newParent) {
+    throw new NotFoundError('Parent category not found');
+  }
+
+  // Check if new parent is not one of the categories themselves
+  if (ids.includes(newParentId.toString())) {
+    throw new BadRequestError('A category cannot be its own parent');
+  }
+
+  // Bulk update to set new parent id
+  const updateResult = await categoryModel.updateMany(
+    { _id: { $in: ids } },
+    { $set: { parent_id: newParentId } }
+  );
+
+  if (updateResult.modifiedCount === 0) {
+    throw new NotFoundError('No categories were updated');
+  }
+
+  // Fetch updated categories for response
+  return categoryModel.find({ _id: { $in: ids } });
+}
+
 
 module.exports = {
   newCategory,
@@ -414,5 +454,6 @@ module.exports = {
   getCategoryWithChildren,
   getCategoryRoot,
   getStatisticalCategory,
-  getStatisticalCategories
+  getStatisticalCategories,
+  updateParentForCategories
 };

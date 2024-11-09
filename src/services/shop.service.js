@@ -291,19 +291,27 @@ const getPlatformRevenue = async ({
   };
 
   // Xác định cấu trúc nhóm theo `year` hoặc `year` + `month`
-  const groupStage = groupBy === 'year' || groupBy == '' ? (
-    {
-      _id: { year: { $year: "$createdAt" } },
-      totalOrders: { $sum: 1 },
-      totalRevenue: { $sum: "$order_total_price" }
-    }) : groupBy === 'month' ? ({
-      _id: { 
-        year: { $year: "$createdAt" },
-        month: { $month: "$createdAt" }
-      },
-      totalOrders: { $sum: 1 },
-      totalRevenue: { $sum: "$order_total_price" }
-    } ) : null ;
+  const groupStage = (() => {
+    if (groupBy === 'year' || groupBy === '') {
+      return {
+        _id: { year: { $year: "$createdAt" } },
+        totalOrders: { $sum: 1 },
+        totalRevenue: { $sum: "$order_total_price" }
+      };
+    } else if (groupBy === 'month') {
+      return {
+        _id: { 
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" }
+        },
+        totalOrders: { $sum: 1 },
+        totalRevenue: { $sum: "$order_total_price" }
+      };
+    } else {
+      throw new BadRequestError('Invalid groupBy parameter. It should be either "year" or "month".');
+    }
+  })();
+  
 
   const sortStage = groupBy === 'year' ? 
     { "_id.year": 1 } : 
