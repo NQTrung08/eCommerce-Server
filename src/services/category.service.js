@@ -33,6 +33,7 @@ const newCategory = async ({
   }
 
   let parentCategory = null;
+  let order = 0;
   if (parent_id) {
     if (!mongoose.Types.ObjectId.isValid(parent_id)) {
       throw new BadRequestError('Invalid parent_id');
@@ -41,6 +42,11 @@ const newCategory = async ({
     if (!parentCategory) {
       throw new BadRequestError('Parent category not found');
     }
+
+
+    // Tìm số lượng node con hiện có của `parent_id`
+    const siblingCount = await categoryModel.countDocuments({ parent_id });
+    order = siblingCount;
   }
 
   // upload images
@@ -55,6 +61,7 @@ const newCategory = async ({
     parent_id: parentCategory ? parent_id : null,
     level: parentCategory ? parentCategory.level + 1 : 0,
     category_img: uploadResult.url,
+    order
   });
 
 
@@ -165,9 +172,10 @@ const buildCategoryTree = async () => {
   const buildTree = (parentId = null) => {
     return categories
       .filter(category => (category.parent_id ? category.parent_id.toString() : null) === (parentId ? parentId.toString() : null))
+      .sort((a, b) => a.order - b.order) // Sắp xếp theo order
       .map(category => ({
         ...category,
-        children: buildTree(category._id)
+        children: buildTree(category._id) // Tiếp tục đệ quy xây dựng cây cho danh mục con
       }));
   };
 
@@ -175,6 +183,7 @@ const buildCategoryTree = async () => {
 
   return categoryTree;
 };
+
 
 const getCategoryRoot = async () => {
   const categories = await categoryModel.find({}).lean();
@@ -406,41 +415,56 @@ const getStatisticalCategories = async ({
 
 
 // update parent for [ids]
-const updateParentForCategories = async (ids, newParentId) => {
-  if (!mongoose.Types.ObjectId.isValid(newParentId)) {
-    throw new BadRequestError('Invalid parent id');
-  }
-
-  // Check if categories exist
+const moveNode = async (ids, newParentId, newIndex) => {
+  // Kiểm tra xem các danh mục có tồn tại không
   const categories = await categoryModel.find({ _id: { $in: ids } });
-  if (categories.length === 0) {
-    throw new NotFoundError('Categories not found');
+  if (categories.length !== ids.length) {
+    throw new NotFoundError('Không tìm thấy một hoặc nhiều danh mục');
   }
 
-  // Check if new parent exists
+  // Kiểm tra xem danh mục cha mới có tồn tại không
   const newParent = await categoryModel.findById(newParentId);
-  if (!newParent) {
-    throw new NotFoundError('Parent category not found');
+  if (!newParent && newParentId !== null) {
+    throw new NotFoundError('Không tìm thấy danh mục cha mới');
   }
 
-  // Check if new parent is not one of the categories themselves
-  if (ids.includes(newParentId.toString())) {
-    throw new BadRequestError('A category cannot be its own parent');
+  // Kiểm tra xem danh mục cha mới không phải là chính danh mục cần di chuyển
+  if (ids.includes(newParentId?.toString())) {
+    throw new BadRequestError('Danh mục không thể là cha của chính nó');
   }
 
-  // Bulk update to set new parent id
-  const updateResult = await categoryModel.updateMany(
-    { _id: { $in: ids } },
-    { $set: { parent_id: newParentId } }
-  );
+  // Lấy tất cả các danh mục con của danh mục cha mới, sắp xếp theo thứ tự hiện tại
+  const siblingCategories = await categoryModel.find({ parent_id: newParentId }).sort({ order: 1 });
 
+  // Loại bỏ các danh mục đang được di chuyển khỏi danh sách
+  const remainingSiblings = siblingCategories.filter(cat => !ids.includes(cat._id.toString()));
+
+  // Chèn các danh mục cần di chuyển vào vị trí `newIndex`
+  const reorderedCategories = [
+    ...remainingSiblings.slice(0, newIndex),
+    ...ids.map(id => ({ _id: id })),
+    ...remainingSiblings.slice(newIndex)
+  ];
+
+  // Cập nhật `order` cho từng danh mục
+  const bulkUpdates = reorderedCategories.map((cat, index) => ({
+    updateOne: {
+      filter: { _id: cat._id },
+      update: { parent_id: newParentId, order: index }
+    }
+  }));
+
+  const updateResult = await categoryModel.bulkWrite(bulkUpdates);
+
+  // Kiểm tra xem có danh mục nào được cập nhật không
   if (updateResult.modifiedCount === 0) {
-    throw new NotFoundError('No categories were updated');
+    throw new NotFoundError('Không có danh mục nào được cập nhật');
   }
 
-  // Fetch updated categories for response
+  // Lấy danh mục đã cập nhật để trả về
   return categoryModel.find({ _id: { $in: ids } });
-}
+};
+
 
 
 module.exports = {
@@ -455,5 +479,5 @@ module.exports = {
   getCategoryRoot,
   getStatisticalCategory,
   getStatisticalCategories,
-  updateParentForCategories
+  moveNode
 };

@@ -19,7 +19,7 @@ router.get('/statistical/shop', authenticate, authorize(['shop']), asyncHandler(
 // thống kế  doanh thu category cho admin
 router.get('/statistical', authenticate, authorize(['admin']), asyncHandler(CategoryController.getStatisticalCategories));
 // update parent for [ids]
-router.put('/update-parent', authenticate, authorize(['admin']), asyncHandler(CategoryController.updateParentForCategories));
+router.put('/move-node', authenticate, authorize(['admin']), asyncHandler(CategoryController.moveNode));
 
 
 router.get('/:id', asyncHandler(CategoryController.getCategoryById));

@@ -20,6 +20,7 @@ const categorySchema = new Schema({
     default: null
   },
   level: Number,
+  order: Number,
 }, {
   timestamps: true,
   collection: COLLECTION_NAME
