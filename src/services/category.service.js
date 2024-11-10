@@ -446,11 +446,16 @@ const moveNode = async (ids, newParentId, newIndex) => {
     ...remainingSiblings.slice(newIndex)
   ];
 
-  // Cập nhật `order` cho từng danh mục
+  // Cập nhật `order` và `level` cho từng danh mục trong danh sách đã sắp xếp lại
   const bulkUpdates = reorderedCategories.map((cat, index) => ({
     updateOne: {
       filter: { _id: cat._id },
-      update: { parent_id: newParentId, order: index }
+      update: { 
+        parent_id: newParentId, 
+        order: index,
+        // Cập nhật level dựa vào cấp độ của danh mục cha mới
+        level: newParent ? newParent.level + 1 : 0  // Cấp độ của danh mục con sẽ là cấp độ của cha + 1
+      }
     }
   }));
 
@@ -464,6 +469,7 @@ const moveNode = async (ids, newParentId, newIndex) => {
   // Lấy danh mục đã cập nhật để trả về
   return categoryModel.find({ _id: { $in: ids } });
 };
+
 
 
 
