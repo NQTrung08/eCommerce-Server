@@ -1,4 +1,5 @@
 'use strict';
+
 const { NotFoundError, BadRequestError } = require('../core/error.response');
 const productModel = require('../models/product.model');
 const shopModel = require('../models/shop.model');
@@ -179,27 +180,27 @@ const getProductById = async (id) => {
 
 }
 
-const updateProduct = async ({
-  userId, id, body
-}) => {
+const updateProduct = async ({ userId, id, body }) => {
 
-  // Kiểm tra các trường bắt buộc trong body
+  console.log('Updating product', body.product_img);
+  console.log('Updating product', body.category_id);
+  // Kiểm tra các trường bắt buộc nếu body có các trường liên quan
+  
   const requiredFields = ['product_name', 'product_price', 'product_quantity', 'category_id'];
-
+  
   for (const field of requiredFields) {
-    if (!body[field]) {
+    if (field in body && !body[field]) {
       throw new BadRequestError(`Missing required field: ${field}`);
     }
   }
 
-
-  // Tìm shop với owner_id xem có tồn tại không
+  // Tìm shop với owner_id để đảm bảo shop tồn tại
   const shop = await shopModel.findOne({ owner_id: userId });
   if (!shop) {
     throw new NotFoundError('Shop not found for the owner');
   }
 
-  // Kiểm tra xem sản phẩm có tồn tại trong shop đó không
+  // Kiểm tra xem sản phẩm có tồn tại trong shop không
   const existingProduct = await productModel.findOne({
     _id: id,
     shop_id: shop._id
@@ -208,20 +209,42 @@ const updateProduct = async ({
     throw new NotFoundError('Product not found in this shop');
   }
 
-  // Kiểm tra xem nếu product_name có trong body thì tạo lại product_slug
+  // Tạo lại product_slug nếu product_name có trong body
   if (body.product_name) {
     body.product_slug = slugify(body.product_name, { lower: true });
   }
 
-  // Kiểm tra xem sản phẩm đã có tồn tại trước đó hay chưa
-  const productToUpdate = await productModel.findByIdAndUpdate(id, body, { new: true });
+  // Cập nhật trạng thái hiển thị nếu có visibility
+  if (body.isPublic) {
+    body.isPublic = true;
+    body.isDraft = false;
+    body.isDeleted = false;
+  } else if (body.isDraft) {
+    body.isPublic = false;
+    body.isDraft = true;
+    body.isDeleted = false;
+  }
 
+  // Nếu có file hình ảnh, upload từng file lên Cloudinary
+  const productImages = await uploadProductImages({
+    files: body.product_img,
+    shopId: shop._id,
+    productId: id, // Tạo productId tạm thời cho tên folder
+  });
+
+  // Gắn hình ảnh vào productData
+  productData.product_img = productImages;
+
+  // Cập nhật sản phẩm chỉ với các trường có trong body
+  const productToUpdate = await productModel.findByIdAndUpdate(id, { $set: body }, { new: true });
+  
   if (!productToUpdate) {
     throw new NotFoundError('Product not found');
   }
 
   return productToUpdate;
-}
+};
+
 
 const deleteProducts = async (ids) => {
   const products = await productModel.updateMany(

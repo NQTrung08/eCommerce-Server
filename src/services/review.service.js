@@ -1,6 +1,7 @@
 const { BadRequestError } = require("../core/error.response")
 const productModel = require("../models/product.model")
 const reviewModel = require("../models/review.model")
+const shopModel = require("../models/shop.model")
 const userModel = require("../models/user.model")
 
 const createReview = async (payload) => {
@@ -37,7 +38,24 @@ const getReviewsByProductId = async (productId) => {
   return review
 }
 
+
+const getAllReviewsForShop = async (shopId) => {
+  const shop = await shopModel.findById(shopId)
+  if (!shop) {
+    throw new BadRequestError("Shop not found")
+  }
+  const reviews = await reviewModel.find({ shop_id: shop.id })
+  return reviews
+}
+
+const getAll = async () => {
+  const reviews = await reviewModel.find({})
+  return reviews
+}
+
 module.exports = {
   createReview,
-  getReviewsByProductId
+  getReviewsByProductId,
+  getAllReviewsForShop,
+  getAll
 }

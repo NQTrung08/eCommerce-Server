@@ -1,12 +1,40 @@
 // order.controller.js
 'use strict';
-const { createOrder, getOrdersByUserId, cancelOrder, updateOrderStatus, removePurchasedItemsFromCart } = require('../services/order.service');
+const { createOrder, getOrdersByUserId, cancelOrder, updateOrderStatus, removePurchasedItemsFromCart, getAllOrders, getOrdersForShop } = require('../services/order.service');
 const { createVnpayPaymentUrl } = require('../services/payment.service');
-const { SuccessResponse, SuccessReponse } = require('../core/success.response');
+const { SuccessReponse } = require('../core/success.response');
 const { BadRequestError } = require('../core/error.response');
 const { createVnpayTransaction } = require('../services/transaction.service');
-const { app: { redirectUrl } } = require('../configs/config.app')
+const { app: { redirectUrl } } = require('../configs/config.app');
+const shopModel = require('../models/shop.model');
 class OrderController {
+
+  getAll = async (req, res, next) => {
+    new SuccessReponse({
+      message: 'Get all orders',
+      data: await getAllOrders()
+    }).send(res)
+  }
+
+  getOrdersForShop = async (req, res, next) => {
+    const id = req.user._id
+    const { status } = req.query;
+    const shop = await shopModel.findOne({
+      owner_id: id
+    })
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
+
+    new SuccessReponse({
+      message: 'All orders for shop',
+      data: await getOrdersForShop({
+        shopId: shop._id
+      })
+    }).send(res)
+  }
+
+
   // Hàm xử lý yêu cầu tạo đơn hàng
   createOrder = async (req, res, next) => {
     const { _id } = req.user; // Lấy id người dùng từ req.user

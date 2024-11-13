@@ -1,7 +1,8 @@
 const { BadRequestError } = require("../core/error.response");
 const { SuccessReponse } = require("../core/success.response");
 const orderModel = require("../models/order.model");
-const { createReview, getReviewsByProductId } = require("../services/review.service");
+const shopModel = require("../models/shop.model");
+const { createReview, getReviewsByProductId, getAll, getAllReviewsForShop } = require("../services/review.service");
 
 
 class ReviewController {
@@ -32,6 +33,30 @@ class ReviewController {
     new SuccessReponse({
       message: 'Review by product id',
       data: review
+    }).send(res);
+  }
+
+  getAll = async (req, res, next) => {
+    new SuccessReponse({
+      message: 'All reviews',
+      data: await getAll()
+    }).send(res);
+  }
+
+  getAllReviewsForShop = async (req, res, next) => {
+    const id = req.user._id
+    const shop = await shopModel.findOne({
+      owner_id: id
+    })
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
+
+    new SuccessReponse({
+      message: 'All reviews for shop',
+      data: await getAllReviewsForShop({
+        shopId: shop._id
+      })
     }).send(res);
   }
 }

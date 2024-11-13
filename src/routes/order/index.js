@@ -3,7 +3,10 @@ const orderController = require('../../controllers/order.controller');
 const { authenticate, authorize } = require('../../middewares/authenticate.middleware');
 const  {asyncHandler} = require('../../helpers/asyncHandler');
 const router = express.Router();
+
 // Endpoint nhận thông tin thanh toán từ VNPAY
+router.get('/', authenticate, authorize('admin'), asyncHandler(orderController.getAll))
+router.get('/shop-owners', authenticate, authorize('shop'), asyncHandler(orderController.getOrdersForShop))
 router.post('/', authenticate, asyncHandler(orderController.createOrder));
 router.get('/vnpay_return', asyncHandler(orderController.vnpayReturn));
 

@@ -59,10 +59,10 @@ const createOrder = async ({ userId, orders, paymentMethod, shippingAddress, pay
       order_payment_gateway: paymentMethod === 'online' ? paymentGateway : 'none', // Lưu thông tin cổng thanh toán
       order_status: 'pending', // Trạng thái đơn hàng mặc định là đang chờ xử lý
     });
-    
+
     await newOrder.save(); // Lưu đơn hàng vào DB
     createdOrders.push(newOrder);
-    
+
     // Cộng dồn tổng tiền
     totalAmountOrders += orderData.totalPrice;
 
@@ -83,9 +83,19 @@ const createOrder = async ({ userId, orders, paymentMethod, shippingAddress, pay
 };
 
 const getAllOrders = async () => {
-  const orders = await orderModel.find();
+  const orders = await orderModel.find({
+
+  });
   return orders;
-} 
+}
+
+const getOrdersForShop = async ({shopId}) => {
+  const orders = await orderModel.find({
+    order_shopId: shopId
+  });
+
+  return orders;
+}
 
 // get order by user id filter by status
 const getOrdersByUserId = async ({ userId, status }) => {
@@ -110,7 +120,7 @@ const updateOrderStatus = async ({ orderId, status }) => {
 }
 
 // cancel order if order status is pending
-const cancelOrder = async ({ userId,orderId }) => {
+const cancelOrder = async ({ userId, orderId }) => {
   const query = { _id: orderId };
   const order = await orderModel.findById(orderId);
 
@@ -127,7 +137,7 @@ const cancelOrder = async ({ userId,orderId }) => {
   if (order.order_status === 'pending') {
     const update = { order_status: 'cancelled' };
     const options = { new: true };
-    
+
     // Cập nhật trạng thái đơn hàng thành 'cancelled'
     const updatedOrder = await orderModel.findOneAndUpdate(query, update, options);
     return updatedOrder;
@@ -161,5 +171,6 @@ module.exports = {
   getOrdersByUserId,
   updateOrderStatus,
   cancelOrder,
-  removePurchasedItemsFromCart
+  removePurchasedItemsFromCart,
+  getOrdersForShop
 };
