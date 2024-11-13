@@ -46,6 +46,11 @@ const newProduct = async (owner_id, productData, files) => {
     throw new BadRequestError('Product already exists in this shop');
   }
 
+  // nếu có field là isDraft 
+  if(productData.isDraft) {
+      productData.isPublic = false;
+    }
+
   // Upload các hình ảnh của sản phẩm
   const productImages = await uploadProductImages({
     files,

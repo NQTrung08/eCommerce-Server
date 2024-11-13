@@ -2,6 +2,7 @@
 
 const { BadRequestError } = require('../core/error.response');
 const { SuccessReponse } = require('../core/success.response');
+const productModel = require('../models/product.model');
 const shopModel = require('../models/shop.model');
 const ProductService = require('../services/product.service');
 
@@ -50,16 +51,32 @@ class ProductController {
   }
 
   deleteProducts = async (req, res, next) => {
-
+    const id = req.user._id
     const { ids } = req.body;
 
   // Kiểm tra xem mảng ids có tồn tại và có ít nhất một phần tử không
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
-    return res.status(400).send({
-      message: 'No product IDs provided for deletion',
-    });
+    throw new BadRequestError('No product IDs provided for deletion')
   }
 
+  const shop = shopModel.findOne({
+    owner_id: id
+  })
+  if (!shop) {
+    throw new BadRequestError('Shop not found for the owner');
+  }
+
+  // Kiểm tra xem tất cả sản phẩm có tồn tại trong shop không
+  const existingProducts = await productModel.find({
+    _id: { $in: ids },
+    shop_id: shop._id
+  });
+
+  if (existingProducts.length !== ids.length) {
+    throw new BadRequestError('One or more products not found in this shop');
+  }
+
+  // Xóa sản phẩm
     return new SuccessReponse({
       message: 'Product deleted successfully',
       data: await ProductService.deleteProducts(ids)
@@ -174,6 +191,23 @@ class ProductController {
       message: 'Get products by category id',
       data: await ProductService.getProductsByCategoryId({
         categoryId
+      })
+    }).send(res)
+  }
+
+  getAllProductsForShop = async (req, res, next) => {
+    const id = req.user._id
+
+    const shop = await shopModel.findOne({
+      owner_id: id
+    })
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
+    return new SuccessReponse({
+      message: 'Get product for shop',
+      data: await ProductService.getProductsByShopId({
+        shopId: shop._id
       })
     }).send(res)
   }
