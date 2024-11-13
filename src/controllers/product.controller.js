@@ -198,12 +198,16 @@ class ProductController {
   getAllProductsForShop = async (req, res, next) => {
     const id = req.user._id
 
+    console.log("id", id )
+
     const shop = await shopModel.findOne({
       owner_id: id
     })
     if (!shop) {
       throw new BadRequestError('Shop not found for the owner');
     }
+
+    console.log('shop', shop)
     return new SuccessReponse({
       message: 'Get product for shop',
       data: await ProductService.getProductsByShopId({

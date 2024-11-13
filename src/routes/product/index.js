@@ -8,6 +8,7 @@ const router = express.Router();
 
 router.post('/',authenticate, authorize(['shop']), uploadStorage.array('files', 10), asyncHandler(ProductController.newProduct));
 
+router.get('/shop-owners', authenticate, authorize(['shop']), asyncHandler(ProductController.getAllProductsForShop));
 router.post('/search', asyncHandler(ProductController.searchProducts));
 router.get('/', asyncHandler(ProductController.getAllProducts));
 router.get('/:id', asyncHandler(ProductController.getProductById))
@@ -15,7 +16,6 @@ router.put('/:id', authenticate, authorize(['shop']), uploadStorage.array('files
 
 // Xóa sản phẩm (chỉ chuyển sang trạng thái xóa, không xóa vĩnh viễn)
 router.delete('/', authenticate, authorize(['shop']), asyncHandler(ProductController.deleteProducts));
-
 // Đưa sản phẩm về trạng thái công khai
 router.post('/public', authenticate, authorize(['shop']), asyncHandler(ProductController.publicProducts));
 
