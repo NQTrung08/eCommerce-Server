@@ -45,7 +45,8 @@ class ProductController {
       data: await ProductService.updateProduct({
         userId: req.user._id,
         id: req.params.id,
-        body: req.body
+        body: req.body,
+        files: req.files
       })
     }).send(res)
   }

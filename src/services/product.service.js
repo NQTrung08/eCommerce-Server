@@ -180,10 +180,8 @@ const getProductById = async (id) => {
 
 }
 
-const updateProduct = async ({ userId, id, body }) => {
+const updateProduct = async ({ userId, id, body, files }) => {
 
-  console.log('Updating product', body.product_img);
-  console.log('Updating product', body.category_id);
   // Kiểm tra các trường bắt buộc nếu body có các trường liên quan
   
   const requiredFields = ['product_name', 'product_price', 'product_quantity', 'category_id'];
@@ -227,7 +225,7 @@ const updateProduct = async ({ userId, id, body }) => {
 
   // Nếu có file hình ảnh, upload từng file lên Cloudinary
   const productImages = await uploadProductImages({
-    files: body.product_img,
+    files: files,
     shopId: shop._id,
     productId: id, // Tạo productId tạm thời cho tên folder
   });
