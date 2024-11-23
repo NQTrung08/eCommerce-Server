@@ -10,6 +10,9 @@ const dev = {
   vnpay: {
     vnp_ReturnUrl: process.env.DEV_VNP_RETURN_URL,
   },
+  momo: {
+    momo_ReturnUrl: process.env.DEV_MOMO_RETURN_URL,
+  }
 }
 
 const pro = {
@@ -23,6 +26,9 @@ const pro = {
   vnpay: {
     vnp_ReturnUrl: process.env.PRO_VNP_RETURN_URL,
   },
+  momo: {
+    momo_ReturnUrl: process.env.PRO_MOMO_RETURN_URL
+  }
 }
 
 const config = { dev, pro };

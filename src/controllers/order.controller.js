@@ -1,10 +1,10 @@
 // order.controller.js
 'use strict';
 const { createOrder, getOrdersByUserId, cancelOrder, updateOrderStatus, removePurchasedItemsFromCart, getAllOrders, getOrdersForShop } = require('../services/order.service');
-const { createVnpayPaymentUrl } = require('../services/payment.service');
+const { createVnpayPaymentUrl, createMoMoPaymentUrl } = require('../services/payment.service');
 const { SuccessReponse } = require('../core/success.response');
 const { BadRequestError } = require('../core/error.response');
-const { createVnpayTransaction } = require('../services/transaction.service');
+const { createVnpayTransaction, createMoMoTransaction } = require('../services/transaction.service');
 const { app: { redirectUrl } } = require('../configs/config.app');
 const shopModel = require('../models/shop.model');
 class OrderController {
@@ -64,7 +64,7 @@ class OrderController {
         paymentUrl = await createVnpayPaymentUrl({ orderIds, totalAmount: newOrders.totalAmountOrders, ipAddr });
       } else if (paymentGateway === 'MOMO') {
         // Giả sử hàm createMomoPaymentUrl đã được định nghĩa
-        paymentUrl = await createMomoPaymentUrl(newOrders.totalAmountOrders, ipAddr);
+        paymentUrl = await createMoMoPaymentUrl({ orderIds, amount: newOrders.totalAmountOrders, ipAddr });
       } else {
         throw new BadRequestError('Unsupported payment gateway');
       }
@@ -112,6 +112,55 @@ class OrderController {
 
     // Thực hiện chuyển hướng về frontend với kết quả
     return res.redirect(redirectUrlPayment);
+  };
+
+
+  // nhận thông tin từ momo
+  momoReturn = async (req, res) => {
+    const {
+      partnerCode,
+      orderId,
+      requestId,
+      amount,
+      orderInfo,
+      orderType,
+      transId,
+      resultCode,
+      message,
+      responseTime,
+      extraData,
+      signature,
+    } = req.query;
+
+    const rawSignature = `amount=${amount}&extraData=${extraData}&message=${message}&orderId=${orderId}&orderInfo=${orderInfo}&orderType=${orderType}&partnerCode=${partnerCode}&payType=&requestId=${requestId}&responseTime=${responseTime}&resultCode=${resultCode}&transId=${transId}`;
+    const generatedSignature = crypto.createHmac('sha256', secretkey).update(rawSignature).digest('hex');
+
+    if (signature !== generatedSignature) {
+      throw new BadRequestError(`Invalid signature`)
+    }
+    let redirectUrlPayment;
+    if (resultCode == '0') {
+      // Lưu thông tin giao dịch vào cơ sở dữ liệu
+      const transactionResult = await createMoMoTransaction({
+        transactionId: transId,
+        orderId,
+        amount,
+        responseCode: resultCode,
+        transactionStatus: 'SUCCESS',
+      });
+
+      if (transactionResult.status === 200) {
+        // Redirect tới trang thanh toán thành công
+        redirectUrlPayment = `${redirectUrl}/payment-success?transactionId=${transId}&status=success`;
+        return res.redirect(redirectUrlPayment);
+      } else {
+        redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${transId}&status=failed`;
+        return res.redirect(redirectUrlPayment);
+      }
+    } else {
+      redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${transId}&status=failed`;
+      return res.redirect(redirectUrlPayment);
+    }
   };
 
   // get order by user id filter by status

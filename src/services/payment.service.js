@@ -2,8 +2,9 @@
 const crypto = require('crypto');
 const querystring = require('qs');
 const moment = require('moment');
+const axios = require('axios');
 
-const { vnpayConfig } = require('../configs/payment.config')
+const { vnpayConfig, momoConfig } = require('../configs/payment.config')
 
 
 // Hàm tạo URL thanh toán VNPAY
@@ -55,7 +56,7 @@ const createVnpayPaymentUrl = async ({
 
   vnpParams['vnp_SecureHash'] = signed; // Thêm chữ ký vào tham số
   vnpUrl += '?' + querystring.stringify(vnpParams, { encode: false });
-  
+
   // log url
   console.log('VNPAY URL:', vnpUrl);
 
@@ -79,6 +80,54 @@ function sortObject(obj) {
   return sorted;
 }
 
+// Thông tin sandbox
+var partnerCode = "MOMO";
+var accessKey = "F8BBA842ECF85";
+var secretkey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+const endpoint = 'https://test-payment.momo.vn/v2/gateway/api/create';
+
+
+const createMoMoPaymentUrl = async ({ orderIds, amount }) => {
+  const requestId = partnerCode + new Date().getTime();
+  const redirectUrl = momoConfig.momo_ReturnUrl;
+  const ipnUrl = 'https://your-site.com/notify';
+  const extraData = "";
+  const orderInfo = "Pay with MoMo";
+  const requestType = 'payWithMethod';
+  const orderId = String(orderIds.join(',')); // Mã đơn hàng (order ID)
+
+  // Tạo chữ ký
+  const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
+  const signature = crypto.createHmac('sha256', secretkey).update(rawSignature).digest('hex');
+
+  // Tạo request body
+  const requestBody = {
+    partnerCode,
+    accessKey,
+    requestId,
+    orderId,
+    amount,
+    orderInfo,
+    redirectUrl,
+    ipnUrl,
+    requestType,
+    extraData,
+    signature,
+    lang: 'vi'
+  };
+
+  // Gửi yêu cầu tới MoMo
+  const res = await axios.post(endpoint, requestBody, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  return res.data; // Trả về kết quả từ MoMo
+};
+
+
 module.exports = {
   createVnpayPaymentUrl,
+  createMoMoPaymentUrl
 };

@@ -9,6 +9,7 @@ router.get('/', authenticate, authorize('admin'), asyncHandler(orderController.g
 router.get('/shop-owners', authenticate, authorize('shop'), asyncHandler(orderController.getOrdersForShop))
 router.post('/', authenticate, asyncHandler(orderController.createOrder));
 router.get('/vnpay_return', asyncHandler(orderController.vnpayReturn));
+router.get('/momo_return', asyncHandler(orderController.momoReturn));
 
 router.get('/user', authenticate, asyncHandler(orderController.getOrdersByUserId));
 

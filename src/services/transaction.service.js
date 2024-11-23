@@ -1,3 +1,4 @@
+const { SuccessReponse } = require('../core/success.response');
 const crypto = require('crypto');
 const querystring = require('qs');
 const { vnpayConfig } = require('../configs/payment.config');
@@ -104,6 +105,43 @@ function sortObject(obj) {
 }
 
 
+const createMoMoTransaction = async ({
+  transactionId,
+  orderId,
+  amount,
+  bankCode = '',
+  transactionNo = '',
+  responseCode,
+  transactionStatus = 'PENDING',
+}) => {
+    // Tạo bản ghi giao dịch mới
+    const transaction = await transactionModel.create({
+      transaction_id: transactionId,
+      order_id: orderId,
+      amount,
+      bankCode,
+      transactionNo,
+      responseCode,
+      transactionStatus,
+    });
+
+    new SuccessReponse({
+      data: transaction,
+      message: 'Transaction created successfully',
+    }).send(res)
+};
+
+
+const getTransactions = async () => {
+  const transactions = await transactionModel.find()
+  
+  return transactions
+}
+
+
+
 module.exports = {
   createVnpayTransaction,
+  createMoMoTransaction,
+  getTransactions
 };

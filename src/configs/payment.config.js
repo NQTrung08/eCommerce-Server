@@ -1,5 +1,7 @@
 require('dotenv').config();
-const { vnpay: {vnp_ReturnUrl}} = require('./config.app');
+const { vnpay: {vnp_ReturnUrl}, momo: {
+  momo_ReturnUrl
+}} = require('./config.app');
 
 const vnpayConfig = {
   vnp_TmnCode: "GSO664Y1",
@@ -9,6 +11,11 @@ const vnpayConfig = {
   vnp_ReturnUrl: vnp_ReturnUrl,
 }
 
+const momoConfig = {
+  momo_ReturnUrl: momo_ReturnUrl
+}
+
 module.exports = {
   vnpayConfig,
+  momoConfig
 };
