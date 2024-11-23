@@ -55,14 +55,18 @@ class ProductController {
     const id = req.user._id
     const { ids } = req.body;
 
+    console.log("íds", ids)
+
   // Kiểm tra xem mảng ids có tồn tại và có ít nhất một phần tử không
-  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+  if (ids.length == 0) {
     throw new BadRequestError('No product IDs provided for deletion')
   }
 
-  const shop = shopModel.findOne({
+  const shop = await shopModel.findOne({
     owner_id: id
   })
+
+  console.log('shop', shop)
   if (!shop) {
     throw new BadRequestError('Shop not found for the owner');
   }
@@ -73,7 +77,7 @@ class ProductController {
     shop_id: shop._id
   });
 
-  if (existingProducts.length !== ids.length) {
+  if (!existingProducts) {
     throw new BadRequestError('One or more products not found in this shop');
   }
 
