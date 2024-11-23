@@ -89,10 +89,18 @@ const getAllOrders = async () => {
   return orders;
 }
 
-const getOrdersForShop = async ({shopId}) => {
-  const orders = await orderModel.find({
-    order_shopId: shopId
-  });
+const getOrdersForShop = async ({ shopId, status }) => {
+  let orders;
+  if (!status) {
+    orders = await orderModel.find({
+      order_shopId: shopId
+    });
+  } else {
+    orders = await orderModel.find({
+      order_shopId: shopId,
+      order_status: status
+    });
+  }
 
   return orders;
 }

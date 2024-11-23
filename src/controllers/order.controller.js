@@ -29,7 +29,8 @@ class OrderController {
     new SuccessReponse({
       message: 'All orders for shop',
       data: await getOrdersForShop({
-        shopId: shop._id
+        shopId: shop._id,
+        status: status
       })
     }).send(res)
   }
@@ -127,8 +128,9 @@ class OrderController {
   // update status order
   updateStatusOrder = async (req, res, next) => {
     const { id } = req.params;
-    const { status } = req.body;
-    const order = await updateStatusOrder({ orderId: id, status });
+    const { status } = req.query;
+    console.log("orderId - status", id, status);
+    const order = await updateOrderStatus({ orderId: id, status });
     new SuccessReponse({
       message: 'Update status order successfully',
       data: order
