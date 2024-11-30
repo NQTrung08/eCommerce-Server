@@ -4,6 +4,8 @@ const { BadRequestError, InternalServerError } = require('../core/error.response
 const keyTokenService = require('./keyToken.service');
 const { createTokenPair } = require('../auth/authUtils');
 const { getInfoData, createTokenForUser } = require('../utils');
+const userModel = require('../models/user.model');
+const orderModel = require('../models/order.model');
 
 const verifyUserOTP = async ({
   email,
@@ -51,6 +53,30 @@ const verifyUserOTP = async ({
   }
 };
 
+const getAllUsers = async() => {
+  const users = await userModel.find().lean();
+
+  return users;
+}
+
+const getCustomers = async({
+  shop_id
+  }) => {
+
+    // get customers from orders
+    const orders = await orderModel.find(
+      { order_shopId: shop_id },
+    )
+
+    const customers = await userModel.find({
+      _id: { $in: orders.map(order => order.order_userId) },
+    }).lean();
+
+    return customers;
+}
+
 module.exports = {
   verifyUserOTP,
+  getAllUsers,
+  getCustomers,
 };

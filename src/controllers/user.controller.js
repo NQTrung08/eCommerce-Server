@@ -1,4 +1,6 @@
+const { BadRequestError } = require('../core/error.response');
 const { SuccessReponse } = require('../core/success.response');
+const shopModel = require('../models/shop.model');
 const UserService = require('../services/user.service');
 
 const verifyUserOTP = async (req, res, next) => {
@@ -12,6 +14,34 @@ const verifyUserOTP = async (req, res, next) => {
   }).send(res)
 };
 
+const getAllUsers = async (req, res, next) => {
+  return new SuccessReponse({
+    message: 'All users',
+    data: await UserService.getAllUsers(),
+  }).send(res)
+};
+
+const getCustomers = async (req, res, next) => {
+  const id = req.user._id
+
+  const shop = await shopModel.findOne({
+    owner_id: id
+  })
+
+  if (!shop) {
+    throw new BadRequestError('Shop not found for the owner');
+  }
+
+  return new SuccessReponse({
+    message: 'All customers',
+    data: await UserService.getCustomers({
+      shop_id: shop._id
+    }),
+  }).send(res)
+};
+
 module.exports = {
   verifyUserOTP,
+  getAllUsers,
+  getCustomers,
 }

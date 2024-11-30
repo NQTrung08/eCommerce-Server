@@ -5,8 +5,8 @@ const  {asyncHandler} = require('../../helpers/asyncHandler');
 const router = express.Router();
 
 // Endpoint nhận thông tin thanh toán từ VNPAY
-router.get('/', authenticate, authorize('admin'), asyncHandler(orderController.getAll))
-router.get('/shop-owners', authenticate, authorize('shop'), asyncHandler(orderController.getOrdersForShop))
+router.get('/', authenticate, authorize(['admin']), asyncHandler(orderController.getAll))
+router.get('/shop-owners', authenticate, authorize(['shop']), asyncHandler(orderController.getOrdersForShop))
 router.post('/', authenticate, asyncHandler(orderController.createOrder));
 router.get('/vnpay_return', asyncHandler(orderController.vnpayReturn));
 router.get('/momo_return', asyncHandler(orderController.momoReturn));
