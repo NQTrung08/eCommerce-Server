@@ -80,22 +80,19 @@ function sortObject(obj) {
   return sorted;
 }
 
-// Thông tin sandbox
-var partnerCode = "MOMO";
-var accessKey = "F8BBA842ECF85";
-var secretkey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
-const endpoint = 'https://test-payment.momo.vn/v2/gateway/api/create';
-
 
 const createMoMoPaymentUrl = async ({ orderIds, amount }) => {
-  const requestId = partnerCode + new Date().getTime();
+  const requestId = momoConfig.partnerCode + new Date().getTime();
   const redirectUrl = momoConfig.momo_ReturnUrl;
   const ipnUrl = 'https://your-site.com/notify';
   const extraData = "";
   const orderInfo = "Pay with MoMo";
   const requestType = 'payWithMethod';
   const orderId = String(orderIds.join(',')); // Mã đơn hàng (order ID)
-
+  const partnerCode = momoConfig.partnerCode;
+  const accessKey = momoConfig.accessKey;
+  const secretkey = momoConfig.secretkey;
+  const endpoint = momoConfig.endpoint;
   // Tạo chữ ký
   const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
   const signature = crypto.createHmac('sha256', secretkey).update(rawSignature).digest('hex');
@@ -129,5 +126,5 @@ const createMoMoPaymentUrl = async ({ orderIds, amount }) => {
 
 module.exports = {
   createVnpayPaymentUrl,
-  createMoMoPaymentUrl
-};
+  createMoMoPaymentUrl,
+}

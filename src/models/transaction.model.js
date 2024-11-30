@@ -19,13 +19,13 @@ const transactionSchema = new Schema({
   bankCode: {
     type: String,
   },
-  accountOwner: {
+  bankLogo: {
+    type: String,
+  },
+  accountName: {
     type: String,
   },
   accountNumber: {
-    type: String,
-  },
-  transferContent: {
     type: String,
   },
   transactionNo: {

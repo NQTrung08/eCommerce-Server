@@ -79,6 +79,9 @@ const createVnpayTransaction = async ({
       transactionNo: vnp_Params['vnp_TransactionNo'],
       responseCode: vnp_Params['vnp_ResponseCode'],
       transactionStatus: vnp_Params['vnp_TransactionStatus'],
+      accountName: vnp_Params['vnp_AccountName'], // Tên chủ tài khoản
+      accountNumber: vnp_Params['vnp_AccountNumber'], // Số tài khoản ngân hàng
+      bankLogo: vnp_Params['vnp_BankLogo'],
     });
     createTransactions.push(transaction);
 
@@ -114,27 +117,27 @@ const createMoMoTransaction = async ({
   responseCode,
   transactionStatus = 'PENDING',
 }) => {
-    // Tạo bản ghi giao dịch mới
-    const transaction = await transactionModel.create({
-      transaction_id: transactionId,
-      order_id: orderId,
-      amount,
-      bankCode,
-      transactionNo,
-      responseCode,
-      transactionStatus,
-    });
+  // Tạo bản ghi giao dịch mới
+  const transaction = await transactionModel.create({
+    transaction_id: transactionId,
+    order_id: orderId,
+    amount,
+    bankCode,
+    transactionNo,
+    responseCode,
+    transactionStatus,
+  });
 
-    new SuccessReponse({
-      data: transaction,
-      message: 'Transaction created successfully',
-    }).send(res)
+  new SuccessReponse({
+    data: transaction,
+    message: 'Transaction created successfully',
+  }).send(res)
 };
 
 
 const getTransactions = async () => {
   const transactions = await transactionModel.find()
-  
+
   return transactions
 }
 
