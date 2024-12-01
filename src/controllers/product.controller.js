@@ -11,10 +11,8 @@ class ProductController {
     const owner_id = req.user._id; // Giả sử bạn có thông tin người dùng trong req.user
     const body = req.body;
     const files = req.files; // Giả sử bạn đang sử dụng middleware như multer để xử lý file upload
-
     // Tạo sản phẩm mới
     const newProduct = await ProductService.newProduct(owner_id, body, files);
-
     return new SuccessReponse({
       message: 'Product created successfully',
       data: newProduct
