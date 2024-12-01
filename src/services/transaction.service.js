@@ -38,12 +38,9 @@ const createVnpayTransaction = async ({
   // Lấy orderIds từ params (giả sử nó được gửi là vnp_TxnRef)
 
   let responseCode = vnp_Params['vnp_ResponseCode']; // Lấy response code
-  let orderStatus;
-  if (responseCode === '00') {
-    orderStatus = 'paid'; // Thanh toán thành công
-  } else {
-    // vnp_ResponseCode=24
-    orderStatus = 'failed'; // Thanh toán thất bại
+  let orderStatus = 'pending';
+  if (responseCode !== '00') {
+    orderStatus = 'waiting'; // Thanh toán thành công
   }
   const orderIds = decodeURIComponent(vnp_Params['vnp_TxnRef']).split(',');
   console.log(orderIds);
