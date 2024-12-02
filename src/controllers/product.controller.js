@@ -49,40 +49,40 @@ class ProductController {
     }).send(res)
   }
 
-  deleteProducts = async (req, res, next) => {
+  moveTrashProducts = async (req, res, next) => {
     const id = req.user._id
     const { ids } = req.body;
 
     console.log("íds", ids)
 
-  // Kiểm tra xem mảng ids có tồn tại và có ít nhất một phần tử không
-  if (ids.length == 0) {
-    throw new BadRequestError('No product IDs provided for deletion')
-  }
+    // Kiểm tra xem mảng ids có tồn tại và có ít nhất một phần tử không
+    if (ids.length == 0) {
+      throw new BadRequestError('No product IDs provided for deletion')
+    }
 
-  const shop = await shopModel.findOne({
-    owner_id: id
-  })
+    const shop = await shopModel.findOne({
+      owner_id: id
+    })
 
-  console.log('shop', shop)
-  if (!shop) {
-    throw new BadRequestError('Shop not found for the owner');
-  }
+    console.log('shop', shop)
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
 
-  // Kiểm tra xem tất cả sản phẩm có tồn tại trong shop không
-  const existingProducts = await productModel.find({
-    _id: { $in: ids },
-    shop_id: shop._id
-  });
+    // Kiểm tra xem tất cả sản phẩm có tồn tại trong shop không
+    const existingProducts = await productModel.find({
+      _id: { $in: ids },
+      shop_id: shop._id
+    });
 
-  if (!existingProducts) {
-    throw new BadRequestError('One or more products not found in this shop');
-  }
+    if (!existingProducts) {
+      throw new BadRequestError('One or more products not found in this shop');
+    }
 
-  // Xóa sản phẩm
+    // Xóa sản phẩm
     return new SuccessReponse({
       message: 'Product deleted successfully',
-      data: await ProductService.deleteProducts(ids)
+      data: await ProductService.moveTrashProducts(ids)
     }).send(res)
   }
 
@@ -105,27 +105,27 @@ class ProductController {
   publicProducts = async (req, res, next) => {
     const { ids } = req.body;
 
-  // Kiểm tra xem mảng ids có tồn tại và có ít nhất một phần tử không
-  if (!ids || !Array.isArray(ids) || ids.length === 0) {
-    return res.status(400).send({
-      message: 'No product IDs provided for deletion',
-    });
-  }
+    // Kiểm tra xem mảng ids có tồn tại và có ít nhất một phần tử không
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).send({
+        message: 'No product IDs provided for deletion',
+      });
+    }
     return new SuccessReponse({
       message: 'Public Products',
       data: await ProductService.publicProducts(ids)
     }).send(res)
   }
-  
+
   privateProducts = async (req, res, next) => {
     const { ids } = req.body;
 
-  // Kiểm tra xem mảng ids có tồn tại và có ít nhất một phần tử không
-  if (!ids || !Array.isArray(ids) || ids.length === 0) {
-    return res.status(400).send({
-      message: 'No product IDs provided for deletion',
-    });
-  }
+    // Kiểm tra xem mảng ids có tồn tại và có ít nhất một phần tử không
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).send({
+        message: 'No product IDs provided for deletion',
+      });
+    }
 
     return new SuccessReponse({
       message: 'Private Products',
@@ -135,8 +135,8 @@ class ProductController {
 
   getProductsByCatalogShop = async (req, res, next) => {
     const { shopId, catalogId } = req.params;
-    if (!shopId ||!catalogId) {
-     throw new BadRequestError('Shop id and catalog id is required');
+    if (!shopId || !catalogId) {
+      throw new BadRequestError('Shop id and catalog id is required');
     }
     return new SuccessReponse({
       message: 'Get products by shop id and catalog id',
@@ -171,7 +171,7 @@ class ProductController {
     if (!shop) {
       throw new BadRequestError('Shop not found for the owner');
     }
-    if (!shop._id ||!catalogId ||!productIds || !Array.isArray(productIds) || productIds.length === 0) {
+    if (!shop._id || !catalogId || !productIds || !Array.isArray(productIds) || productIds.length === 0) {
       throw new BadRequestError('Invalid input');
     }
     return new SuccessReponse({
@@ -212,7 +212,7 @@ class ProductController {
       filters.isPublic = true;
     }
 
-    console.log("id", id )
+    console.log("id", id)
 
     const shop = await shopModel.findOne({
       owner_id: id
@@ -231,6 +231,58 @@ class ProductController {
     }).send(res)
   }
 
+
+  getCountProduct = async (req, res) => {
+    const id = req.user._id
+    const shop = await shopModel.findOne({
+      owner_id: id
+    })
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
+
+    return new SuccessReponse({
+      message: 'Get count products for shop',
+      data: await ProductService.getCountProduct({
+        shopId: shop._id,
+      })
+    }).send(res)
+
+  }
+
+  deleteProducts = async (req, res, next) => {
+    const id = req.user._id
+    const { ids } = req.body;
+    // Kiểm tra xem mảng ids có tồn tại và có ít nhất một phần tử không
+    if (ids.length == 0) {
+      throw new BadRequestError('No product IDs provided for deletion')
+    }
+
+    const shop = await shopModel.findOne({
+      owner_id: id
+    })
+
+    console.log('shop', shop)
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
+
+    // Kiểm tra xem tất cả sản phẩm có tồn tại trong shop không
+    const existingProducts = await productModel.find({
+      _id: { $in: ids },
+      shop_id: shop._id
+    });
+
+    if (!existingProducts) {
+      throw new BadRequestError('One or more products not found in this shop');
+    }
+
+    // Xóa sản phẩm
+    return new SuccessReponse({
+      message: 'Product deleted successfully',
+      data: await ProductService.deleteProducts(ids)
+    }).send(res)
+  }
 
 }
 

@@ -48,9 +48,9 @@ const newProduct = async (owner_id, productData, files) => {
   }
 
   // nếu có field là isDraft 
-  if(productData.isDraft) {
-      productData.isPublic = false;
-    }
+  if (productData.isDraft) {
+    productData.isPublic = false;
+  }
 
   // Upload các hình ảnh của sản phẩm
   const productImages = await uploadProductImages({
@@ -183,9 +183,9 @@ const getProductById = async (id) => {
 const updateProduct = async ({ userId, id, body, files }) => {
 
   // Kiểm tra các trường bắt buộc nếu body có các trường liên quan
-  
+
   const requiredFields = ['product_name', 'product_price', 'product_quantity', 'category_id'];
-  
+
   for (const field of requiredFields) {
     if (field in body && !body[field]) {
       throw new BadRequestError(`Missing required field: ${field}`);
@@ -235,7 +235,7 @@ const updateProduct = async ({ userId, id, body, files }) => {
 
   // Cập nhật sản phẩm chỉ với các trường có trong body
   const productToUpdate = await productModel.findByIdAndUpdate(id, { $set: body }, { new: true });
-  
+
   if (!productToUpdate) {
     throw new NotFoundError('Product not found');
   }
@@ -244,7 +244,7 @@ const updateProduct = async ({ userId, id, body, files }) => {
 };
 
 
-const deleteProducts = async (ids) => {
+const moveTrashProducts = async (ids) => {
   const products = await productModel.updateMany(
     { _id: { $in: ids } }, // Tìm kiếm theo danh sách ID
     {
@@ -310,7 +310,7 @@ const searchProducts = async ({
 
   // Xây dựng truy vấn tìm kiếm
   let query = {};
-  
+
   // Nếu searchQuery không phải chuỗi rỗng, thực hiện tìm kiếm văn bản
   if (searchQuery.trim() !== '') {
     query.$text = {
@@ -327,7 +327,7 @@ const searchProducts = async ({
 
   // Xử lý sắp xếp
   let sortQuery = {};
-  
+
   if (sortBy === 'sold_count') {
     // Sắp xếp theo sản phẩm bán chạy nhất
     sortQuery = { sold_count: -1 };
@@ -418,7 +418,7 @@ const getProductsByShopId = async ({
     throw new NotFoundError('Shop not found');
   }
 
-  
+
   // Query MongoDB
   const query = {
     shop_id: shopId,
@@ -490,13 +490,47 @@ const getProductsByCategoryId = async ({
   return products;
 }
 
+const getCountProduct = async ({
+  shopId
+}) => {
+  const countProduct = await productModel.aggregate([
+    {
+      $match: {
+        shop_id: shopId, // Lọc sản phẩm theo shop_id
+      },
+    },
+    {
+      $group: {
+        _id: null, // Không cần nhóm theo bất kỳ trường nào
+        totalDraft: { $sum: { $cond: [{ $eq: ["$isDraft", true] }, 1, 0] } },
+        totalPublic: { $sum: { $cond: [{ $eq: ["$isPublic", true] }, 1, 0] } },
+        totalDeleted: { $sum: { $cond: [{ $eq: ["$isDeleted", true] }, 1, 0] } },
+      },
+    },
+  ]);
 
+  return countProduct.length > 0 ? countProduct[0] : { totalDraft: 0, totalPublic: 0, totalDeleted: 0 };
+}
+
+const deleteProducts = async (ids) => {
+  const products = await productModel.deleteMany(
+    { _id: { $in: ids } }, // Tìm kiếm theo danh sách ID
+    
+  );
+
+  if (products.modifiedCount === 0) {
+    throw new NotFoundError('No products found to delete');
+  }
+
+  return products;
+}
 
 module.exports = {
   newProduct,
   getAllProducts,
   getProductById,
   updateProduct,
+  moveTrashProducts,
   deleteProducts,
   searchProducts,
   uploadProductImages,
@@ -505,5 +539,6 @@ module.exports = {
   getProductsByCatalogShop,
   getProductsByShopId,
   addProductsToCatalog,
-  getProductsByCategoryId
+  getProductsByCategoryId,
+  getCountProduct
 };

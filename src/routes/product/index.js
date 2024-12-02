@@ -8,6 +8,7 @@ const router = express.Router();
 
 router.post('/',authenticate, authorize(['shop']), uploadStorage.array('files', 10), asyncHandler(ProductController.newProduct));
 
+router.get('/shop/countProduct',authenticate, asyncHandler(ProductController.getCountProduct))
 router.get('/shop-owners', authenticate, authorize(['shop']), asyncHandler(ProductController.getAllProductsForShop));
 router.post('/search', asyncHandler(ProductController.searchProducts));
 router.get('/', asyncHandler(ProductController.getAllProducts));
@@ -19,10 +20,8 @@ router.get('/:id', asyncHandler(ProductController.getProductById))
 router.put('/:id', authenticate, authorize(['shop']), uploadStorage.array('files', 10), asyncHandler(ProductController.updateProduct));
 
 // Xóa sản phẩm (chỉ chuyển sang trạng thái xóa, không xóa vĩnh viễn)
-router.delete('/', authenticate, authorize(['shop']), asyncHandler(ProductController.deleteProducts));
-// Đưa sản phẩm về trạng thái công khai
-
-// Đưa sản phẩm về trạng thái riêng tư
+router.delete('/', authenticate, authorize(['shop']), asyncHandler(ProductController.moveTrashProducts));
+router.delete('/delete-permanently', authenticate, authorize(['shop']), asyncHandler(ProductController.deleteProducts));
 
 // get products by shop id and catalog id
 router.get('/shop/:shopId/catalog/:catalogId', asyncHandler(ProductController.getProductsByCatalogShop));
