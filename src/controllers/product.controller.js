@@ -201,6 +201,17 @@ class ProductController {
   getAllProductsForShop = async (req, res, next) => {
     const id = req.user._id
 
+    const filters = {
+      isDraft: req.query.isDraft === 'true',
+      isPublic: req.query.isPublic === 'true',
+      isDeleted: req.query.isDeleted === 'true'
+    };
+
+    // Kiểm tra nếu tất cả filter đều không được truyền, mặc định là isPublic: true
+    if (!req.query.isDraft && !req.query.isPublic && !req.query.isDeleted) {
+      filters.isPublic = true;
+    }
+
     console.log("id", id )
 
     const shop = await shopModel.findOne({
@@ -214,7 +225,8 @@ class ProductController {
     return new SuccessReponse({
       message: 'Get product for shop',
       data: await ProductService.getProductsByShopId({
-        shopId: shop._id
+        shopId: shop._id,
+        filters
       })
     }).send(res)
   }

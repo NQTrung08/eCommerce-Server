@@ -406,7 +406,8 @@ const getProductsByShopId = async ({
   shopId,
   page = 1,
   limit = 20,
-  sortBy = '-createdAt'
+  sortBy = '-createdAt',
+  filters = {}
 }
 ) => {
 
@@ -416,10 +417,15 @@ const getProductsByShopId = async ({
   if (!shopExists) {
     throw new NotFoundError('Shop not found');
   }
-  const products = await productModel.find({
+
+  
+  // Query MongoDB
+  const query = {
     shop_id: shopId,
-    isPublic: true
-  })
+    ...filters,
+  };
+
+  const products = await productModel.find(query)
     .populate({
       path: 'category_id',
     })
