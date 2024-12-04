@@ -13,8 +13,12 @@ const createReview = async (payload) => {
   } = payload
   // TODO: handle product and user existence
   const user = await userModel.findById(userId)
-  const product = await productModel.findById(productId)
-  if (!user ||!product) {
+  const product = await productModel.findOne(
+    {
+      _id: productId,
+      isPublic: true,
+    })
+  if (!user || !product) {
     throw new BadRequestError("User or product not found")
   }
   // Create a new review
@@ -34,12 +38,12 @@ const getReviewsByProductId = async (productId) => {
     throw new BadRequestError("Product not found")
   }
   const review = await reviewModel.find({ product_id: productId })
-  .populate('product_id')
+    .populate('product_id')
   return review
 }
 
 
-const getAllReviewsForShop = async (shopId) => {
+const getAllReviewsForShop = async ({ shopId }) => {
   const shop = await shopModel.findById(shopId)
   if (!shop) {
     throw new BadRequestError("Shop not found")
