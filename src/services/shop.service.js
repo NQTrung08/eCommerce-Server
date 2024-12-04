@@ -242,7 +242,6 @@ const getShopsStatisticsForAdmin = async ({ year = "all", shop_id = null }) => {
 const getStatisticsForShop = async (shopId, year) => {
   const matchCondition = {
     order_shopId: shopId,
-    order_status: 'completed'
   };
 
   // Kiểm tra nếu `year` được cung cấp, thêm điều kiện cho các đơn hàng trong năm đó
@@ -252,24 +251,33 @@ const getStatisticsForShop = async (shopId, year) => {
     matchCondition.createdAt = { $gte: startOfYear, $lte: endOfYear };
   }
 
-  // Sử dụng `aggregate` để tính toán doanh thu hàng tháng và tổng số đơn hàng
+  // Sử dụng `aggregate` để tính toán doanh thu và tổng số đơn hàng theo ngày, tháng và năm
   const statistics = await orderModel.aggregate([
     { $match: matchCondition },
     {
       $group: {
-        _id: { month: { $month: '$createdAt' }, year: { $year: '$createdAt' } },
-        totalRevenue: { $sum: '$order_total_price' },
+        _id: {
+          year: { $year: '$createdAt' },
+          month: { $month: '$createdAt' },
+          day: { $dayOfMonth: '$createdAt' }, // Thêm nhóm theo ngày
+        },
+        totalRevenue: {
+          $sum: {
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0],
+          },
+        },
         orderCount: { $sum: 1 },
       },
     },
     {
-      $sort: { '_id.year': 1, '_id.month': 1 }, // Sắp xếp theo năm và tháng
+      $sort: { '_id.year': 1, '_id.month': 1, '_id.day': 1 }, // Sắp xếp theo năm, tháng, ngày
     },
     {
       $project: {
         _id: 0,
-        month: '$_id.month',
         year: '$_id.year',
+        month: '$_id.month',
+        day: '$_id.day',
         totalRevenue: 1,
         orderCount: 1,
       },
@@ -280,57 +288,117 @@ const getStatisticsForShop = async (shopId, year) => {
 };
 
 
+
 const getPlatformRevenue = async ({
   startDate,
   endDate,
-  groupBy = 'year'
+  groupBy = 'month'
 }) => {
-  const matchCondition = { 
-    // order_status: 'completed', 
-    createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } 
+  const dateFilter = {
+    createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) }
   };
 
-  // Xác định cấu trúc nhóm theo `year` hoặc `year` + `month`
+  // Xác định nhóm dữ liệu theo 'year', 'month' hoặc 'day'
   const groupStage = (() => {
-    if (groupBy === 'year' || groupBy === '') {
+    if (groupBy === 'year') {
       return {
         _id: { year: { $year: "$createdAt" } },
-        totalOrders: { $sum: 1 },
-        totalRevenue: { $sum: "$order_total_price" }
+        totalRevenue: { 
+          $sum: { 
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0] 
+          } 
+        },
+        totalOrders: { $sum: 1 }
       };
-    } else if (groupBy === 'month') {
+    } else if (groupBy === 'month' || groupBy === '') {
       return {
         _id: { 
           year: { $year: "$createdAt" },
           month: { $month: "$createdAt" }
         },
-        totalOrders: { $sum: 1 },
-        totalRevenue: { $sum: "$order_total_price" }
+        totalRevenue: { 
+          $sum: { 
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0] 
+          } 
+        },
+        totalOrders: { $sum: 1 }
+      };
+    } else if (groupBy === 'day') {
+      return {
+        _id: { 
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+          day: { $dayOfMonth: "$createdAt" }
+        },
+        totalRevenue: { 
+          $sum: { 
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0] 
+          } 
+        },
+        totalOrders: { $sum: 1 }
       };
     } else {
-      throw new BadRequestError('Invalid groupBy parameter. It should be either "year" or "month".');
+      throw new BadRequestError('Invalid groupBy parameter. It should be either "year", "month", or "day".');
     }
   })();
-  
 
-  const sortStage = groupBy === 'year' ? 
-    { "_id.year": 1 } : 
-    { "_id.year": 1, "_id.month": 1 };
+  const sortStage = (() => {
+    if (groupBy === 'year') {
+      return { "_id.year": 1 };
+    } else if (groupBy === 'month' || groupBy === '') {
+      return { "_id.year": 1, "_id.month": 1 };
+    } else if (groupBy === 'day') {
+      return { "_id.year": 1, "_id.month": 1, "_id.day": 1 };
+    }
+  })();
 
+  // Thực hiện truy vấn
   const statistics = await orderModel.aggregate([
-    { $match: matchCondition },
+    { $match: dateFilter },
     { $group: groupStage },
     { $sort: sortStage }
   ]);
 
-  // Định dạng dữ liệu trả về
-  return statistics.map(stat => ({
-    year: stat._id.year,
-    month: stat._id.month || null,
-    totalOrders: stat.totalOrders,
-    totalRevenue: stat.totalRevenue
-  }));
+  // Tạo đối tượng chứa dữ liệu đầy đủ cho tất cả các tháng hoặc ngày
+  const result = [];
+
+  if (groupBy === 'year') {
+    const year = new Date(startDate).getFullYear(); // Lấy năm từ startDate
+    result.push({
+      year,
+      totalRevenue: statistics[0]?.totalRevenue || 0,
+      totalOrders: statistics[0]?.totalOrders || 0
+    });
+  } else if (groupBy === 'month') {
+    for (let i = 1; i <= 12; i++) {
+      const monthData = statistics.find(stat => stat._id.month === i) || { totalRevenue: 0, totalOrders: 0 };
+      result.push({
+        year: statistics[0]?._id.year,
+        month: i,
+        totalRevenue: monthData.totalRevenue,
+        totalOrders: monthData.totalOrders
+      });
+    }
+  } else if (groupBy === 'day') {
+    const year = new Date(startDate).getFullYear();
+    const month = new Date(startDate).getMonth() + 1; // Month in JavaScript starts from 0
+    const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
+
+    for (let i = 1; i <= daysInMonth; i++) {
+      const dayData = statistics.find(stat => stat._id.day === i) || { totalRevenue: 0, totalOrders: 0 };
+      result.push({
+        year,
+        month,
+        day: i,
+        totalRevenue: dayData.totalRevenue,
+        totalOrders: dayData.totalOrders
+      });
+    }
+  }
+
+  return result;
 };
+
 
 
 

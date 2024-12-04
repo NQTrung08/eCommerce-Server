@@ -173,6 +173,8 @@ const removePurchasedItemsFromCart = async (userId, orders) => {
 }
 
 
+
+
 module.exports = {
   createOrder,
   getAllOrders,
