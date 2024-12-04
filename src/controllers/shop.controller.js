@@ -1,6 +1,7 @@
 
 const { BadRequestError } = require('../core/error.response');
 const { CREATED, SuccessReponse } = require('../core/success.response');
+const shopModel = require('../models/shop.model');
 const ShopService = require('../services/shop.service');
 
 
@@ -115,6 +116,38 @@ class ShopController {
     return new SuccessReponse({
       message: 'Revenue for platform',
       data: await ShopService.getPlatformRevenue({
+        startDate: req.query.startDate,
+        endDate: req.query.endDate,
+        groupBy: req.query.groupBy
+      })
+    }).send(res)
+  }
+
+  // api cho shop hoặc admin call shop id
+  getShopRevenue = async (req, res) => {
+    const owner_id = req.user._id
+    const shop = await shopModel.findOne({
+      owner_id: owner_id
+    })
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
+    return new SuccessReponse({
+      message: 'Revenue for shop',
+      data: await ShopService.getRevenueByShopId({
+        shopId: shop._id,
+        startDate: req.query.startDate,
+        endDate: req.query.endDate,
+        groupBy: req.query.groupBy
+      })
+    }).send(res)
+  }
+
+  getShopRevenueForAdmin = async (req, res) => {
+    return new SuccessReponse({
+      message: 'Revenue for shop for admin',
+      data: await ShopService.getRevenueByShopId({
+        shopId: req.params.shopId,
         startDate: req.query.startDate,
         endDate: req.query.endDate,
         groupBy: req.query.groupBy

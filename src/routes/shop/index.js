@@ -18,6 +18,8 @@ router.get('/admin/:shopId', authenticate, authorize(['admin']), asyncHandler(Sh
 
 // api get bieu đồ
 router.get('/admin-revenue', authenticate, authorize(['admin']), asyncHandler(ShopController.getPlatformRevenue));
+router.get('/revenue', authenticate, authorize(['shop']), asyncHandler(ShopController.getShopRevenue));
+router.get('/revenue/:shopId', authenticate, authorize(['shop']), asyncHandler(ShopController.getShopRevenue));
 
 // get all for user
 router.get('/all', asyncHandler(ShopController.getAllShopForUser));

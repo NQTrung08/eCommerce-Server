@@ -400,6 +400,119 @@ const getPlatformRevenue = async ({
 };
 
 
+const getRevenueByShopId = async ({
+  shopId,
+  startDate,
+  endDate,
+  groupBy = 'month'
+}) => {
+  const dateFilter = {
+    createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) },
+    order_shopId: shopId
+  };
+
+  // Xác định nhóm dữ liệu theo 'year', 'month' hoặc 'day'
+  const groupStage = (() => {
+    if (groupBy === 'year') {
+      return {
+        _id: { year: { $year: "$createdAt" } },
+        totalRevenue: { 
+          $sum: { 
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0] 
+          } 
+        },
+        totalOrders: { $sum: 1 }
+      };
+    } else if (groupBy === 'month' || groupBy === '') {
+      return {
+        _id: { 
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" }
+        },
+        totalRevenue: { 
+          $sum: { 
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0] 
+          } 
+        },
+        totalOrders: { $sum: 1 }
+      };
+    } else if (groupBy === 'day') {
+      return {
+        _id: { 
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" },
+          day: { $dayOfMonth: "$createdAt" }
+        },
+        totalRevenue: { 
+          $sum: { 
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0] 
+          } 
+        },
+        totalOrders: { $sum: 1 }
+      };
+    } else {
+      throw new BadRequestError('Invalid groupBy parameter. It should be either "year", "month", or "day".');
+    }
+  })();
+
+  const sortStage = (() => {
+    if (groupBy === 'year') {
+      return { "_id.year": 1 };
+    } else if (groupBy === 'month' || groupBy === '') {
+      return { "_id.year": 1, "_id.month": 1 };
+    } else if (groupBy === 'day') {
+      return { "_id.year": 1, "_id.month": 1, "_id.day": 1 };
+    }
+  })();
+
+  // Thực hiện truy vấn
+  const statistics = await orderModel.aggregate([
+    { $match: dateFilter },
+    { $group: groupStage },
+    { $sort: sortStage }
+  ]);
+
+  // Tạo đối tượng chứa dữ liệu đầy đủ cho tất cả các tháng hoặc ngày
+  const result = [];
+
+  if (groupBy === 'year') {
+    const year = new Date(startDate).getFullYear(); // Lấy năm từ startDate
+    result.push({
+      year,
+      totalRevenue: statistics[0]?.totalRevenue || 0,
+      totalOrders: statistics[0]?.totalOrders || 0
+    });
+  } else if (groupBy === 'month') {
+    for (let i = 1; i <= 12; i++) {
+      const monthData = statistics.find(stat => stat._id.month === i) || { totalRevenue: 0, totalOrders: 0 };
+      result.push({
+        year: statistics[0]?._id.year,
+        month: i,
+        totalRevenue: monthData.totalRevenue,
+        totalOrders: monthData.totalOrders
+      });
+    }
+  } else if (groupBy === 'day') {
+    const year = new Date(startDate).getFullYear();
+    const month = new Date(startDate).getMonth() + 1; // Month in JavaScript starts from 0
+    const daysInMonth = new Date(year, month, 0).getDate(); // Get the number of days in the month
+
+    for (let i = 1; i <= daysInMonth; i++) {
+      const dayData = statistics.find(stat => stat._id.day === i) || { totalRevenue: 0, totalOrders: 0 };
+      result.push({
+        year,
+        month,
+        day: i,
+        totalRevenue: dayData.totalRevenue,
+        totalOrders: dayData.totalOrders
+      });
+    }
+  }
+
+  return result;
+};
+
+
 
 
 
@@ -413,5 +526,6 @@ module.exports = {
   getAllShopForUser,
   getShopsStatisticsForAdmin,
   getShopForAdmin,
-  getPlatformRevenue
+  getPlatformRevenue,
+  getRevenueByShopId
 };
