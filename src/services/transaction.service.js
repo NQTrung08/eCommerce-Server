@@ -138,10 +138,25 @@ const getTransactions = async () => {
   return transactions
 }
 
+const getTransactionsByShopId = async ({
+  shopId
+}) => {
+  const transactions = await transactionModel.find({
+    order_id: {
+      $in: await orderModel.find({
+        order_shopId: shopId
+      }).map(order => order._id)
+    }
+  })
+
+  return transactions
+}
+
 
 
 module.exports = {
   createVnpayTransaction,
   createMoMoTransaction,
-  getTransactions
+  getTransactions,
+  getTransactionsByShopId,
 };
