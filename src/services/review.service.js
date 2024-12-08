@@ -39,6 +39,7 @@ const getReviewsByProductId = async (productId) => {
   }
   const review = await reviewModel.find({ product_id: productId })
     .populate('product_id')
+    .populate('user_id')
   return review
 }
 
@@ -49,11 +50,15 @@ const getAllReviewsForShop = async ({ shopId }) => {
     throw new BadRequestError("Shop not found")
   }
   const reviews = await reviewModel.find({ shop_id: shop.id })
+   .populate('product_id')
+   .populate('user_id')
   return reviews
 }
 
 const getAll = async () => {
   const reviews = await reviewModel.find({})
+  .populate('product_id')
+  .populate('user_id')
   return reviews
 }
 
