@@ -83,6 +83,29 @@ class CatalogShopController {
       data: catalogShop
     }).send(res)
   }
+
+  getStatisticalCatalogByShopId = async(req, res, next) => {
+    const _id = req.user._id;
+    console.log(_id)
+    const shop = await shopModel.findOne({
+      owner_id: _id
+    }).lean()
+
+    console.log(shop)
+    console.log(shop._id)
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
+    
+    return new SuccessReponse({
+      message: 'Category statistical by shop',
+      data: await CatalogShopService.getStatisticalCatalogByShopId({
+        shopId: shop._id,
+        sortBy: req.query.sortBy,
+        order: req.query.order
+      })
+    }).send(res)
+  }
 }
 
 module.exports = new CatalogShopController();

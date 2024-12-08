@@ -8,8 +8,11 @@ const router = express.Router();
 
 // create catalog shop
 router.post('/', authenticate, authorize(['shop']), asyncHandler(CatalogShopController.newCatalogShop));
+// thống kê doanh thu theo catalog for shop
+router.get('/shop/statistical', authenticate, authorize(['shop']), asyncHandler(CatalogShopController.getStatisticalCatalogByShopId));
 // get catalog shop
 router.get('/shop/:shopId', asyncHandler(CatalogShopController.getCatalogShop));
+
 
 // update catalog
 router.put('/:catalogId', authenticate, authorize(['shop']), asyncHandler(CatalogShopController.updateCatalogShop));
