@@ -49,16 +49,28 @@ const getAllReviewsForShop = async ({ shopId }) => {
   if (!shop) {
     throw new BadRequestError("Shop not found")
   }
-  const reviews = await reviewModel.find({ shop_id: shop.id })
-   .populate('product_id')
-   .populate('user_id')
-  return reviews
+  const products = await productModel.find({
+    shop_id: shopId
+  })
+  if (!products) {
+    throw new BadRequestError("Product not found")
+  }
+  // Lấy danh sách các product_id
+  const productIds = products.map(product => product._id);
+
+  // Tìm các đánh giá có product_id nằm trong danh sách productIds
+  const reviews = await reviewModel
+    .find({ product_id: { $in: productIds } })
+    .populate('product_id') // Populate để lấy chi tiết sản phẩm
+    .populate('user_id');   // Populate để lấy chi tiết người dùng
+
+  return reviews;
 }
 
 const getAll = async () => {
   const reviews = await reviewModel.find({})
-  .populate('product_id')
-  .populate('user_id')
+    .populate('product_id')
+    .populate('user_id')
   return reviews
 }
 
