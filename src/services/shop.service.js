@@ -465,12 +465,31 @@ const getRevenueByShopId = async ({
     }
   })();
 
-  // Thực hiện truy vấn
+  // Thực hiện truy vấn doanh thu theo nhóm
   const statistics = await orderModel.aggregate([
     { $match: dateFilter },
     { $group: groupStage },
     { $sort: sortStage }
   ]);
+
+  // Thực hiện truy vấn tổng doanh thu và tổng số đơn
+  const overallStatistics = await orderModel.aggregate([
+    { $match: dateFilter },
+    {
+      $group: {
+        _id: null,
+        totalRevenue: { 
+          $sum: { 
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0] 
+          } 
+        },
+        totalOrders: { $sum: 1 }
+      }
+    }
+  ]);
+
+  const totalRevenue = overallStatistics[0]?.totalRevenue || 0;
+  const totalOrders = overallStatistics[0]?.totalOrders || 0;
 
   // Tạo đối tượng chứa dữ liệu đầy đủ cho tất cả các tháng hoặc ngày
   const result = [];
@@ -509,8 +528,14 @@ const getRevenueByShopId = async ({
     }
   }
 
-  return result;
+  // Trả về kết quả kèm tổng doanh thu và tổng số đơn hàng
+  return {
+    totalRevenue,
+    totalOrders,
+    breakdown: result
+  };
 };
+
 
 
 
