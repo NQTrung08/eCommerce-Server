@@ -117,7 +117,7 @@ const getStatisticalCatalogByShopId = async ({ shopId, sortBy, order }) => {
       { $unwind: "$order_products" },
       {
         $lookup: {
-          from: "products",
+          from: "Products",
           localField: "order_products.productId",
           foreignField: "_id",
           as: "product_info"

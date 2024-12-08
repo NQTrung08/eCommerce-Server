@@ -126,12 +126,9 @@ class CategoryController {
   }
 
   getStatisticalCategoryByShopId = async(req, res, next) => {
-    const _id = req.params.shopId;
-    console.log(_id)
-    const shop = await shopModel.findById(_id);
-
-    console.log(shop)
-    console.log(shop._id)
+    const id = req.params.shopId;
+    console.log(id)
+    const shop = await shopModel.findById(id);
     if (!shop) {
       throw new BadRequestError('Shop not found for the owner');
     }

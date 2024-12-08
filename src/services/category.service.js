@@ -360,7 +360,7 @@ const getStatisticalCategories = async ({
       { $unwind: "$order_products" },
       {
         $lookup: {
-          from: 'products',
+          from: 'Products',
           localField: 'order_products.productId',
           foreignField: '_id',
           as: 'product_info'
@@ -384,6 +384,8 @@ const getStatisticalCategories = async ({
         }
       }
     ]);
+
+    console.log("orders", orders);
 
     const totalRevenue = orders.reduce((acc, order) => acc + order.totalRevenue, 0);
 
