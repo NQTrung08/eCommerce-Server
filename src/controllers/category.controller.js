@@ -125,6 +125,27 @@ class CategoryController {
     }).send(res)
   }
 
+  getStatisticalCategoryByShopId = async(req, res, next) => {
+    const _id = req.params.shopId;
+    console.log(_id)
+    const shop = await shopModel.findById(_id);
+
+    console.log(shop)
+    console.log(shop._id)
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
+    
+    return new SuccessReponse({
+      message: 'Category statistical by shop',
+      data: await CategoryService.getStatisticalCategories({
+        shopId: shop._id,
+        sortBy: req.query.sortBy,
+        order: req.query.order
+      })
+    }).send(res)
+  }
+
 
   // update parent for categories
   moveNode = async(req, res, next) => {

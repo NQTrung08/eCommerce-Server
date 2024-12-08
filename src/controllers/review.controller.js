@@ -59,6 +59,21 @@ class ReviewController {
       })
     }).send(res);
   }
+
+  getAllReviewsForShopId = async (req, res, next) => {
+    const id = req.params.shopId
+    const shop = await shopModel.findById(id)
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
+
+    new SuccessReponse({
+      message: 'All reviews for shop',
+      data: await getAllReviewsForShop({
+        shopId: shop._id
+      })
+    }).send(res);
+  }
 }
 
 module.exports = new ReviewController;

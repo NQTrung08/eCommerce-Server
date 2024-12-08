@@ -15,6 +15,7 @@ router.get('/root', asyncHandler(CategoryController.getCategoryRoot));
 
 // thống kế doanh thu category cho shop
 router.get('/statistical/shop', authenticate, authorize(['shop']), asyncHandler(CategoryController.getStatisticalCategoryByShop));
+router.get('/statistical/shop/:shopId', authenticate, authorize(['shop']), asyncHandler(CategoryController.getStatisticalCategoryByShopId));
 
 // thống kế  doanh thu category cho admin
 router.get('/statistical', authenticate, authorize(['admin']), asyncHandler(CategoryController.getStatisticalCategories));
