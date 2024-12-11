@@ -106,6 +106,25 @@ class CatalogShopController {
       })
     }).send(res)
   }
+
+  getCatalogShopOwner = async (req, res, next) => {
+    const shop = await shopModel.findOne({
+      owner_id: req.user._id
+    })
+
+    console.log('Shop owner', shop)
+    if (!shop) {
+      throw new BadRequestError('Shop not found for the owner');
+    }
+    const catalogShop = await CatalogShopService.getShopCategories({
+      shopId: shop._id
+    })
+
+    new SuccessReponse({
+      message: 'Get catalog shop successfully',
+      data: catalogShop
+    }).send(res)
+  }
 }
 
 module.exports = new CatalogShopController();
