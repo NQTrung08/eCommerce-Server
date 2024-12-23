@@ -4,9 +4,11 @@ const { createOrder, getOrdersByUserId, cancelOrder, updateOrderStatus, removePu
 const { createVnpayPaymentUrl, createMoMoPaymentUrl } = require('../services/payment.service');
 const { SuccessReponse } = require('../core/success.response');
 const { BadRequestError } = require('../core/error.response');
-const { createVnpayTransaction, createMoMoTransaction } = require('../services/transaction.service');
+const { createVnpayTransaction, createMoMoTransaction, verifySignature } = require('../services/transaction.service');
 const { app: { redirectUrl } } = require('../configs/config.app');
+const { momoConfig } = require('../configs/payment.config')
 const shopModel = require('../models/shop.model');
+const crypto = require('crypto');
 class OrderController {
 
   getAll = async (req, res, next) => {
@@ -52,8 +54,6 @@ class OrderController {
       shippingAddress,
       paymentGateway
     });
-
-    console.log('new orderrr', newOrders)
     const orderIds = newOrders.orders.map(order => order._id); // Hoặc thuộc tính nào đó chứa ID
 
 
@@ -117,35 +117,19 @@ class OrderController {
 
   // nhận thông tin từ momo
   momoReturn = async (req, res) => {
-    const {
-      partnerCode,
-      orderId,
-      requestId,
-      amount,
-      orderInfo,
-      orderType,
-      transId,
-      resultCode,
-      message,
-      responseTime,
-      extraData,
-      signature,
-    } = req.query;
+    const momo_params = req.query;
 
-    const rawSignature = `amount=${amount}&extraData=${extraData}&message=${message}&orderId=${orderId}&orderInfo=${orderInfo}&orderType=${orderType}&partnerCode=${partnerCode}&payType=&requestId=${requestId}&responseTime=${responseTime}&resultCode=${resultCode}&transId=${transId}`;
-    const generatedSignature = crypto.createHmac('sha256', secretkey).update(rawSignature).digest('hex');
+    const verify = await verifySignature(momo_params)
 
-    if (signature !== generatedSignature) {
-      throw new BadRequestError(`Invalid signature`)
-    }
+    if(!verify) return null;
     let redirectUrlPayment;
-    if (resultCode == '0') {
+    if (momo_params.resultCode == '0') {
       // Lưu thông tin giao dịch vào cơ sở dữ liệu
       const transactionResult = await createMoMoTransaction({
-        transactionId: transId,
-        orderId,
-        amount,
-        responseCode: resultCode,
+        transactionId: momo_params.transId,
+        orderId: momo_params.orderId,
+        amount: momo_params.amount,
+        responseCode: momo_params.resultCode,
         transactionStatus: 'SUCCESS',
       });
 

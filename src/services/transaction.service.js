@@ -1,7 +1,7 @@
 const { SuccessReponse } = require('../core/success.response');
 const crypto = require('crypto');
 const querystring = require('qs');
-const { vnpayConfig } = require('../configs/payment.config');
+const { vnpayConfig, momoConfig } = require('../configs/payment.config');
 const transactionModel = require('../models/transaction.model');
 const { BadRequestError } = require('../core/error.response');
 const orderModel = require('../models/order.model');
@@ -104,6 +104,33 @@ function sortObject(obj) {
   return sorted;
 }
 
+const  verifySignature = async (params) => {
+  // Lấy signature từ tham số
+  const receivedSignature = params['signature'];
+
+  // Loại bỏ tham số signature ra khỏi params
+  delete params['signature'];
+
+  // Sắp xếp tham số theo thứ tự bảng chữ cái
+  const sortedParams = sortObject(params);
+
+  // Tạo chuỗi signData
+  const signData = querystring.stringify(sortedParams, { encode: false });
+
+  let hmac = crypto.createHmac("sha512", momoConfig.secretkey);
+  let signed = hmac.update(new Buffer(signData, 'utf-8')).digest("hex");
+
+  console.log('signData:', signData);
+  console.log('generatedSignature:', signed);
+  console.log('receivedSignature:', receivedSignature);
+
+  // So sánh chữ ký
+  if (signed !== receivedSignature) {
+    throw new BadRequestError('Invalid signature');
+  }
+
+  return true;
+}
 
 const createMoMoTransaction = async ({
   transactionId,
@@ -159,4 +186,5 @@ module.exports = {
   createMoMoTransaction,
   getTransactions,
   getTransactionsByShopId,
+  verifySignature
 };
