@@ -223,18 +223,17 @@ const updateProduct = async ({ userId, id, body, files }) => {
     body.isDeleted = false;
   }
 
-  // Nếu có file hình ảnh, upload từng file lên Cloudinary
-  const productImages = await uploadProductImages({
-    files: files,
-    shopId: shop._id,
-    productId: id, // Tạo productId tạm thời cho tên folder
-  });
-
-  // Gắn hình ảnh vào productData
-  productData.product_img = productImages;
-
-  // Cập nhật sản phẩm chỉ với các trường có trong body
-  const productToUpdate = await productModel.findByIdAndUpdate(id, { $set: body }, { new: true });
+  let productToUpdate
+  if (!!files) {
+    const productImages = await uploadProductImages({
+      files: files,
+      shopId: shop._id,
+      productId: id, // Tạo productId tạm thời cho tên folder
+    });
+    productToUpdate = await productModel.findByIdAndUpdate(id, { $set: { ...body, product_img: productImages } }, { new: true });
+  } else {
+    productToUpdate = await productModel.findByIdAndUpdate(id, { $set: body }, { new: true });
+  }
 
   if (!productToUpdate) {
     throw new NotFoundError('Product not found');
@@ -515,7 +514,7 @@ const getCountProduct = async ({
 const deleteProducts = async (ids) => {
   const products = await productModel.deleteMany(
     { _id: { $in: ids } }, // Tìm kiếm theo danh sách ID
-    
+
   );
 
   if (products.modifiedCount === 0) {
