@@ -480,10 +480,10 @@ const addProductsToCatalog = async ({
 }
 
 const getProductsByCategoryId = async ({
-  catalogId
+  categoryId
 }) => {
   const products = await productModel.find({
-    catalog_id: catalogId,
+    category_id: categoryId,
     isPublic: true
   }).lean();
   return products;
