@@ -1,7 +1,7 @@
 // order.controller.js
 'use strict';
 const { createOrder, getOrdersByUserId, cancelOrder, updateOrderStatus, removePurchasedItemsFromCart, getAllOrders, getOrdersForShop } = require('../services/order.service');
-const { createVnpayPaymentUrl, createMoMoPaymentUrl } = require('../services/payment.service');
+const { createVnpayPaymentUrl, createMoMoPaymentUrl, updateStatusOrders } = require('../services/payment.service');
 const { SuccessReponse } = require('../core/success.response');
 const { BadRequestError } = require('../core/error.response');
 const { createVnpayTransaction, createMoMoTransaction, verifySignature } = require('../services/transaction.service');
@@ -116,12 +116,12 @@ class OrderController {
 
 
   // nhận thông tin từ momo
-  momoReturn = async (req, res) => {
+  momoReturn = async (req, res, next) => {
     const momo_params = req.query;
 
     const verify = await verifySignature(momo_params)
 
-    if(!verify) return null;
+    if (!verify) return null;
     let redirectUrlPayment;
     if (momo_params.resultCode == '0') {
       // Lưu thông tin giao dịch vào cơ sở dữ liệu
@@ -134,17 +134,16 @@ class OrderController {
       });
 
       if (transactionResult.status === 200) {
+        await updateStatusOrders(momo_params.orderId, 'waiting')
         // Redirect tới trang thanh toán thành công
-        redirectUrlPayment = `${redirectUrl}/payment-success?transactionId=${transId}&status=success`;
-        return res.redirect(redirectUrlPayment);
+        redirectUrlPayment = `${redirectUrl}/payment-success?transactionId=${momo_params.transId}&status=success`;
       } else {
-        redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${transId}&status=failed`;
-        return res.redirect(redirectUrlPayment);
+        redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${momo_params.transId}&status=failed`;
       }
     } else {
-      redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${transId}&status=failed`;
-      return res.redirect(redirectUrlPayment);
+      redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${momo_params.transId}&status=failed`;
     }
+    return res.redirect(redirectUrlPayment);
   };
 
   // get order by user id filter by status

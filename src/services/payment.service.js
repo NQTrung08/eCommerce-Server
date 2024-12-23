@@ -4,7 +4,9 @@ const querystring = require('qs');
 const moment = require('moment');
 const axios = require('axios');
 
-const { vnpayConfig, momoConfig } = require('../configs/payment.config')
+const { vnpayConfig, momoConfig } = require('../configs/payment.config');
+const { BadRequestError } = require('../core/error.response');
+const orderModel = require('../models/order.model');
 
 
 // Hàm tạo URL thanh toán VNPAY
@@ -23,7 +25,7 @@ const createVnpayPaymentUrl = async ({
 
   let date = new Date();
   let createDate = moment(date).format('YYYYMMDDHHmmss'); // Ngày tạo đơn hàng theo định dạng VNPAY
-  const orderId = orderIds.join(','); // Mã đơn hàng (order ID)
+  const orderId = orderIds.join('-'); // Mã đơn hàng (order ID)
   console.log(orderId);
   const amount = totalAmount; // Tổng giá trị đơn hàng (VND)
 
@@ -88,7 +90,7 @@ const createMoMoPaymentUrl = async ({ orderIds, amount }) => {
   const extraData = "";
   const orderInfo = "Pay with MoMo";
   const requestType = 'payWithMethod';
-  const orderId = String(orderIds.join(',')); // Mã đơn hàng (order ID)
+  const orderId = String(orderIds.join('-')); // Mã đơn hàng (order ID)
   const partnerCode = momoConfig.partnerCode;
   const accessKey = momoConfig.accessKey;
   const secretkey = momoConfig.secretkey;
@@ -96,7 +98,6 @@ const createMoMoPaymentUrl = async ({ orderIds, amount }) => {
   // Tạo chữ ký
   const rawSignature = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
   const signature = crypto.createHmac('sha256', secretkey).update(rawSignature).digest('hex');
-
   // Tạo request body
   const requestBody = {
     partnerCode,
@@ -123,8 +124,27 @@ const createMoMoPaymentUrl = async ({ orderIds, amount }) => {
   return res.data; // Trả về kết quả từ MoMo
 };
 
+const updateStatusOrders = async (orderId, orderStatus) => {
+  const orderIds = decodeURIComponent(orderId).split('-');
+  console.log(orderIds);
+  // Cập nhật trạng thái cho tất cả các đơn hàng
+  for (const orderId of orderIds) {
+    console.log(orderId);
+    const order = await orderModel.findByIdAndUpdate(
+      orderId,
+      { order_status: orderStatus },
+      { new: true } // Trả về tài liệu đã cập nhật
+    );
+
+    if (!order) {
+      throw new BadRequestError('Order not found');
+    }
+  }
+}
+
 
 module.exports = {
   createVnpayPaymentUrl,
   createMoMoPaymentUrl,
+  updateStatusOrders
 }

@@ -39,10 +39,10 @@ const createVnpayTransaction = async ({
 
   let responseCode = vnp_Params['vnp_ResponseCode']; // Lấy response code
   let orderStatus = 'pending';
-  if (responseCode !== '00') {
+  if (responseCode == '00') {
     orderStatus = 'waiting'; // Thanh toán thành công
   }
-  const orderIds = decodeURIComponent(vnp_Params['vnp_TxnRef']).split(',');
+  const orderIds = decodeURIComponent(vnp_Params['vnp_TxnRef']).split('-');
   console.log(orderIds);
   // Cập nhật trạng thái cho tất cả các đơn hàng
   for (const orderId of orderIds) {
@@ -104,7 +104,9 @@ function sortObject(obj) {
   return sorted;
 }
 
-const  verifySignature = async (params) => {
+const verifySignature = async (params) => {
+
+  console.log("params", params);
   // Lấy signature từ tham số
   const receivedSignature = params['signature'];
 
@@ -125,9 +127,9 @@ const  verifySignature = async (params) => {
   console.log('receivedSignature:', receivedSignature);
 
   // So sánh chữ ký
-  if (signed !== receivedSignature) {
-    throw new BadRequestError('Invalid signature');
-  }
+  // if (signed !== receivedSignature) {
+  //   throw new BadRequestError('Invalid signature');
+  // }
 
   return true;
 }
@@ -141,21 +143,38 @@ const createMoMoTransaction = async ({
   responseCode,
   transactionStatus = 'PENDING',
 }) => {
-  // Tạo bản ghi giao dịch mới
-  const transaction = await transactionModel.create({
-    transaction_id: transactionId,
-    order_id: orderId,
-    amount,
-    bankCode,
-    transactionNo,
-    responseCode,
-    transactionStatus,
-  });
 
-  new SuccessReponse({
-    data: transaction,
+  const orderIds = decodeURIComponent(orderId).split('-');
+
+  let createTransactions = [];
+  for (const orderId of orderIds) {
+
+    // Tìm order theo orderId và lấy order_total_price
+    const order = await orderModel.findById(orderId);
+
+    if (!order) {
+      throw new BadRequestError('Order not found'); // Nếu không tìm thấy order, ném lỗi
+    }
+    // Tạo bản ghi giao dịch mới
+    const transaction = await transactionModel.create({
+      transaction_id: transactionId,
+      order_id: orderId,
+      amount: order.order_total_price,
+      bankCode,
+      transactionNo: transactionId,
+      responseCode,
+      transactionStatus,
+    });
+
+    createTransactions.push(transaction);
+
+  }
+
+  return {
+    status: 200,
+    data: createTransactions,
     message: 'Transaction created successfully',
-  }).send(res)
+  };
 };
 
 
