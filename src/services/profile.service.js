@@ -95,7 +95,7 @@ const updateProfile = async ({
   body,
 }) => {
   const { email, password, ...updateData } = body;
-  const user = await userModel.findByIdAndUpdate(id, ...updateData, { new: true });
+  const user = await userModel.findByIdAndUpdate(id, updateData, { new: true }).select('-password');
 
   if (!user) {
     throw new NotFoundError('User not found');
