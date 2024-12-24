@@ -16,7 +16,7 @@ const { getProductById } = require('../models/repo/product.repo');
  */
 
 const createUserCart = async ({ userId, product }) => {
-  const { productId, quantity} = product;
+  const { productId, quantity } = product;
 
   // Kiểm tra sản phẩm có tồn tại
   const productExist = await getProductById(productId);
@@ -45,10 +45,10 @@ const createUserCart = async ({ userId, product }) => {
 
 const addToCart = async ({ userId, product }) => {
   const { productId, quantity } = product;
-  if(!userId) {
+  if (!userId) {
     throw new BadRequestError('User id is required');
   }
-  if(!productId || !quantity) {
+  if (!productId || !quantity) {
     throw new BadRequestError('Product id and quantity are required');
   }
   // Kiểm tra sản phẩm có tồn tại
@@ -82,6 +82,8 @@ const addToCart = async ({ userId, product }) => {
     return await createUserCart({ userId, product });
   }
 
+  console.log('userCart', userCart)
+
   // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
   const productInCart = userCart.cart_products.find(
     (p) => p.productId.toString() === productId.toString()
@@ -97,21 +99,18 @@ const addToCart = async ({ userId, product }) => {
       product_name: productExist.product_name,
       product_desc: productExist.product_desc,
     };
-    
+
     userCart.cart_products.push(newProduct);
     return await userCart.save();
   }
 
   // Nếu sản phẩm đã tồn tại, cập nhật số lượng
-  return await updateUserCartQuantity({ userId, product });
+  return await updateUserCartQuantity({ userId, product: { ...product, quantity: productInCart.quantity + product.quantity } });
 
 };
 
 const updateQuantityFromCart = async ({ userId, product }) => {
   const { productId, quantity } = product; // Chỉ cần lấy quantity mới
-
-  console.log('UserId:', userId);
-  console.log('ProductId, Quantity:', productId, quantity);
 
   // Kiểm tra giá trị quantity phải hợp lệ và lớn hơn hoặc bằng 0 và phải truyền vào là number
   if (typeof quantity !== 'number') {
