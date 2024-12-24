@@ -44,7 +44,8 @@ async (accessToken, refreshToken, profile, done) => {
       provider: 'google',
       providerId: profile.id,
       roles: [defaultRole._id],
-      verifiedEmail: profile._json.email_verified
+      verifiedEmail: true,
+      status: 'active'
     });
 
     return done(null, newUser);
