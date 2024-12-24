@@ -5,7 +5,7 @@ const { ConflictError, InternalServerError, BadRequestError } = require('../../c
 const keyTokenService = require('../../services/keyToken.service');
 const UserController = require('../../controllers/user.controller');
 const { asyncHandler } = require('../../helpers/asyncHandler');
-const { app: { redirectUrl }} = require('../../configs/config.app')
+const { app: { redirectUrl } } = require('../../configs/config.app')
 
 const router = express.Router();
 
@@ -14,8 +14,8 @@ router.post('/verifyUser', asyncHandler(UserController.verifyUserOTP));
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 router.get('/google/callback',
-  passport.authenticate('google',{ session: false }),
-  async (req, res) => { 
+  passport.authenticate('google', { session: false }),
+  async (req, res) => {
     console.log('User Info:', req.user);
     // Success redirect or return JWT token
     const tokens = await createTokenPair({
@@ -24,7 +24,8 @@ router.get('/google/callback',
       avatar: req.user.avatar,
       email: req.user.email,
       roles: req.user.roles,
-      status: req.user.status
+      status: req.user.status,
+      verifiedEmail: req.user.verifiedEmail
     });
 
     const keyStore = await keyTokenService.createKeyToken({
