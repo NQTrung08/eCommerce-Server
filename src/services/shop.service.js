@@ -168,7 +168,7 @@ const getShop = async ({ id, year }) => {
   if (!shop) {
     throw new NotFoundError('Shop not found');
   }
-  
+
   return {
     shop,
     productsCount,
@@ -303,37 +303,37 @@ const getPlatformRevenue = async ({
     if (groupBy === 'year') {
       return {
         _id: { year: { $year: "$createdAt" } },
-        totalRevenue: { 
-          $sum: { 
-            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0] 
-          } 
+        totalRevenue: {
+          $sum: {
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0]
+          }
         },
         totalOrders: { $sum: 1 }
       };
     } else if (groupBy === 'month' || groupBy === '') {
       return {
-        _id: { 
+        _id: {
           year: { $year: "$createdAt" },
           month: { $month: "$createdAt" }
         },
-        totalRevenue: { 
-          $sum: { 
-            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0] 
-          } 
+        totalRevenue: {
+          $sum: {
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0]
+          }
         },
         totalOrders: { $sum: 1 }
       };
     } else if (groupBy === 'day') {
       return {
-        _id: { 
+        _id: {
           year: { $year: "$createdAt" },
           month: { $month: "$createdAt" },
           day: { $dayOfMonth: "$createdAt" }
         },
-        totalRevenue: { 
-          $sum: { 
-            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0] 
-          } 
+        totalRevenue: {
+          $sum: {
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0]
+          }
         },
         totalOrders: { $sum: 1 }
       };
@@ -363,12 +363,17 @@ const getPlatformRevenue = async ({
   const result = [];
 
   if (groupBy === 'year') {
-    const year = new Date(startDate).getFullYear(); // Lấy năm từ startDate
-    result.push({
-      year,
-      totalRevenue: statistics[0]?.totalRevenue || 0,
-      totalOrders: statistics[0]?.totalOrders || 0
-    });
+    const startYear = new Date(startDate).getFullYear();
+    const endYear = new Date(endDate).getFullYear();
+
+    for (let year = startYear; year <= endYear; year++) {
+      const yearData = statistics.find(stat => stat._id.year === year) || { totalRevenue: 0, totalOrders: 0 };
+      result.push({
+        year,
+        totalRevenue: yearData.totalRevenue,
+        totalOrders: yearData.totalOrders
+      });
+    }
   } else if (groupBy === 'month') {
     for (let i = 1; i <= 12; i++) {
       const monthData = statistics.find(stat => stat._id.month === i) || { totalRevenue: 0, totalOrders: 0 };
@@ -416,37 +421,37 @@ const getRevenueByShopId = async ({
     if (groupBy === 'year') {
       return {
         _id: { year: { $year: "$createdAt" } },
-        totalRevenue: { 
-          $sum: { 
-            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0] 
-          } 
+        totalRevenue: {
+          $sum: {
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0]
+          }
         },
         totalOrders: { $sum: 1 }
       };
     } else if (groupBy === 'month' || groupBy === '') {
       return {
-        _id: { 
+        _id: {
           year: { $year: "$createdAt" },
           month: { $month: "$createdAt" }
         },
-        totalRevenue: { 
-          $sum: { 
-            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0] 
-          } 
+        totalRevenue: {
+          $sum: {
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0]
+          }
         },
         totalOrders: { $sum: 1 }
       };
     } else if (groupBy === 'day') {
       return {
-        _id: { 
+        _id: {
           year: { $year: "$createdAt" },
           month: { $month: "$createdAt" },
           day: { $dayOfMonth: "$createdAt" }
         },
-        totalRevenue: { 
-          $sum: { 
-            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0] 
-          } 
+        totalRevenue: {
+          $sum: {
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0]
+          }
         },
         totalOrders: { $sum: 1 }
       };
@@ -478,10 +483,10 @@ const getRevenueByShopId = async ({
     {
       $group: {
         _id: null,
-        totalRevenue: { 
-          $sum: { 
-            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0] 
-          } 
+        totalRevenue: {
+          $sum: {
+            $cond: [{ $eq: ["$order_status", "completed"] }, "$order_total_price", 0]
+          }
         },
         totalOrders: { $sum: 1 }
       }
@@ -495,12 +500,17 @@ const getRevenueByShopId = async ({
   const result = [];
 
   if (groupBy === 'year') {
-    const year = new Date(startDate).getFullYear(); // Lấy năm từ startDate
-    result.push({
-      year,
-      totalRevenue: statistics[0]?.totalRevenue || 0,
-      totalOrders: statistics[0]?.totalOrders || 0
-    });
+    const startYear = new Date(startDate).getFullYear();
+    const endYear = new Date(endDate).getFullYear();
+
+    for (let year = startYear; year <= endYear; year++) {
+      const yearData = statistics.find(stat => stat._id.year === year) || { totalRevenue: 0, totalOrders: 0 };
+      result.push({
+        year,
+        totalRevenue: yearData.totalRevenue,
+        totalOrders: yearData.totalOrders
+      });
+    }
   } else if (groupBy === 'month') {
     for (let i = 1; i <= 12; i++) {
       const monthData = statistics.find(stat => stat._id.month === i) || { totalRevenue: 0, totalOrders: 0 };
