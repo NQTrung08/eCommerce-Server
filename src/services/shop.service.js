@@ -411,6 +411,8 @@ const getRevenueByShopId = async ({
   endDate,
   groupBy = 'month'
 }) => {
+  console.log('getRevenueByShopId', shopId, startDate, endDate)
+
   const dateFilter = {
     createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) },
     order_shopId: shopId

@@ -132,6 +132,7 @@ class ShopController {
     if (!shop) {
       throw new BadRequestError('Shop not found for the owner');
     }
+    console.log('Shop found', shop)
     return new SuccessReponse({
       message: 'Revenue for shop',
       data: await ShopService.getRevenueByShopId({
@@ -144,10 +145,14 @@ class ShopController {
   }
 
   getShopRevenueForAdmin = async (req, res) => {
+    const shop = await shopModel.findById(req.params.shopId)
+    if (!shop) {
+      throw new BadRequestError('Shop not found');
+    }
     return new SuccessReponse({
       message: 'Revenue for shop for admin',
       data: await ShopService.getRevenueByShopId({
-        shopId: req.params.shopId,
+        shopId: shop._id,
         startDate: req.query.startDate,
         endDate: req.query.endDate,
         groupBy: req.query.groupBy
