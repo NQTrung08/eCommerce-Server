@@ -40,54 +40,60 @@ class OrderController {
 
   // Hàm xử lý yêu cầu tạo đơn hàng
   createOrder = async (req, res, next) => {
-    const { _id } = req.user; // Lấy id người dùng từ req.user
-    const { orders, paymentMethod, shippingAddress, paymentGateway } = req.body; // Nhận luôn paymentGateway từ req.body
-    let ipAddr = req.headers['x-forwarded-for'] ||
-      req.connection.remoteAddress ||
-      req.socket.remoteAddress ||
-      req.connection.socket.remoteAddress;
-    // Tạo đơn hàng
-    const newOrders = await createOrder({
-      userId: _id,
-      orders,
-      paymentMethod,
-      shippingAddress,
-      paymentGateway
-    });
-    const orderIds = newOrders.orders.map(order => order._id); // Hoặc thuộc tính nào đó chứa ID
-
-
-    // Xử lý thanh toán online (nếu có)
-    if (paymentMethod === 'online') {
-      let paymentUrl;
-      if (paymentGateway === 'VNPAY') {
-        paymentUrl = await createVnpayPaymentUrl({ orderIds, totalAmount: newOrders.totalAmountOrders, ipAddr });
-      } else if (paymentGateway === 'MOMO') {
-        // Giả sử hàm createMomoPaymentUrl đã được định nghĩa
-        paymentUrl = await createMoMoPaymentUrl({ orderIds, amount: newOrders.totalAmountOrders, ipAddr });
-      } else {
-        throw new BadRequestError('Unsupported payment gateway');
-      }
-
-      // Chuyển hướng đến URL thanh toán
-      return res.status(200).json({
-        message: 'Order created successfully, redirect to payment',
-        paymentUrl, // Trả về paymentUrl
-        data: newOrders,
+    try {
+      const { _id } = req.user; // Lấy id người dùng từ req.user
+      const { orders, paymentMethod, shippingAddress, paymentGateway } = req.body; // Nhận luôn paymentGateway từ req.body
+      let ipAddr = req.headers['x-forwarded-for'] ||
+        req.connection.remoteAddress ||
+        req.socket.remoteAddress ||
+        req.connection.socket.remoteAddress;
+      // Tạo đơn hàng
+      const newOrders = await createOrder({
+        userId: _id,
+        orders,
+        paymentMethod,
+        shippingAddress,
+        paymentGateway
       });
-
-
-    };
-
-    // Loại bỏ các sản phẩm đã mua khỏi giỏ hàng của người dùng
-    await removePurchasedItemsFromCart(_id, orders);
-
-    // Trả về phản hồi thành công
-    new SuccessReponse({
-      message: 'Order created successfully',
-      data: newOrders,
-    }).send(res);
-
+      const orderIds = newOrders.orders.map(order => order._id); // Hoặc thuộc tính nào đó chứa ID
+  
+  
+      // Xử lý thanh toán online (nếu có)
+      if (paymentMethod === 'online') {
+        let paymentUrl;
+        if (paymentGateway === 'VNPAY') {
+          paymentUrl = await createVnpayPaymentUrl({ orderIds, totalAmount: newOrders.totalAmountOrders, ipAddr });
+        } else if (paymentGateway === 'MOMO') {
+          // Giả sử hàm createMomoPaymentUrl đã được định nghĩa
+          paymentUrl = await createMoMoPaymentUrl({ orderIds, amount: newOrders.totalAmountOrders, ipAddr });
+        } else {
+          throw new BadRequestError('Unsupported payment gateway');
+        }
+  
+        // Chuyển hướng đến URL thanh toán
+        return res.status(200).json({
+          message: 'Order created successfully, redirect to payment',
+          paymentUrl, // Trả về paymentUrl
+          data: newOrders,
+        });
+  
+  
+      };
+  
+      // Loại bỏ các sản phẩm đã mua khỏi giỏ hàng của người dùng
+      await removePurchasedItemsFromCart(_id, orders);
+  
+      // Trả về phản hồi thành công
+      new SuccessReponse({
+        message: 'Order created successfully',
+        data: newOrders,
+      }).send(res);
+  
+    } catch(e) {
+      console.log(e)
+      throw new BadRequestError('product_thumb is required')
+    }
+    
   }
 
   // Hàm nhận thông tin thanh toán thành công từ VNPAY
