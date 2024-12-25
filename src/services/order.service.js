@@ -85,7 +85,7 @@ const createOrder = async ({ userId, orders, paymentMethod, shippingAddress, pay
 const getAllOrders = async () => {
   const orders = await orderModel.find({
 
-  });
+  }).populate('order_shopId');
   return orders;
 }
 
