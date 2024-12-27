@@ -6,6 +6,7 @@ const dev = {
     host: process.env.DEV_DB_HOST || 'localhost',
     port: process.env.DEV_DB_PORT || 27017,
     name: process.env.DEV_DB_NAME || 'shopDEV',
+    uri: process.env.URI_MONGO_PRO
   }
 }
 

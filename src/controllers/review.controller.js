@@ -2,7 +2,7 @@ const { BadRequestError } = require("../core/error.response");
 const { SuccessReponse } = require("../core/success.response");
 const orderModel = require("../models/order.model");
 const shopModel = require("../models/shop.model");
-const { createReview, getReviewsByProductId, getAll, getAllReviewsForShop } = require("../services/review.service");
+const { createReview, getReviewsByProductId, getAll, getAllReviewsForShop, getCountReview } = require("../services/review.service");
 
 
 class ReviewController {
@@ -74,6 +74,15 @@ class ReviewController {
       })
     }).send(res);
   }
+
+  getCountReview = async (req, res, next) => {
+    const { type, id } = req.body
+    new SuccessReponse({
+      message: 'Get count review',
+      data: await getCountReview(type, id)
+    }).send(res);
+  }
 }
+
 
 module.exports = new ReviewController;
