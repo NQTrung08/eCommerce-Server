@@ -126,7 +126,7 @@ const createMoMoPaymentUrl = async ({ orderIds, amount }) => {
 
 const updateStatusOrders = async (orderId, orderStatus) => {
   const orderIds = decodeURIComponent(orderId).split('-');
-  console.log(orderIds);
+  console.log("orderIds", orderIds);
   // Cập nhật trạng thái cho tất cả các đơn hàng
   for (const orderId of orderIds) {
     console.log(orderId);

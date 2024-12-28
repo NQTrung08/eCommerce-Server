@@ -36,40 +36,17 @@ const createVnpayTransaction = async ({
     throw new BadRequestError('Invalid secure hash');
   }
   // Lấy orderIds từ params (giả sử nó được gửi là vnp_TxnRef)
-
-  let responseCode = vnp_Params['vnp_ResponseCode']; // Lấy response code
-  let orderStatus = 'pending';
-  if (responseCode == '00') {
-    orderStatus = 'waiting'; // Thanh toán thành công
-  }
   const orderIds = decodeURIComponent(vnp_Params['vnp_TxnRef']).split('-');
-  console.log(orderIds);
-  // Cập nhật trạng thái cho tất cả các đơn hàng
-  for (const orderId of orderIds) {
-    console.log(orderId);
-    const order = await orderModel.findByIdAndUpdate(
-      orderId,
-      { order_status: orderStatus },
-      { new: true } // Trả về tài liệu đã cập nhật
-    );
-
-    if (!order) {
-      throw new BadRequestError('Order not found');
-    }
-  }
-
   let createTransactions = [];
   for (const orderId of orderIds) {
-
     // Tìm order theo orderId và lấy order_total_price
     const order = await orderModel.findById(orderId);
-
     if (!order) {
       throw new BadRequestError('Order not found'); // Nếu không tìm thấy order, ném lỗi
     }
 
     const transaction = await transactionModel.create({
-      transaction_id: orderId, // Mã giao dịch có thể là mã chung cho tất cả
+      transaction_id: vnp_Params['vnp_TransactionNo'], // Mã giao dịch có thể là mã chung cho tất cả
       order_id: orderId,
       amount: order.order_total_price, // Lưu với đơn vị VND
       bankCode: vnp_Params['vnp_BankCode'],
@@ -105,7 +82,6 @@ function sortObject(obj) {
 }
 
 const verifySignature = async (params) => {
-
   console.log("params", params);
   // Lấy signature từ tham số
   const receivedSignature = params['signature'];
@@ -141,7 +117,7 @@ const createMoMoTransaction = async ({
   bankCode = '',
   transactionNo = '',
   responseCode,
-  transactionStatus = 'PENDING',
+  transactionStatus = 'pending',
 }) => {
 
   const orderIds = decodeURIComponent(orderId).split('-');
@@ -170,17 +146,13 @@ const createMoMoTransaction = async ({
 
   }
 
-  return {
-    status: 200,
-    data: createTransactions,
-    message: 'Transaction created successfully',
-  };
+  return createTransactions
+  
 };
 
 
 const getTransactions = async () => {
   const transactions = await transactionModel.find()
-
   return transactions
 }
 

@@ -56,8 +56,10 @@ class OrderController {
         paymentGateway
       });
       const orderIds = newOrders.orders.map(order => order._id); // Hoặc thuộc tính nào đó chứa ID
-  
-  
+      if(!!newOrders) {
+        // Loại bỏ các sản phẩm đã mua khỏi giỏ hàng của người dùng
+        await removePurchasedItemsFromCart(_id, orders);
+      }
       // Xử lý thanh toán online (nếu có)
       if (paymentMethod === 'online') {
         let paymentUrl;
@@ -80,9 +82,6 @@ class OrderController {
   
       };
   
-      // Loại bỏ các sản phẩm đã mua khỏi giỏ hàng của người dùng
-      await removePurchasedItemsFromCart(_id, orders);
-  
       // Trả về phản hồi thành công
       new SuccessReponse({
         message: 'Order created successfully',
@@ -99,7 +98,7 @@ class OrderController {
   // Hàm nhận thông tin thanh toán thành công từ VNPAY
   vnpayReturn = async (req, res, next) => {
     const vnp_Params = req.query;
-
+    console.log("vnpayReturn")
     // Kiểm tra tính hợp lệ của secure hash và lưu giao dịch
     const transaction = await createVnpayTransaction({
       params: vnp_Params,
@@ -109,13 +108,15 @@ class OrderController {
     const responseCode = vnp_Params['vnp_ResponseCode']; // Lấy response code
     let redirectUrlPayment;
     if (responseCode === '00') {
+      await updateStatusOrders(vnp_Params['vnp_ResponseCode'], 'confirmed')
       // Nếu thành công, chuyển hướng về FE với trạng thái success
-      redirectUrlPayment = `${redirectUrl}/payment-success?transactionId=${vnp_Params['vnp_TxnRef']}&status=success`;
+      redirectUrlPayment = `${redirectUrl}/payment-success?transactionId=${transaction.transactionNo}&status=success`;
     } else {
+      await updateStatusOrders(vnp_Params['vnp_ResponseCode'], 'waiting')
       // Nếu thất bại, chuyển hướng về FE với trạng thái failed
-      redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${vnp_Params['vnp_TxnRef']}&status=failed`;
+      redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${transaction.transactionNo}&status=failed`;
     }
-
+    console.log("rés", responseCode)
     // Thực hiện chuyển hướng về frontend với kết quả
     return res.redirect(redirectUrlPayment);
   };
@@ -124,9 +125,8 @@ class OrderController {
   // nhận thông tin từ momo
   momoReturn = async (req, res, next) => {
     const momo_params = req.query;
-
+    console.log("momoReturn", momo_params)
     const verify = await verifySignature(momo_params)
-
     if (!verify) return null;
     let redirectUrlPayment;
     if (momo_params.resultCode == '0') {
@@ -136,18 +136,20 @@ class OrderController {
         orderId: momo_params.orderId,
         amount: momo_params.amount,
         responseCode: momo_params.resultCode,
-        transactionStatus: 'SUCCESS',
+        transactionStatus: momo_params.resultCode,
       });
 
-      if (transactionResult.status === 200) {
-        await updateStatusOrders(momo_params.orderId, 'waiting')
+      if (momo_params.resultCode == '0') {
+        await updateStatusOrders(momo_params.orderId, 'confirmed')
         // Redirect tới trang thanh toán thành công
-        redirectUrlPayment = `${redirectUrl}/payment-success?transactionId=${momo_params.transId}&status=success`;
+        redirectUrlPayment = `${redirectUrl}/payment-success?transactionId=${transactionResult.transactionNo}&status=success`;
       } else {
-        redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${momo_params.transId}&status=failed`;
+        // update thành chờ thanh toán
+        await updateStatusOrders(momo_params.orderId, 'waiting')
+        redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${momo_params.transactionNo}&status=failed`;
       }
     } else {
-      redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${momo_params.transId}&status=failed`;
+      redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${momo_params.transactionNo}&status=failed`;
     }
     return res.redirect(redirectUrlPayment);
   };
@@ -167,7 +169,6 @@ class OrderController {
   updateStatusOrder = async (req, res, next) => {
     const { id } = req.params;
     const { status } = req.query;
-    console.log("orderId - status", id, status);
     const order = await updateOrderStatus({ orderId: id, status });
     new SuccessReponse({
       message: 'Update status order successfully',
@@ -182,6 +183,16 @@ class OrderController {
     });
     new SuccessReponse({
       message: 'Cancel order successfully',
+      data: order
+    }).send(res);
+  }
+
+  // update kiểu thanh toán
+  updatePaymentMethod = async (req, res, next) => {
+    const { orderId, paymentMethod, paymentGateway } = req.body;
+    const order = await updatePaymentMethod({ orderId, paymentMethod, paymentGateway });
+    new SuccessReponse({
+      message: 'Update payment method successfully',
       data: order
     }).send(res);
   }

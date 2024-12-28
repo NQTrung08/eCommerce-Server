@@ -172,6 +172,33 @@ const removePurchasedItemsFromCart = async (userId, orders) => {
   await cart.save(); // Lưu lại giỏ hàng sau khi cập nhật
 }
 
+const updatePaymentMethod = async ({
+  orderId,
+  paymentMethod,
+  paymentGateway,
+}) => {
+  const query = { _id: orderId };
+  const update = {
+    order_payment_method: paymentMethod,
+    order_payment_gateway: paymentMethod === 'online'? paymentGateway : 'none',
+  };
+  const options = { new: true };
+  const updatedOrder = await orderModel.findOneAndUpdate(query, update, options);
+  return updatedOrder;
+}
+
+const paymentReturn = async ({
+  orderId
+}) => {
+  const query = { _id: orderId };
+  const update = {
+    order_status: 'completed',
+  };
+  const options = { new: true };
+  const updatedOrder = await orderModel.findOneAndUpdate(query, update, options);
+  return updatedOrder;
+}
+
 
 
 
