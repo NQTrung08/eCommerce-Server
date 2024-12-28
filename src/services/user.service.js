@@ -75,8 +75,19 @@ const getCustomers = async({
     return customers;
 }
 
+const blockUser = async ({
+  userId,
+}) => {
+  const user = await userModel.findById(userId);
+  if (!user) {
+    throw new BadRequestError('User not found');
+  }
+  user.status = 'block';
+  await user.save();
+}
 module.exports = {
   verifyUserOTP,
   getAllUsers,
   getCustomers,
+  blockUser
 };

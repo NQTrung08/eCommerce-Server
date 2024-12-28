@@ -40,8 +40,17 @@ const getCustomers = async (req, res, next) => {
   }).send(res)
 };
 
+const blockUser = async (req, res, next) => {
+  const userId = req.body.userId
+  return new SuccessReponse({
+    message: 'User blocked successfully',
+    data: await UserService.blockUser({ userId }),
+  }).send(res)
+};
+
 module.exports = {
   verifyUserOTP,
   getAllUsers,
   getCustomers,
+  blockUser
 }

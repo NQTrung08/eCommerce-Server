@@ -79,7 +79,11 @@ const productSchema = new Schema({
     enum: ['inStock', 'outOfStock', 'preOrder'],
     default: 'inStock'
   },
-
+  status: {
+    type: String,
+    enum: ['active', 'block'],
+    default: 'active',
+  }
 
 }, {
   timestamps: true,

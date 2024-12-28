@@ -26,8 +26,11 @@ const authenticate = async (req, res, next) => {
     if (!tokenRecord) {
       return res.status(403).json({ message: 'Access denied' });
     }
-    if (decoded.status == 'block' || decoded.status == 'pending' || !decoded.verifiedEmail) {
-      return res.status(403).json({ message: "You can't access" });
+    if (decoded.status == 'pending' || !decoded.verifiedEmail) {
+      return res.status(403).json({ message: "Bạn chưa xác thực email. Vui lòng xác thực!" });
+    }
+    if(decoded.status == 'block') {
+      return res.status(403).json({ message: 'Tài khoản của bạn đã bị khóa.' });
     }
 
     req.user = decoded;
