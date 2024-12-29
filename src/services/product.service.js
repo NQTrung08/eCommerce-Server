@@ -336,10 +336,10 @@ const searchProducts = async ({
     sortQuery = { sold_count: -1 };
   } else if (sortBy === 'price_asc') {
     // Sắp xếp theo giá tăng dần
-    sortQuery = { price: 1 };
+    sortQuery = { product_price: 1 };
   } else if (sortBy === 'price_desc') {
     // Sắp xếp theo giá giảm dần
-    sortQuery = { price: -1 };
+    sortQuery = { product_price: -1 };
   } else {
     // Mặc định sắp xếp theo mới nhất (createdAt)
     sortQuery = { createdAt: -1 };
