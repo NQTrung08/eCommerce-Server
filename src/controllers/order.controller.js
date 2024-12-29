@@ -98,7 +98,6 @@ class OrderController {
   // Hàm nhận thông tin thanh toán thành công từ VNPAY
   vnpayReturn = async (req, res, next) => {
     const vnp_Params = req.query;
-    console.log("vnpayReturn")
     // Kiểm tra tính hợp lệ của secure hash và lưu giao dịch
     const transaction = await createVnpayTransaction({
       params: vnp_Params,
@@ -108,11 +107,11 @@ class OrderController {
     const responseCode = vnp_Params['vnp_ResponseCode']; // Lấy response code
     let redirectUrlPayment;
     if (responseCode === '00') {
-      await updateStatusOrders(vnp_Params['vnp_ResponseCode'], 'confirmed')
+      await updateStatusOrders(vnp_Params['vnp_TxnRef'], 'confirmed')
       // Nếu thành công, chuyển hướng về FE với trạng thái success
       redirectUrlPayment = `${redirectUrl}/payment-success?transactionId=${transaction.transactionNo}&status=success`;
     } else {
-      await updateStatusOrders(vnp_Params['vnp_ResponseCode'], 'waiting')
+      await updateStatusOrders(vnp_Params['vnp_TxnRef'], 'waiting')
       // Nếu thất bại, chuyển hướng về FE với trạng thái failed
       redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${transaction.transactionNo}&status=failed`;
     }
