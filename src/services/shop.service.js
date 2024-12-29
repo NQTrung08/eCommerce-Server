@@ -137,11 +137,17 @@ const getAllShops = async ({
 const getShopForAdmin = async ({ id, year = 'all' }) => {
 
   const shop = await shopModel.findById(id).lean();
-  const productsCount = await productModel.countDocuments({ shop_id: id });
-  const reviewsCount = await reviewModel.countDocuments({ shop_id: id });
+  const products = await productModel.find({
+    shop_id: id,
+    isPublic: true
+  }).select('_id'); // Chỉ lấy _id để giảm tải dữ liệu
+  
+  const productIds = products.map(product => product._id); // Tạo danh sách các _id của sản phẩm  
+  const reviewsCount = await reviewModel.countDocuments({
+    product_id: { $in: productIds } // Kiểm tra các review có product_id nằm trong productIds
+  });
+
   const stats = await getStatisticsForShop(shop._id, year);
-
-
   if (!shop) {
     throw new NotFoundError('Shop not found');
   }
@@ -149,7 +155,7 @@ const getShopForAdmin = async ({ id, year = 'all' }) => {
   shop.statistics = stats.length ? stats[0] : null;
   return {
     shop,
-    productsCount,
+    productsCount: products.length,
     reviewsCount
   };
 
@@ -160,18 +166,24 @@ const getShopForAdmin = async ({ id, year = 'all' }) => {
 const getShop = async ({ id, year }) => {
 
   const shop = await shopModel.findById(id).lean();
-  const productsCount = await productModel.countDocuments({ shop_id: id });
-  const reviewsCount = await reviewModel.countDocuments({ shop_id: id });
+  const products = await productModel.find({
+    shop_id: id,
+    isPublic: true
+  }).select('_id'); // Chỉ lấy _id để giảm tải dữ liệu
+  
+  const productIds = products.map(product => product._id); // Tạo danh sách các _id của sản phẩm
+  
+  const reviewsCount = await reviewModel.countDocuments({
+    product_id: { $in: productIds } // Kiểm tra các review có product_id nằm trong productIds
+  });
+  
   const stats = await getStatisticsForShop(shop._id, year);
-
-
   if (!shop) {
     throw new NotFoundError('Shop not found');
   }
-
   return {
     shop,
-    productsCount,
+    productsCount: products.length,
     reviewsCount
   }
 
