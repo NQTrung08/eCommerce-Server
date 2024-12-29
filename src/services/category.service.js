@@ -253,9 +253,9 @@ const getCategoryWithChildren = async (id) => {
   const buildTree = (parentId) => {
     return categories
       .filter(cat => (cat.parent_id ? cat.parent_id.toString() : null) === (parentId ? parentId.toString() : null))
-      .map(cat => ({
-        ...cat,
-        // children: cat._id
+      .map(category => ({
+        ...category,
+        children: buildTree(category._id) // Tiếp tục đệ quy xây dựng cây cho danh mục con
       }));
   };
 

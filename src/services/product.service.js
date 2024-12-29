@@ -10,10 +10,13 @@ const orderModel = require('../models/order.model');
 const skuService = require('../services/sku.service');
 const { uploadProductThumbnail } = require('../services/upload.service');
 const { uploadToCloudinary } = require('../helpers/cloudinary.helper');
-
 const slugify = require('slugify');
 const { handlePaginationAndSorting, mapProductWithCounts } = require('../models/repo/product.repo');
 const catalogShopModel = require('../models/catalogShop.model');
+const mongoose = require('mongoose');
+const { getCategoryWithChildren } = require('./category.service');
+const { ObjectId } = mongoose.Types;
+
 
 /**
  * 1. Tạo sản phẩm (public hoặc draft)
@@ -286,15 +289,11 @@ const privateProducts = async (ids) => {
       isDeleted: false
     }
   );
-
   if (products.modifiedCount === 0) {
     throw new NotFoundError('No products found to make private');
   }
-
   return products;
 }
-
-
 
 const searchProducts = async ({
   searchQuery = '',
@@ -308,7 +307,9 @@ const searchProducts = async ({
   const limitNumber = parseInt(limit, 10) || 10;
 
   // Xây dựng truy vấn tìm kiếm
-  let query = {};
+  let query = {
+    isPublic: true,
+  };
 
   // Nếu searchQuery không phải chuỗi rỗng, thực hiện tìm kiếm văn bản
   if (searchQuery.trim() !== '') {
@@ -321,7 +322,10 @@ const searchProducts = async ({
 
   // Nếu có category, thêm điều kiện lọc theo category_id
   if (category) {
-    query.category_id = category;
+    const categoryWithChildren = await getCategoryWithChildren(category);
+    // Lấy tất cả các categoryId từ danh mục gốc và các danh mục con
+    const categoryIds = getCategoryIdsRecursively(categoryWithChildren);
+    query.category_id = { $in: categoryIds };
   }
 
   // Xử lý sắp xếp
@@ -475,15 +479,38 @@ const addProductsToCatalog = async ({
 
 }
 
-const getProductsByCategoryId = async ({
-  categoryId
-}) => {
+const getProductsByCategoryId = async ({ categoryId }) => {
+  // Lấy danh mục và các danh mục con từ hàm getCategoryWithChildren
+  const categoryWithChildren = await getCategoryWithChildren(categoryId);
+
+  // Lấy tất cả các categoryId từ danh mục gốc và các danh mục con
+  const categoryIds = getCategoryIdsRecursively(categoryWithChildren);
+
+  console.log("Category IDs:", categoryIds);
+
+  // Tìm sản phẩm có category_id nằm trong danh sách các danh mục cha/con
   const products = await productModel.find({
-    category_id: categoryId,
+    category_id: { $in: categoryIds },
     isPublic: true
   }).lean();
+
   return products;
-}
+
+};
+
+// Đệ quy lấy tất cả các categoryId từ danh mục gốc và tất cả các danh mục con
+const getCategoryIdsRecursively = (category) => {
+  let ids = [category._id]; // Bắt đầu với ID của danh mục gốc
+
+  // Nếu có danh mục con, tiếp tục đệ quy để lấy ID của các danh mục con
+  if (category.children && category.children.length > 0) {
+    category.children.forEach(childCategory => {
+      ids = ids.concat(getCategoryIdsRecursively(childCategory)); // Đệ quy lấy ID của các danh mục con
+    });
+  }
+
+  return ids;
+};
 
 const getCountProduct = async ({
   shopId
