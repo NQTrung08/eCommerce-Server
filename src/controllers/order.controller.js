@@ -104,17 +104,19 @@ class OrderController {
       params: vnp_Params,
     });
 
+    console.log('Transaction', transaction)
+
     // Nếu thanh toán thành công
     const responseCode = vnp_Params['vnp_ResponseCode']; // Lấy response code
     let redirectUrlPayment;
     if (responseCode === '00') {
       await updateStatusOrders(vnp_Params['vnp_TxnRef'], 'confirmed')
       // Nếu thành công, chuyển hướng về FE với trạng thái success
-      redirectUrlPayment = `${redirectUrl}/payment-success?transactionId=${transaction.transactionNo}&status=success`;
+      redirectUrlPayment = `${redirectUrl}/payment-success?transactionId=${transaction[0].transactionNo}&status=success`;
     } else {
       await updateStatusOrders(vnp_Params['vnp_TxnRef'], 'waiting')
       // Nếu thất bại, chuyển hướng về FE với trạng thái failed
-      redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${transaction.transactionNo}&status=failed`;
+      redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${transaction[0].transactionNo}&status=failed`;
     }
     console.log("rés", responseCode)
     // Thực hiện chuyển hướng về frontend với kết quả
@@ -142,14 +144,14 @@ class OrderController {
       if (momo_params.resultCode == '0') {
         await updateStatusOrders(momo_params.orderId, 'confirmed')
         // Redirect tới trang thanh toán thành công
-        redirectUrlPayment = `${redirectUrl}/payment-success?transactionId=${transactionResult.transactionNo}&status=success`;
+        redirectUrlPayment = `${redirectUrl}/payment-success?transactionId=${transactionResult[0].transactionNo}&status=success`;
       } else {
         // update thành chờ thanh toán
         await updateStatusOrders(momo_params.orderId, 'waiting')
-        redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${momo_params.transactionNo}&status=failed`;
+        redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${transactionResult[0].transactionNo}&status=failed`;
       }
     } else {
-      redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${momo_params.transactionNo}&status=failed`;
+      redirectUrlPayment = `${redirectUrl}/payment-failed?transactionId=${transactionResult[0].transactionNo}&status=failed`;
     }
     return res.redirect(redirectUrlPayment);
   };
