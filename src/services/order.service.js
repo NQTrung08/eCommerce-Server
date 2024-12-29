@@ -2,6 +2,7 @@ const { BadRequestError } = require("../core/error.response");
 const cartModel = require("../models/cart.model");
 const orderModel = require("../models/order.model");
 const productModel = require("../models/product.model");
+const { createVnpayPaymentUrl, createMoMoPaymentUrl } = require("./payment.service");
 
 /**
  * 
@@ -173,34 +174,57 @@ const removePurchasedItemsFromCart = async (userId, orders) => {
 }
 
 const updatePaymentMethod = async ({
-  orderId,
+  orderIds,
+  totalAmountOrders,
   paymentMethod,
   paymentGateway,
+  ipAddr
 }) => {
-  const query = { _id: orderId };
-  const update = {
-    order_payment_method: paymentMethod,
-    order_payment_gateway: paymentMethod === 'online'? paymentGateway : 'none',
-  };
-  const options = { new: true };
-  const updatedOrder = await orderModel.findOneAndUpdate(query, update, options);
-  return updatedOrder;
+
+  if (paymentMethod === 'online') {
+    let paymentUrl;
+    if (paymentGateway === 'VNPAY') {
+      paymentUrl = await createVnpayPaymentUrl({ orderIds, totalAmount: totalAmountOrders, ipAddr });
+    } else if (paymentGateway === 'MOMO') {
+      // Giả sử hàm createMomoPaymentUrl đã được định nghĩa
+      paymentUrl = await createMoMoPaymentUrl({ orderIds, amount: totalAmountOrders, ipAddr });
+    } else {
+      throw new BadRequestError('Unsupported payment gateway');
+    }
+
+    // Chuyển hướng đến URL thanh toán
+    return paymentUrl
+  }
+  const orders = await orderModel.updateMany(
+    { _id: { $in: orderIds } },
+    {
+      order_payment_method: paymentMethod,
+      order_payment_gateway: paymentGateway || "none",
+      order_status: 'pending',
+    }
+  );
+  return orders // Trả về mảng đơn hàng đã cập nhật
 }
 
 const paymentReturn = async ({
-  orderId
+  orderIds,
+  totalAmountOrders,
+  paymentMethod = 'online',
+  paymentGateway,
+  ipAddr
 }) => {
-  const query = { _id: orderId };
-  const update = {
-    order_status: 'completed',
-  };
-  const options = { new: true };
-  const updatedOrder = await orderModel.findOneAndUpdate(query, update, options);
-  return updatedOrder;
+  let paymentUrl;
+  if (paymentGateway === 'VNPAY') {
+    console.log("2132132")
+    paymentUrl = await createVnpayPaymentUrl({ orderIds, totalAmount: totalAmountOrders, ipAddr });
+  } else if (paymentGateway == 'MOMO') {
+    // Giả sử hàm createMomoPaymentUrl đã được định nghĩa
+    paymentUrl = await createMoMoPaymentUrl({ orderIds, amount: totalAmountOrders, ipAddr });
+  } else {
+    throw new BadRequestError('Unsupported payment gateway');
+  }
+  return paymentUrl // Trả về paymentUrl
 }
-
-
-
 
 module.exports = {
   createOrder,
@@ -209,5 +233,7 @@ module.exports = {
   updateOrderStatus,
   cancelOrder,
   removePurchasedItemsFromCart,
-  getOrdersForShop
+  getOrdersForShop,
+  updatePaymentMethod,
+  paymentReturn,
 };

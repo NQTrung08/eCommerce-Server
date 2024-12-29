@@ -38,12 +38,22 @@ const createVnpayTransaction = async ({
   // Lấy orderIds từ params (giả sử nó được gửi là vnp_TxnRef)
   const orderIds = decodeURIComponent(vnp_Params['vnp_TxnRef']).split('-');
   let createTransactions = [];
+  const groupTransactionNo = Math.floor(10000000 + Math.random() * 90000000);
+  if(vnp_Params['vnp_TransactionNo'] == '0') {
+    vnp_Params['vnp_TransactionNo'] = groupTransactionNo
+  }
   for (const orderId of orderIds) {
     // Tìm order theo orderId và lấy order_total_price
     const order = await orderModel.findById(orderId);
     if (!order) {
       throw new BadRequestError('Order not found'); // Nếu không tìm thấy order, ném lỗi
     }
+
+    // ---------update order with transactionNo
+    order.order_transactionNo = vnp_Params['vnp_TransactionNo'];
+    order.save();
+    // ------------------------------
+    
 
     const transaction = await transactionModel.create({
       transaction_id: vnp_Params['vnp_TransactionNo'], // Mã giao dịch có thể là mã chung cho tất cả
@@ -131,6 +141,14 @@ const createMoMoTransaction = async ({
     if (!order) {
       throw new BadRequestError('Order not found'); // Nếu không tìm thấy order, ném lỗi
     }
+
+    // ---------update order with transactionNo
+
+    order.order_transactionNo = transactionId;
+    order.save();
+    // ------------------------------
+    
+    
     // Tạo bản ghi giao dịch mới
     const transaction = await transactionModel.create({
       transaction_id: transactionId,

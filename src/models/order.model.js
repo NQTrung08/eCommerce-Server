@@ -81,6 +81,11 @@ const orderSchema = new Schema({
     // required: true,
     default: 0  // Có thể tính toán và lưu giá trị
   },
+  order_transactionNo: {
+    type: String,
+    default: ''
+  }
+
 }, {
   timestamps: true,
   collection: COLLECTION_NAME

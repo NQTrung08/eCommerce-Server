@@ -1,6 +1,6 @@
 // order.controller.js
 'use strict';
-const { createOrder, getOrdersByUserId, cancelOrder, updateOrderStatus, removePurchasedItemsFromCart, getAllOrders, getOrdersForShop } = require('../services/order.service');
+const { createOrder, getOrdersByUserId, cancelOrder, updateOrderStatus, removePurchasedItemsFromCart, getAllOrders, getOrdersForShop, paymentReturn, updatePaymentMethod } = require('../services/order.service');
 const { createVnpayPaymentUrl, createMoMoPaymentUrl, updateStatusOrders } = require('../services/payment.service');
 const { SuccessReponse } = require('../core/success.response');
 const { BadRequestError } = require('../core/error.response');
@@ -9,6 +9,7 @@ const { app: { redirectUrl } } = require('../configs/config.app');
 const { momoConfig } = require('../configs/payment.config')
 const shopModel = require('../models/shop.model');
 const crypto = require('crypto');
+const orderModel = require('../models/order.model');
 class OrderController {
 
   getAll = async (req, res, next) => {
@@ -56,7 +57,7 @@ class OrderController {
         paymentGateway
       });
       const orderIds = newOrders.orders.map(order => order._id); // Hoặc thuộc tính nào đó chứa ID
-      if(!!newOrders) {
+      if (!!newOrders) {
         // Loại bỏ các sản phẩm đã mua khỏi giỏ hàng của người dùng
         await removePurchasedItemsFromCart(_id, orders);
       }
@@ -71,28 +72,28 @@ class OrderController {
         } else {
           throw new BadRequestError('Unsupported payment gateway');
         }
-  
+
         // Chuyển hướng đến URL thanh toán
         return res.status(200).json({
           message: 'Order created successfully, redirect to payment',
           paymentUrl, // Trả về paymentUrl
           data: newOrders,
         });
-  
-  
+
+
       };
-  
+
       // Trả về phản hồi thành công
       new SuccessReponse({
         message: 'Order created successfully',
         data: newOrders,
       }).send(res);
-  
-    } catch(e) {
+
+    } catch (e) {
       console.log(e)
       throw new BadRequestError('product_thumb is required')
     }
-    
+
   }
 
   // Hàm nhận thông tin thanh toán thành công từ VNPAY
@@ -188,13 +189,30 @@ class OrderController {
 
   // update kiểu thanh toán
   updatePaymentMethod = async (req, res, next) => {
-    const { orderId, paymentMethod, paymentGateway } = req.body;
-    const order = await updatePaymentMethod({ orderId, paymentMethod, paymentGateway });
+    let ipAddr = req.headers['x-forwarded-for'] ||
+      req.connection.remoteAddress ||
+      req.socket.remoteAddress ||
+      req.connection.socket.remoteAddress;
+    const { orderIds, paymentMethod, paymentGateway } = req.body;
+    const order = await updatePaymentMethod({ orderIds, paymentMethod, paymentGateway, ipAddr });
     new SuccessReponse({
       message: 'Update payment method successfully',
       data: order
     }).send(res);
   }
 
+  // paymentReturn
+  paymentReturn = async (req, res, next) => {
+    let ipAddr = req.headers['x-forwarded-for'] ||
+      req.connection.remoteAddress ||
+      req.socket.remoteAddress ||
+      req.connection.socket.remoteAddress;
+    const { orderIds, totalAmountOrders, paymentMethod, paymentGateway } = req.body;
+    const order = await paymentReturn({ orderIds, totalAmountOrders, paymentMethod, paymentGateway });
+    new SuccessReponse({
+      message: 'Payment return successfully',
+      data: order
+    }).send(res);
+  }
 }
 module.exports = new OrderController();

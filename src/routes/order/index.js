@@ -14,7 +14,10 @@ router.get('/momo_return', asyncHandler(orderController.momoReturn));
 router.get('/user', authenticate, asyncHandler(orderController.getOrdersByUserId));
 
 // update trạng thái đơn hàng
+router.post('/payment-method', authenticate, asyncHandler(orderController.updatePaymentMethod));
+router.post('/payment-return', authenticate, asyncHandler(orderController.paymentReturn));
 router.put('/:id', authenticate, authorize(['shop']), asyncHandler(orderController.updateStatusOrder));
+
 
 // cancel đơn hàng
 router.put('/cancel/:orderId', authenticate, asyncHandler(orderController.cancelOrder));
