@@ -62,7 +62,7 @@ const addToCart = async ({ userId, product }) => {
     throw new BadRequestError('Product is not available for sale');
   }
 
-  if (productExist.stock_status !== 'inStock' && productExist.stock_status !== 'preOrder') {
+  if (productExist.stock_status !== 'inStock' || productExist.product_quantity == 0) {
     throw new BadRequestError('Product is out of stock');
   }
 
@@ -119,7 +119,7 @@ const updateQuantityFromCart = async ({ userId, product }) => {
   if (quantity < 0) {
     throw new BadRequestError('Quantity must be non-negative');
   }
-
+  
   // Kiểm tra sản phẩm có tồn tại
   const foundProduct = await productModel.findById(productId);
   if (!foundProduct) {

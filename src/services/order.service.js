@@ -73,9 +73,16 @@ const createOrder = async ({ userId, orders, paymentMethod, shippingAddress, pay
 
       // Giảm số lượng sản phẩm
       existingProduct.product_quantity -= product.quantity;
+      if(existingProduct.product_quantity == 0) {
+        existingProduct.product_status = 'outOfStock'; // Cập nhật trạng thái sản phẩm
+        existingProduct.product_quantity = 0; // Cập nhật số lượng sản phẩm về 0 khi hết hàng
+      }
       await existingProduct.save(); // Lưu thay đổi vào DB
+      
     }
   }
+
+
 
   return {
     orders: createdOrders, // Mảng các đơn hàng đã tạo
@@ -83,10 +90,16 @@ const createOrder = async ({ userId, orders, paymentMethod, shippingAddress, pay
   };
 };
 
-const getAllOrders = async () => {
-  const orders = await orderModel.find({
-
-  }).populate('order_shopId');
+const getAllOrders = async ({ status }) => {
+  let orders;
+  if (!status) {
+    orders = await orderModel.find().populate('order_shopId');
+  }
+  else {
+    orders = await orderModel.find({
+      order_status: status
+    }).populate('order_shopId');
+  }
   return orders;
 }
 

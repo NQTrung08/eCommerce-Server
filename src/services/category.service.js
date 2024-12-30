@@ -342,7 +342,12 @@ const getStatisticalCategories = async ({
     let totalProducts, matchCriteria;
     if (!shopId) {
       totalProducts = await productModel.countDocuments({ category_id: { $in: categoryIds } });
-      matchCriteria = { "product_info.category_id": { $in: categoryIds } };
+      matchCriteria = {
+        "product_info.category_id": { $in: categoryIds },
+        "order_status": "completed"
+
+      };
+
     } else {
       // Nếu là shop, chỉ tính sản phẩm của cửa hàng
       totalProducts = await productModel.countDocuments({
@@ -351,7 +356,9 @@ const getStatisticalCategories = async ({
       });
       matchCriteria = {
         "product_info.category_id": { $in: categoryIds },
-        "product_info.shop_id": shopId // Lọc theo shop_id
+        "product_info.shop_id": shopId, // Lọc theo shop_id
+        "order_status": "completed"
+
       };
     }
 
@@ -452,8 +459,8 @@ const moveNode = async (ids, newParentId, newIndex) => {
   const bulkUpdates = reorderedCategories.map((cat, index) => ({
     updateOne: {
       filter: { _id: cat._id },
-      update: { 
-        parent_id: newParentId, 
+      update: {
+        parent_id: newParentId,
         order: index,
         // Cập nhật level dựa vào cấp độ của danh mục cha mới
         level: newParent ? newParent.level + 1 : 0  // Cấp độ của danh mục con sẽ là cấp độ của cha + 1

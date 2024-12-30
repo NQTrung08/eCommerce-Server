@@ -15,7 +15,7 @@ class OrderController {
   getAll = async (req, res, next) => {
     new SuccessReponse({
       message: 'Get all orders',
-      data: await getAllOrders()
+      data: await getAllOrders({status: req.query.status})
     }).send(res)
   }
 
