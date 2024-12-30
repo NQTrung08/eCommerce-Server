@@ -51,7 +51,8 @@ const getAllReviewsForShop = async ({ shopId }) => {
     throw new BadRequestError("Shop not found")
   }
   const products = await productModel.find({
-    shop_id: shopId
+    shop_id: shopId,
+    isPublic: true,
   })
   if (!products) {
     throw new BadRequestError("Product not found")
@@ -69,9 +70,18 @@ const getAllReviewsForShop = async ({ shopId }) => {
 }
 
 const getAll = async () => {
-  const reviews = await reviewModel.find({})
-    .populate('product_id')
-    .populate('user_id')
+  const products = await productModel.find({
+    isPublic: true,
+  })
+  // Lấy danh sách các product_id
+  const productIds = products.map(product => product._id);
+
+  // Tìm các đánh giá có product_id nằm trong danh sách productIds
+  const reviews = await reviewModel
+    .find({ product_id: { $in: productIds } })
+    .populate('product_id') // Populate để lấy chi tiết sản phẩm
+    .populate('user_id');   // Populate để lấy chi tiết người dùng
+
   return reviews
 }
 
@@ -87,8 +97,8 @@ const getCountReview = async (type, id) => {
 }
 
 const getStarCountsByProduct = async (productId) => {
-  
-  if(!Array.isArray(productId)) {
+
+  if (!Array.isArray(productId)) {
     productId = [productId]
   }
   const objectIds = productId.map((id) => {
@@ -135,7 +145,8 @@ const getStarCountsByShop = async (shopId) => {
     throw new BadRequestError("Shop not found")
   }
   const products = await productModel.find({
-    shop_id: shopId
+    shop_id: shopId,
+    isPublic: true,
   })
   if (!products) {
     throw new BadRequestError("Product not found")
@@ -145,11 +156,13 @@ const getStarCountsByShop = async (shopId) => {
   // Đếm các sao của tất cả sản phẩm trong shop
   const rating = getStarCountsByProduct(productIds)
   return rating;
-  
+
 };
 
 const getStarCountByAdmin = async () => {
-  const products = await productModel.find({})
+  const products = await productModel.find({
+    isPublic: true,
+  })
   const productIds = products.map(product => product._id);
   const rating = getStarCountsByProduct(productIds)
   return rating;
