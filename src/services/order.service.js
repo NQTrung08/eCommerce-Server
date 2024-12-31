@@ -156,8 +156,8 @@ const cancelOrder = async ({ userId, orderId }) => {
   }
 
   // Kiểm tra nếu trạng thái đơn hàng là 'pending'
-  if (order.order_status === 'pending') {
-    const update = { order_status: 'cancelled' };
+  if (order.order_status === 'pending' || order.order_status === 'waiting') {
+    const update = { order_status: 'canceled' };
     const options = { new: true };
 
     // Cập nhật trạng thái đơn hàng thành 'cancelled'
@@ -165,7 +165,7 @@ const cancelOrder = async ({ userId, orderId }) => {
     return updatedOrder;
   } else {
     // Nếu trạng thái không phải 'pending', trả về lỗi
-    throw new BadRequestError(`Order cannot be cancelled because its status is ${order.order_status}`);
+    throw new BadRequestError(`Order cannot be canceled because its status is ${order.order_status}`);
   }
 };
 
