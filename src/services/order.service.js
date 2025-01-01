@@ -73,12 +73,12 @@ const createOrder = async ({ userId, orders, paymentMethod, shippingAddress, pay
 
       // Giảm số lượng sản phẩm
       existingProduct.product_quantity -= product.quantity;
-      if(existingProduct.product_quantity == 0) {
+      if (existingProduct.product_quantity == 0) {
         existingProduct.product_status = 'outOfStock'; // Cập nhật trạng thái sản phẩm
         existingProduct.product_quantity = 0; // Cập nhật số lượng sản phẩm về 0 khi hết hàng
       }
       await existingProduct.save(); // Lưu thay đổi vào DB
-      
+
     }
   }
 
@@ -239,6 +239,16 @@ const paymentReturn = async ({
   return paymentUrl // Trả về paymentUrl
 }
 
+const getDetailOrder = async ({
+  orderId
+}) => {
+  const order = await orderModel.findById(orderId)
+    .populate('order_shopId')
+    .populate('order_userId')
+    .populate('order_products.productId');
+  return order;
+}
+
 module.exports = {
   createOrder,
   getAllOrders,
@@ -249,4 +259,5 @@ module.exports = {
   getOrdersForShop,
   updatePaymentMethod,
   paymentReturn,
+  getDetailOrder
 };

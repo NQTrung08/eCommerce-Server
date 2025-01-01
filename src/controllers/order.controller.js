@@ -1,6 +1,6 @@
 // order.controller.js
 'use strict';
-const { createOrder, getOrdersByUserId, cancelOrder, updateOrderStatus, removePurchasedItemsFromCart, getAllOrders, getOrdersForShop, paymentReturn, updatePaymentMethod } = require('../services/order.service');
+const { createOrder, getOrdersByUserId, cancelOrder, updateOrderStatus, removePurchasedItemsFromCart, getAllOrders, getOrdersForShop, paymentReturn, updatePaymentMethod, getDetailOrder } = require('../services/order.service');
 const { createVnpayPaymentUrl, createMoMoPaymentUrl, updateStatusOrders } = require('../services/payment.service');
 const { SuccessReponse } = require('../core/success.response');
 const { BadRequestError } = require('../core/error.response');
@@ -15,7 +15,7 @@ class OrderController {
   getAll = async (req, res, next) => {
     new SuccessReponse({
       message: 'Get all orders',
-      data: await getAllOrders({status: req.query.status})
+      data: await getAllOrders({ status: req.query.status })
     }).send(res)
   }
 
@@ -213,6 +213,14 @@ class OrderController {
     const order = await paymentReturn({ orderIds, totalAmountOrders, paymentMethod, paymentGateway });
     new SuccessReponse({
       message: 'Payment return successfully',
+      data: order
+    }).send(res);
+  }
+
+  getDetailOrder = async (req, res) => {
+    const order = await getDetailOrder({ orderId: req.params.orderId });
+    new SuccessReponse({
+      message: 'Get order detail successfully',
       data: order
     }).send(res);
   }
