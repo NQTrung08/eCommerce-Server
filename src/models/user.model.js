@@ -10,6 +10,9 @@ const addressSchema = new Schema({
   recipient_phone: String,
   address: String,
   specific_address: String,
+  province: String,
+  district: String,
+  ward: String,
   isDefault: { type: Boolean, default: false },
 }, { _id: true });
 
