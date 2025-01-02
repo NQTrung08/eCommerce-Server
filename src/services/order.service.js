@@ -93,12 +93,18 @@ const createOrder = async ({ userId, orders, paymentMethod, shippingAddress, pay
 const getAllOrders = async ({ status }) => {
   let orders;
   if (!status) {
-    orders = await orderModel.find().populate('order_shopId');
+    orders = await orderModel.find()
+      .populate('order_shopId')
+      .populate('order_products.productId')
+      .populate('order_userId')
   }
   else {
     orders = await orderModel.find({
       order_status: status
-    }).populate('order_shopId');
+    })
+     .populate('order_shopId')
+     .populate('order_products.productId')
+     .populate('order_userId')
   }
   return orders;
 }
@@ -108,12 +114,18 @@ const getOrdersForShop = async ({ shopId, status }) => {
   if (!status) {
     orders = await orderModel.find({
       order_shopId: shopId
-    });
+    })
+      .populate('order_shopId')
+      .populate('order_products.productId')
+      .populate('order_userId')
   } else {
     orders = await orderModel.find({
       order_shopId: shopId,
       order_status: status
-    });
+    })
+      .populate('order_shopId')
+      .populate('order_products.productId')
+      .populate('order_userId')
   }
 
   return orders;
