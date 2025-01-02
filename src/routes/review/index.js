@@ -10,7 +10,7 @@ const router = express.Router();
 router.get('/', authenticate, authorize(['admin']), asyncHandler(reviewController.getAll))
 router.post('/count', asyncHandler(reviewController.getCountReview))
 router.get('/shop-owners', authenticate, authorize(['shop']), asyncHandler(reviewController.getAllReviewsForShop))
-router.get('/shop/:shopId', authenticate, authorize(['shop']), asyncHandler(reviewController.getAllReviewsForShopId))
+router.get('/shop/:shopId', authenticate, asyncHandler(reviewController.getAllReviewsForShopId))
 // Create a new review
 router.post('/', authenticate, asyncHandler(reviewController.createReview));
 
