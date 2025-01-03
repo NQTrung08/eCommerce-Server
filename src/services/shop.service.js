@@ -141,7 +141,7 @@ const getShopForAdmin = async ({ id, year = 'all' }) => {
     shop_id: id,
     isPublic: true
   }).select('_id'); // Chỉ lấy _id để giảm tải dữ liệu
-  
+
   const productIds = products.map(product => product._id); // Tạo danh sách các _id của sản phẩm  
   const reviewsCount = await reviewModel.countDocuments({
     product_id: { $in: productIds } // Kiểm tra các review có product_id nằm trong productIds
@@ -170,13 +170,13 @@ const getShop = async ({ id, year }) => {
     shop_id: id,
     isPublic: true
   }).select('_id'); // Chỉ lấy _id để giảm tải dữ liệu
-  
+
   const productIds = products.map(product => product._id); // Tạo danh sách các _id của sản phẩm
-  
+
   const reviewsCount = await reviewModel.countDocuments({
     product_id: { $in: productIds } // Kiểm tra các review có product_id nằm trong productIds
   });
-  
+
   const stats = await getStatisticsForShop(shop._id, year);
   if (!shop) {
     throw new NotFoundError('Shop not found');
@@ -205,8 +205,25 @@ const getShopByOwnerId = async ({
     const stats = await getStatisticsForShop(shop._id, year);
     shop.statistics = stats.length ? stats[0] : null;
   }
+  const shopOwner = await shopModel.findOne({ owner_id })
+    
+  const products = await productModel.find({
+    shop_id: shopOwner.id,
+    isPublic: true
+  }).select('_id'); // Chỉ lấy _id để giảm tải dữ liệu
 
-  return shop;
+  const productIds = products.map(product => product._id); // Tạo danh sách các _id của sản phẩm
+
+  const reviewsCount = await reviewModel.countDocuments({
+    product_id: { $in: productIds } // Kiểm tra các review có product_id nằm trong productIds
+  });
+
+
+  return {
+    shop,
+    productsCount: products.length,
+    reviewsCount
+  };
 };
 
 
