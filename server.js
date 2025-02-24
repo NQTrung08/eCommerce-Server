@@ -8,8 +8,6 @@ const server = app.listen(port, () => {
   console.log(`Api docs is running on ${url}/api-docs`);
 });
 
-console.log(`Starting`);
-
 // process.on("SIGINT", () => {
 //   server.close(() => {
 //     console.log("Server is closed");

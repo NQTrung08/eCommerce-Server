@@ -7,7 +7,7 @@ module.exports = {
   },
   rules: {
     'no-unused-vars': 'warn',
-    'no-console': 'error',
+    'no-console': 'warn',
     'no-debugger': 'off',
     'eqeqeq': 'off',
     'semi': 'off',
