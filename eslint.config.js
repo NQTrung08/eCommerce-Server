@@ -6,8 +6,8 @@ module.exports = {
     globals: require('globals').node,
   },
   rules: {
-    'no-unused-vars': 'off',
-    'no-console': 'off',
+    'no-unused-vars': 'warn',
+    'no-console': 'error',
     'no-debugger': 'off',
     'eqeqeq': 'off',
     'semi': 'off',
